@@ -5,6 +5,7 @@ public class WeaponObject : ItemObject
 {
     [Header("Weapon References")]
     [SerializeField] Animation attackAnimation;
+    [SerializeField] Transform hitSpot;
 
     bool inAttack = false;
 
@@ -49,8 +50,23 @@ public class WeaponObject : ItemObject
 
         yield return new WaitForSeconds(attack.attackDelay);
 
-        // Deal damage;
+        TriggerAttackHitbox(attack);
 
         inAttack = false;
+    }
+    
+    void TriggerAttackHitbox(Attack attack) 
+    {
+        Collider[] hits = Physics.OverlapSphere(hitSpot.position, weapon.range, LayerMask.NameToLayer("Enemy"));
+        if (hits.Length > 0) 
+        {
+            foreach (Collider enemyCollider in hits) 
+            {
+                if (enemyCollider.TryGetComponent(out EnemyAI enemy)) 
+                {
+                    enemy.TakeDamage(attack.damage);
+                }
+            }
+        }
     }
 }

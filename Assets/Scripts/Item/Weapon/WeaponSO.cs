@@ -6,5 +6,6 @@ public class WeaponSO : ItemSO
     public Attack[] attacks;
 
     [Header("Stats")]
+    public float range = 3f;
     public float attackRate = 1f;
 }

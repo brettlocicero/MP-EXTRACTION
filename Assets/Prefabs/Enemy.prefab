@@ -78,6 +78,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NetworkEnemyAI
   ShowTopMostFoldoutHeaderGroup: 1
   targetUpdateInterval: 0.5
+  maxHealth: 30
 --- !u!33 &7073701652540155097
 MeshFilter:
   m_ObjectHideFlags: 0
