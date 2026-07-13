@@ -28,11 +28,9 @@ public class EnemyAI : NetworkBehaviour
     
     float nextTargetUpdateTime;
     
-    // Server-side state tracking for the stun mechanic
     bool isStunned = false;
     Coroutine stunCoroutine;
 
-    // NetworkVariable syncs from Server to Clients automatically.
     NetworkVariable<float> currentHealth = new NetworkVariable<float>(
         100f, 
         NetworkVariableReadPermission.Everyone, 
@@ -109,6 +107,7 @@ public class EnemyAI : NetworkBehaviour
         {
             ModifyHealth(damage, stunTime, attackDirection);
         }
+        
         else
         {
             TakeDamageServerRpc(damage, stunTime, attackDirection);

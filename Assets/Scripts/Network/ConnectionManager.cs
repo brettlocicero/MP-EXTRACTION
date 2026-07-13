@@ -5,11 +5,9 @@ public class ConnectionManager : MonoBehaviour
 {
     void Start()
     {
-        // Existing callbacks
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         
-        // Add this callback to detect when the server finishes starting up
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
     }
 

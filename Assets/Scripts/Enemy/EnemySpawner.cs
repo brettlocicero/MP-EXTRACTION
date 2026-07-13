@@ -8,13 +8,11 @@ public class EnemySpawner : NetworkBehaviour
     [Header("Spawn Settings")]
     [SerializeField] GameObject enemyPrefab; 
     [SerializeField] int baseEnemiesPerWave = 5;
-    [SerializeField] int extraEnemiesPerWave = 2; // How many more enemies spawn each subsequent round
+    [SerializeField] int extraEnemiesPerWave = 2;
     [SerializeField] float spawnRadius = 10f;
-    [SerializeField] float spawnDelay = 1f;       // Time between each enemy spawn
-    [SerializeField] float timeBetweenWaves = 20f; // Intermission duration
+    [SerializeField] float spawnDelay = 1f;
+    [SerializeField] float timeBetweenWaves = 20f;
 
-    // NetworkVariables update automatically from Server -> Clients.
-    // Clients read these to update their UI.
     public NetworkVariable<int> currentWave = new NetworkVariable<int>(0);
     public NetworkVariable<float> waveCountdown = new NetworkVariable<float>(0f);
     public NetworkVariable<bool> isIntermission = new NetworkVariable<bool>(false);
@@ -34,7 +32,6 @@ public class EnemySpawner : NetworkBehaviour
             yield break;
         }
 
-        // Infinite loop for continuous waves
         while (true)
         {
             currentWave.Value++;

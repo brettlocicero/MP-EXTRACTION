@@ -8,7 +8,7 @@ public class NetworkBootstrapper : MonoBehaviour
 {
     [Header("Bootstrapper Settings")]
     [SerializeField] TransportMode transportMode = TransportMode.Unity;
-    [SerializeField] uint steamAppId = 480; // 480 is Steam's default "Spacewar" test ID
+    [SerializeField] uint steamAppId = 480;
 
     [Header("Transport Component References")]
     [SerializeField] UnityTransport unityTransport;
@@ -41,8 +41,6 @@ public class NetworkBootstrapper : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogError($"[Bootstrapper] Steam failed to initialize! Is Steam desktop app running? Error: {e.Message}");
-            
-            // Fallback safety: If Steam fails, force switch back to Unity Transport so the game doesn't crash
             Debug.LogWarning("[Bootstrapper] Falling back to Unity Transport due to Steam initialization failure.");
             transportMode = TransportMode.Unity;
         }
@@ -69,7 +67,6 @@ public class NetworkBootstrapper : MonoBehaviour
                 break;
 
             case TransportMode.Steam:
-                // Double check that Steam actually succeeded before committing to FacepunchTransport
                 if (!SteamClient.IsValid)
                 {
                     Debug.LogError("[Bootstrapper] FacepunchTransport selected, but Steam is not initialized! Swapping to UnityTransport.");
@@ -82,6 +79,7 @@ public class NetworkBootstrapper : MonoBehaviour
                     Debug.LogError("[Bootstrapper] FacepunchTransport reference is missing in Inspector!");
                     return;
                 }
+                
                 NetworkManager.Singleton.NetworkConfig.NetworkTransport = steamTransport;
                 Debug.Log("[Bootstrapper] Active network transport set to: FacepunchTransport (Steam).");
                 break;
@@ -90,7 +88,6 @@ public class NetworkBootstrapper : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        // Clean up Steam handles when closing the game
         if (SteamClient.IsValid)
         {
             SteamClient.Shutdown();

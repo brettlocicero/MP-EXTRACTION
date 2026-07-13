@@ -2,7 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
 
-public class GameManager : NetworkBehaviour
+public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
@@ -23,8 +23,6 @@ public class GameManager : NetworkBehaviour
 
     public void StartGameSession()
     {
-        // if (!IsServer) return;
-
         Debug.Log("[GameManager] Network session verified. Starting initialization check...");
         if (spawner != null)
         {
