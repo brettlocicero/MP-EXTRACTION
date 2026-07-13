@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] EnemySpawner spawner;
+    [SerializeField] CanvasGroup menuUI;
+    [SerializeField] CanvasGroup ingameUI;
 
     void Awake()
     {
@@ -33,6 +35,8 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("[GameManager] Spawner reference is missing!");
         }
+        
+        SwapToGameUI();
     }
 
     IEnumerator WaitForSpawnerAndStartLoop()
@@ -44,5 +48,16 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("[GameManager] Spawner Netcode identity confirmed active. Launching game loop!");
         spawner.StartGameLoop();
+    }
+    
+    void SwapToGameUI() 
+    {
+        menuUI.alpha = 0f;
+        menuUI.blocksRaycasts = false;
+        menuUI.interactable = false;
+        
+        ingameUI.alpha = 1f;
+        ingameUI.blocksRaycasts = true;
+        ingameUI.interactable = true;
     }
 }
