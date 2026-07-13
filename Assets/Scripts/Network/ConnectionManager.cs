@@ -33,6 +33,7 @@ public class ConnectionManager : MonoBehaviour
         {
             if (GameManager.Instance != null)
             {
+                Debug.Log("[ConnectionManager] Starting game manager...");
                 GameManager.Instance.StartGameSession();
             }
             

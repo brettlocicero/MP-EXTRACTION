@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using System.Collections;
 
 public class GameManager : NetworkBehaviour
 {
@@ -22,16 +23,28 @@ public class GameManager : NetworkBehaviour
 
     public void StartGameSession()
     {
-        Debug.Log("[GameManager] Network session verified. Initializing game loop...");
-        
+        // if (!IsServer) return;
+
+        Debug.Log("[GameManager] Network session verified. Starting initialization check...");
         if (spawner != null)
         {
-            spawner.SpawnEnemies();
+            StartCoroutine(WaitForSpawnerAndStartLoop());
         }
-        
+
         else
         {
             Debug.LogWarning("[GameManager] Spawner reference is missing!");
         }
+    }
+
+    IEnumerator WaitForSpawnerAndStartLoop()
+    {
+        while (spawner == null || !spawner.IsSpawned)
+        {
+            yield return null; 
+        }
+
+        Debug.Log("[GameManager] Spawner Netcode identity confirmed active. Launching game loop!");
+        spawner.StartGameLoop();
     }
 }

@@ -13,10 +13,13 @@ public class WeaponObject : ItemObject
     float attackTimer = 0f;
     int comboIndex = 0;
 
+    AudioSource audioSource;
+
     protected override void Start()
     {
         base.Start();
         weapon = item as WeaponSO;
+        audioSource = GetComponent<AudioSource>();
     }
 
     protected override void Update()
@@ -50,6 +53,7 @@ public class WeaponObject : ItemObject
 
         yield return new WaitForSeconds(attack.attackDelay);
 
+        PlayAttackAudio();
         TriggerAttackHitbox(attack);
 
         inAttack = false;
@@ -64,9 +68,15 @@ public class WeaponObject : ItemObject
             {
                 if (enemyCollider.TryGetComponent(out EnemyAI enemy)) 
                 {
-                    enemy.TakeDamage(attack.damage);
+                    enemy.TakeDamage(attack.damage, attack.stunTime, attack.direction);
                 }
             }
         }
+    }
+
+    void PlayAttackAudio()
+    {
+        audioSource.pitch = Random.Range(weapon.attackSoundPitchRange.x, weapon.attackSoundPitchRange.y);
+        audioSource.PlayOneShot(weapon.attackSound);
     }
 }

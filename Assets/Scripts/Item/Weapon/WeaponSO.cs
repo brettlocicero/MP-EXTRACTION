@@ -8,4 +8,8 @@ public class WeaponSO : ItemSO
     [Header("Stats")]
     public float range = 3f;
     public float attackRate = 1f;
+
+    [Header("FX")]
+    public AudioClip attackSound;
+    public Vector2 attackSoundPitchRange;
 }

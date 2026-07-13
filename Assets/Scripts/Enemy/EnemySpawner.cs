@@ -1,50 +1,117 @@
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.AI;
+using System.Collections;
 
 public class EnemySpawner : NetworkBehaviour
 {
     [Header("Spawn Settings")]
     [SerializeField] GameObject enemyPrefab; 
-    [SerializeField] int enemiesToSpawn = 5;
+    [SerializeField] int baseEnemiesPerWave = 5;
+    [SerializeField] int extraEnemiesPerWave = 2; // How many more enemies spawn each subsequent round
     [SerializeField] float spawnRadius = 10f;
+    [SerializeField] float spawnDelay = 1f;       // Time between each enemy spawn
+    [SerializeField] float timeBetweenWaves = 20f; // Intermission duration
 
-    // The GameManager will now call this method directly.
-    public void SpawnEnemies()
+    // NetworkVariables update automatically from Server -> Clients.
+    // Clients read these to update their UI.
+    public NetworkVariable<int> currentWave = new NetworkVariable<int>(0);
+    public NetworkVariable<float> waveCountdown = new NetworkVariable<float>(0f);
+    public NetworkVariable<bool> isIntermission = new NetworkVariable<bool>(false);
+
+    int enemiesRemainingToKill = 0;
+
+    public void StartGameLoop()
+    {
+        StartCoroutine(GameLoopRoutine());
+    }
+
+    IEnumerator GameLoopRoutine()
     {
         if (enemyPrefab == null)
         {
             Debug.LogError("[Spawner] Enemy prefab is not assigned!");
-            return;
+            yield break;
         }
 
-        for (int i = 0; i < enemiesToSpawn; i++)
+        // Infinite loop for continuous waves
+        while (true)
         {
-            // Generate a random position within a circle around the spawner
-            Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
-            Vector3 spawnPosition = transform.position + new Vector3(randomCircle.x, 0.5f, randomCircle.y);
-
-            // 1. Instantiate the prefab locally on the server
-            GameObject enemyInstance = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
-
-            // 2. Get the NetworkObject component
-            NetworkObject netObj = enemyInstance.GetComponent<NetworkObject>();
+            currentWave.Value++;
+            isIntermission.Value = false;
             
-            if (netObj != null)
+            // Calculate total enemy count for this wave
+            int enemiesToSpawn = baseEnemiesPerWave + ((currentWave.Value - 1) * extraEnemiesPerWave);
+            enemiesRemainingToKill = enemiesToSpawn;
+
+            Debug.Log($"[Spawner] Wave {currentWave.Value} Started! Spawning {enemiesToSpawn} enemies.");
+
+            // Spawn enemies slowly, one by one
+            for (int i = 0; i < enemiesToSpawn; i++)
             {
-                // 3. Spawn it across the network so all clients see it
-                netObj.Spawn();
+                SpawnSingleEnemy();
+                yield return new WaitForSeconds(spawnDelay);
             }
-            else
+
+            // Wait until all spawned enemies are dead before starting the countdown
+            while (enemiesRemainingToKill > 0)
             {
-                Debug.LogError($"[Spawner] The prefab {enemyPrefab.name} is missing a NetworkObject component!");
-                Destroy(enemyInstance); 
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            // --- INTERMISSION PERIOD ---
+            isIntermission.Value = true;
+            waveCountdown.Value = timeBetweenWaves;
+
+            while (waveCountdown.Value > 0)
+            {
+                yield return new WaitForSeconds(1f);
+                waveCountdown.Value -= 1f; // Countdown by 1 second intervals
             }
         }
-        
-        Debug.Log($"[Spawner] Successfully spawned {enemiesToSpawn} enemies.");
     }
 
-    // Visualizes the spawn radius in the Unity Scene view
+    void SpawnSingleEnemy()
+    {
+        if (!IsServer) return;
+
+        Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
+        Vector3 spawnPosition = transform.position + new Vector3(randomCircle.x, 0.5f, randomCircle.y);
+
+        GameObject enemyInstance = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+        NetworkObject netObj = enemyInstance.GetComponent<NetworkObject>();
+        
+        if (netObj != null)
+        {
+            netObj.Spawn();
+            
+            // Get our EnemyAI component and subscribe to our custom death event
+            EnemyAI enemyAI = enemyInstance.GetComponent<EnemyAI>();
+            if (enemyAI != null)
+            {
+                enemyAI.OnEnemyKilled += OnEnemyKilled;
+            }
+        }
+        else
+        {
+            Debug.LogError($"[Spawner] {enemyPrefab.name} is missing a NetworkObject component!");
+            Destroy(enemyInstance);
+            enemiesRemainingToKill--; // Adjust tracking so game doesn't get stuck
+        }
+    }
+
+    // Updated parameter to accept our EnemyAI component type
+    void OnEnemyKilled(EnemyAI enemyAI)
+    {
+        if (!IsServer) return;
+
+        // Clean up the event listener subscription safely
+        enemyAI.OnEnemyKilled -= OnEnemyKilled;
+        
+        enemiesRemainingToKill--;
+        Debug.Log($"[Spawner] Enemy killed! Remaining: {enemiesRemainingToKill}");
+    }
+
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

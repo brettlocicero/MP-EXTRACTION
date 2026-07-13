@@ -1,21 +1,38 @@
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.AI;
+using System.Collections;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyAI : NetworkBehaviour
 {
+    public System.Action<EnemyAI> OnEnemyKilled;
+
     NavMeshAgent agent;
     
+    [Header("Stats")]
+    [SerializeField] float maxHealth = 100f;
+
     [Header("AI Settings")]
     [SerializeField] float targetUpdateInterval = 0.5f;
-    float nextTargetUpdateTime;
 
-    [Header("Health Settings")]
-    [SerializeField] float maxHealth = 100;
+    [Header("References")]
+    [SerializeField] Animator animator;
     
-    // NetworkVariable syncs from Server to Clients by default.
-    // We use NetworkVariableWritePermission.Server to ensure only the server can modify it.
+    [Header("FX & Audio Settings")]
+    [SerializeField] GameObject hitVFXPrefab;
+    [SerializeField] AudioClip hitSFX;
+    [SerializeField] GameObject deathVFXPrefab;
+    [SerializeField] AudioClip deathSFX;
+    [SerializeField] AudioSource audioSource;
+    
+    float nextTargetUpdateTime;
+    
+    // Server-side state tracking for the stun mechanic
+    bool isStunned = false;
+    Coroutine stunCoroutine;
+
+    // NetworkVariable syncs from Server to Clients automatically.
     NetworkVariable<float> currentHealth = new NetworkVariable<float>(
         100f, 
         NetworkVariableReadPermission.Everyone, 
@@ -25,6 +42,8 @@ public class EnemyAI : NetworkBehaviour
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        // Fallback in case AudioSource isn't assigned via inspector
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
     public override void OnNetworkSpawn()
@@ -34,25 +53,23 @@ public class EnemyAI : NetworkBehaviour
             agent.enabled = false;
         }
 
-        // Initialize health on the server
         if (IsServer)
         {
             currentHealth.Value = maxHealth;
         }
 
-        // Subscribe to health changes so clients can react (e.g., update UI, play VFX)
         currentHealth.OnValueChanged += OnHealthChanged;
     }
 
     public override void OnNetworkDespawn()
     {
-        // Unsubscribe to prevent memory leaks when the object is destroyed
         currentHealth.OnValueChanged -= OnHealthChanged;
     }
 
     void Update()
     {
         if (!IsServer) return;
+        if (isStunned) return; 
 
         if (Time.time >= nextTargetUpdateTime)
         {
@@ -64,7 +81,6 @@ public class EnemyAI : NetworkBehaviour
     void TargetClosestPlayer()
     {
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        
         if (players.Length == 0) return;
 
         GameObject closestPlayer = null;
@@ -87,54 +103,132 @@ public class EnemyAI : NetworkBehaviour
         }
     }
 
-    /// <summary>
-    /// Call this when the enemy should take damage (e.g., from a player projectile or sword).
-    /// Can safely be called from server or clients; ServerRpc ensures execution happens on the server.
-    /// </summary>
-    public void TakeDamage(float damageAmount)
+    public void TakeDamage(float damage, float stunTime, AttackDirection attackDirection)
     {
         if (IsServer)
         {
-            ModifyHealth(damageAmount);
+            ModifyHealth(damage, stunTime, attackDirection);
         }
-        
         else
         {
-            // If a client detected the hit locally, they ask the server to apply the damage
-            TakeDamageServerRpc(damageAmount);
+            TakeDamageServerRpc(damage, stunTime, attackDirection);
         }
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    void TakeDamageServerRpc(float damageAmount)
+    void TakeDamageServerRpc(float damage, float stunTime, AttackDirection attackDirection)
     {
-        ModifyHealth(damageAmount);
+        ModifyHealth(damage, stunTime, attackDirection);
     }
 
-    // Core logic for updating health, kept strictly on the server
-    void ModifyHealth(float damageAmount)
+    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection)
     {
         if (!IsServer) return;
 
-        currentHealth.Value -= damageAmount;
+        currentHealth.Value -= damage;
 
         if (currentHealth.Value <= 0)
         {
+            // Call client RPC for death visuals right before despawning the object
+            PlayDeathFXRpc(); 
             Die();
+            return;
+        }
+
+        PlayHitAnimationRpc(attackDirection);
+        TriggerStun(stunTime);
+    }
+
+    void TriggerStun(float customStunDuration)
+    {
+        if (!IsServer) return;
+        if (customStunDuration <= 0f) return;
+
+        if (stunCoroutine != null)
+        {
+            StopCoroutine(stunCoroutine);
+        }
+
+        stunCoroutine = StartCoroutine(StunRoutine(customStunDuration));
+    }
+
+    IEnumerator StunRoutine(float duration)
+    {
+        isStunned = true;
+
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
+
+        yield return new WaitForSeconds(duration);
+
+        isStunned = false;
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
         }
     }
 
-    // This runs on EVERYONE (Server + Clients) automatically whenever currentHealth changes
+    [Rpc(SendTo.Everyone)]
+    void PlayHitAnimationRpc(AttackDirection attackDirection)
+    {
+        switch (attackDirection)
+        {
+            case AttackDirection.Left:
+                animator.SetTrigger("HitLeft");
+                break;
+            case AttackDirection.Right:
+                animator.SetTrigger("HitRight");
+                break;
+            default:
+                animator.SetTrigger("HitLeft");
+                break;
+        }
+    }
+
+    // Automatically triggers on all clients whenever the NetworkVariable updates
     void OnHealthChanged(float previousValue, float newValue)
     {
-        Debug.Log($"Enemy Health Changed from {previousValue} to {newValue} on Client ID: {NetworkManager.Singleton.LocalClientId}");
-        
-        // UI updates or local blood/hit VFX go here!
+        // Only trigger "Hit" FX if the enemy is taking damage, not dying or healing
+        if (newValue < previousValue && newValue > 0f)
+        {
+            // Play Hit Audio
+            if (audioSource != null && hitSFX != null)
+            {
+                audioSource.PlayOneShot(hitSFX);
+            }
+
+            // Spawn Hit Particles
+            if (hitVFXPrefab != null)
+            {
+                Instantiate(hitVFXPrefab, transform.position + Vector3.up, Quaternion.identity);
+            }
+        }
+    }
+
+    // Client RPC to handle Death FX simultaneously across all screens
+    [Rpc(SendTo.Everyone)]
+    void PlayDeathFXRpc()
+    {
+        // Play death audio at the enemy's location. 
+        // AudioSource.PlayClipAtPoint ensures the audio keeps playing even if this GameObject is immediately destroyed.
+        if (deathSFX != null)
+        {
+            AudioSource.PlayClipAtPoint(deathSFX, transform.position, 0.2f);
+        }
+
+        // Spawn Death Particles
+        if (deathVFXPrefab != null)
+        {
+            Instantiate(deathVFXPrefab, transform.position, transform.rotation);
+        }
     }
 
     void Die()
     {
-        // Handle death logic (e.g., Despawn the object from the network)
+        OnEnemyKilled?.Invoke(this);
         GetComponent<NetworkObject>().Despawn();
     }
 }
