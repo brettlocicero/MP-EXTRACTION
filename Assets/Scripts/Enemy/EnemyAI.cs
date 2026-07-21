@@ -20,7 +20,7 @@ public class EnemyAI : NetworkBehaviour
     [SerializeField] Animator animator;
     
     [Header("FX & Audio Settings")]
-    [SerializeField] GameObject hitVFXPrefab;
+    [SerializeField] ParticleSystem[] hitVFXParticles;
     [SerializeField] AudioClip hitSFX;
     [SerializeField] GameObject deathVFXPrefab;
     [SerializeField] AudioClip deathSFX;
@@ -190,19 +190,16 @@ public class EnemyAI : NetworkBehaviour
     // Automatically triggers on all clients whenever the NetworkVariable updates
     void OnHealthChanged(float previousValue, float newValue)
     {
-        // Only trigger "Hit" FX if the enemy is taking damage, not dying or healing
         if (newValue < previousValue && newValue > 0f)
         {
-            // Play Hit Audio
             if (audioSource != null && hitSFX != null)
             {
                 audioSource.PlayOneShot(hitSFX);
             }
 
-            // Spawn Hit Particles
-            if (hitVFXPrefab != null)
+            foreach (ParticleSystem ps in hitVFXParticles)
             {
-                Instantiate(hitVFXPrefab, transform.position + Vector3.up, Quaternion.identity);
+                ps.Play();
             }
         }
     }
@@ -221,7 +218,13 @@ public class EnemyAI : NetworkBehaviour
         // Spawn Death Particles
         if (deathVFXPrefab != null)
         {
-            Instantiate(deathVFXPrefab, transform.position, transform.rotation);
+            GameObject deathFX = Instantiate(deathVFXPrefab, transform.position, transform.rotation);
+            foreach (Rigidbody rb in deathFX.GetComponentsInChildren<Rigidbody>())
+            {
+                rb.AddForce(-transform.forward * 10f, ForceMode.Impulse);
+            }
+
+            Destroy(deathFX, 10f);
         }
     }
 

@@ -23,6 +23,11 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    void Start()
+    {
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+    }
+
     public void StartGameSession()
     {
         Debug.Log("[GameManager] Network session verified. Starting initialization check...");
@@ -35,8 +40,6 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("[GameManager] Spawner reference is missing!");
         }
-        
-        SwapToGameUI();
     }
 
     IEnumerator WaitForSpawnerAndStartLoop()
@@ -48,6 +51,14 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("[GameManager] Spawner Netcode identity confirmed active. Launching game loop!");
         spawner.StartGameLoop();
+    }
+
+    void OnClientConnected(ulong clientId)
+    {
+        if (clientId == NetworkManager.Singleton.LocalClientId)
+        {
+            SwapToGameUI();
+        }
     }
     
     void SwapToGameUI() 

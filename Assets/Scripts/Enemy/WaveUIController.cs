@@ -7,61 +7,95 @@ public class WaveUIController : MonoBehaviour
     [Header("Dependencies")]
     [SerializeField] EnemySpawner spawner;
 
-    [Header("UI Elements")]
-    [SerializeField] TextMeshProUGUI waveText;
-    [SerializeField] TextMeshProUGUI timerText;
+    [Header("UI")]
+    [SerializeField] TextMeshProUGUI malevolenceText;
+    [SerializeField] TextMeshProUGUI countdownText;
 
     void Start()
     {
         if (spawner == null)
-        {
             spawner = FindAnyObjectByType<EnemySpawner>();
+
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogError("[MalevolenceUI] NetworkManager not found.");
+            return;
         }
 
-        // Wait until Netcode initializes this machine's network session before binding listeners
         NetworkManager.Singleton.OnClientConnectedCallback += InitializeUIListeners;
+        spawner.malevolence.OnValueChanged += UpdateMalevolenceUI;
+        spawner.malevolenceCountdown.OnValueChanged += UpdateCountdownUI;
+
+        UpdateMalevolenceUI(spawner.malevolence.Value, spawner.malevolence.Value);
+        UpdateCountdownUI(spawner.malevolenceCountdown.Value, spawner.malevolenceCountdown.Value);
     }
 
     void InitializeUIListeners(ulong clientId)
     {
-        // Prevent duplicate bindings
+        // Only initialize for the local client
+        if (clientId != NetworkManager.Singleton.LocalClientId)
+            return;
+
         NetworkManager.Singleton.OnClientConnectedCallback -= InitializeUIListeners;
 
-        // Subscribing to the NetworkVariable changes allows all players to instantly sync UI changes
-        spawner.currentWave.OnValueChanged += UpdateWaveUI;
-        spawner.waveCountdown.OnValueChanged += UpdateTimerUI;
-        spawner.isIntermission.OnValueChanged += ToggleTimerVisibility;
+        // In case the spawner wasn't found during Start()
+        if (spawner == null)
+            spawner = FindAnyObjectByType<EnemySpawner>();
 
-        // Run initial configuration draw
-        UpdateWaveUI(0, spawner.currentWave.Value);
-        ToggleTimerVisibility(false, spawner.isIntermission.Value);
+        if (spawner == null)
+        {
+            Debug.LogError("[MalevolenceUI] EnemySpawner not found.");
+            return;
+        }
+
+        spawner.malevolence.OnValueChanged += UpdateMalevolenceUI;
+
+        // Draw initial value
+        UpdateMalevolenceUI(spawner.malevolence.Value, spawner.malevolence.Value);
     }
 
     void OnDestroy()
     {
-        // Standard clean up rules to avoid memory leaks if scenes change
+        if (NetworkManager.Singleton != null)
+            NetworkManager.Singleton.OnClientConnectedCallback -= InitializeUIListeners;
+
         if (spawner != null)
         {
-            spawner.currentWave.OnValueChanged -= UpdateWaveUI;
-            spawner.waveCountdown.OnValueChanged -= UpdateTimerUI;
-            spawner.isIntermission.OnValueChanged -= ToggleTimerVisibility;
+            spawner.malevolence.OnValueChanged -= UpdateMalevolenceUI;
+            spawner.malevolence.OnValueChanged -= UpdateMalevolenceUI;
+            spawner.malevolenceCountdown.OnValueChanged -= UpdateCountdownUI;
         }
     }
 
-    void UpdateWaveUI(int previous, int current)
+    void UpdateCountdownUI(float previous, float current)
     {
-        waveText.text = $"WAVE: {current}";
+        if (spawner.malevolence.Value >= 5)
+        {
+            countdownText.text = "MAX MALEVOLENCE";
+            return;
+        }
+
+        int minutes = Mathf.FloorToInt(current / 60f);
+        int seconds = Mathf.FloorToInt(current % 60f);
+
+        countdownText.text = $"Next Increase: {minutes:00}:{seconds:00}";
     }
 
-    void UpdateTimerUI(float previous, float current)
+    void UpdateMalevolenceUI(int previous, int current)
     {
-        // Rounding to int keeps it clean instead of dumping raw floats down to decimal strings
-        timerText.text = $"Next Wave In: {Mathf.CeilToInt(current)}s";
+        malevolenceText.text = $"MALEVOLENCE {ToRoman(current)}";
     }
 
-    void ToggleTimerVisibility(bool previous, bool isIntermissionActive)
+    string ToRoman(int value)
     {
-        // Hide the timer display block entirely when active combat rounds are in progress
-        timerText.gameObject.SetActive(isIntermissionActive);
+        return value switch
+        {
+            1 => "I",
+            2 => "II",
+            3 => "III",
+            4 => "IV",
+            5 => "V",
+            _ => value.ToString()
+        };
     }
 }

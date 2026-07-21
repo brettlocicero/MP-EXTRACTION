@@ -1,112 +1,117 @@
 using UnityEngine;
 using Unity.Netcode;
-using UnityEngine.AI;
 using System.Collections;
 
 public class EnemySpawner : NetworkBehaviour
 {
-    [Header("Spawn Settings")]
-    [SerializeField] GameObject enemyPrefab; 
-    [SerializeField] int baseEnemiesPerWave = 5;
-    [SerializeField] int extraEnemiesPerWave = 2;
+    [Header("References")]
+    [SerializeField] GameObject enemyPrefab;
+
+    [Header("Spawning")]
     [SerializeField] float spawnRadius = 10f;
-    [SerializeField] float spawnDelay = 1f;
-    [SerializeField] float timeBetweenWaves = 20f;
+    [SerializeField] int minSpawnPerTick = 1;
+    [SerializeField] int maxSpawnPerTick = 3;
+    [SerializeField] int maxAliveEnemies = 50;
 
-    public NetworkVariable<int> currentWave = new NetworkVariable<int>(0);
-    public NetworkVariable<float> waveCountdown = new NetworkVariable<float>(0f);
-    public NetworkVariable<bool> isIntermission = new NetworkVariable<bool>(false);
+    [Header("Malevolence")]
+    [SerializeField] float malevolenceStepTime = 180f; // 3 minutes
+    [SerializeField] int maxMalevolence = 5;
 
-    int enemiesRemainingToKill = 0;
+    [Header("Spawn Rates (seconds between spawns)")]
+    [SerializeField] float[] spawnIntervals =
+    {
+        5f,     // Malevolence 1
+        3.5f,   // Malevolence 2
+        2.5f,   // Malevolence 3
+        1.75f,  // Malevolence 4
+        1f      // Malevolence 5
+    };
+
+    public NetworkVariable<int> malevolence = new(1);
+    public NetworkVariable<float> malevolenceCountdown = new(180f);
+    int aliveEnemies = 0;
 
     public void StartGameLoop()
     {
-        StartCoroutine(GameLoopRoutine());
+        if (!IsServer)
+            return;
+
+        StartCoroutine(SpawnRoutine());
+        StartCoroutine(MalevolenceRoutine());
     }
 
-    IEnumerator GameLoopRoutine()
+    IEnumerator SpawnRoutine()
     {
-        if (enemyPrefab == null)
-        {
-            Debug.LogError("[Spawner] Enemy prefab is not assigned!");
-            yield break;
-        }
-
         while (true)
         {
-            currentWave.Value++;
-            isIntermission.Value = false;
-            
-            // Calculate total enemy count for this wave
-            int enemiesToSpawn = baseEnemiesPerWave + ((currentWave.Value - 1) * extraEnemiesPerWave);
-            enemiesRemainingToKill = enemiesToSpawn;
+            int amountToSpawn = Random.Range(minSpawnPerTick, maxSpawnPerTick + 1);
 
-            Debug.Log($"[Spawner] Wave {currentWave.Value} Started! Spawning {enemiesToSpawn} enemies.");
-
-            // Spawn enemies slowly, one by one
-            for (int i = 0; i < enemiesToSpawn; i++)
+            for (int i = 0; i < amountToSpawn; i++)
             {
+                if (aliveEnemies >= maxAliveEnemies)
+                    break;
+
                 SpawnSingleEnemy();
-                yield return new WaitForSeconds(spawnDelay);
             }
 
-            // Wait until all spawned enemies are dead before starting the countdown
-            while (enemiesRemainingToKill > 0)
-            {
-                yield return new WaitForSeconds(0.5f);
-            }
+            int index = Mathf.Clamp(malevolence.Value - 1, 0, spawnIntervals.Length - 1);
+            yield return new WaitForSeconds(spawnIntervals[index]);
+        }
+    }
 
-            // --- INTERMISSION PERIOD ---
-            isIntermission.Value = true;
-            waveCountdown.Value = timeBetweenWaves;
+    IEnumerator MalevolenceRoutine()
+    {
+        while (malevolence.Value < maxMalevolence)
+        {
+            malevolenceCountdown.Value = malevolenceStepTime;
 
-            while (waveCountdown.Value > 0)
+            while (malevolenceCountdown.Value > 0f)
             {
                 yield return new WaitForSeconds(1f);
-                waveCountdown.Value -= 1f; // Countdown by 1 second intervals
+                malevolenceCountdown.Value--;
             }
+
+            malevolence.Value++;
+
+            Debug.Log($"Malevolence increased to {malevolence.Value}");
         }
+
+        // At max level, stop the timer.
+        malevolenceCountdown.Value = 0f;
     }
 
     void SpawnSingleEnemy()
     {
-        if (!IsServer) return;
+        if (!IsServer || aliveEnemies >= maxAliveEnemies)
+            return;
 
         Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
         Vector3 spawnPosition = transform.position + new Vector3(randomCircle.x, 0.5f, randomCircle.y);
 
-        GameObject enemyInstance = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
-        NetworkObject netObj = enemyInstance.GetComponent<NetworkObject>();
-        
-        if (netObj != null)
+        GameObject enemy = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+
+        if (enemy.TryGetComponent(out NetworkObject netObj))
         {
             netObj.Spawn();
-            
-            // Get our EnemyAI component and subscribe to our custom death event
-            EnemyAI enemyAI = enemyInstance.GetComponent<EnemyAI>();
-            if (enemyAI != null)
-            {
+            aliveEnemies++;
+
+            if (enemy.TryGetComponent(out EnemyAI enemyAI))
                 enemyAI.OnEnemyKilled += OnEnemyKilled;
-            }
         }
+        
         else
         {
-            Debug.LogError($"[Spawner] {enemyPrefab.name} is missing a NetworkObject component!");
-            Destroy(enemyInstance);
-            enemiesRemainingToKill--; // Adjust tracking so game doesn't get stuck
+            Destroy(enemy);
         }
     }
 
-    // Updated parameter to accept our EnemyAI component type
     void OnEnemyKilled(EnemyAI enemyAI)
     {
-        if (!IsServer) return;
+        if (!IsServer)
+            return;
 
-        // Clean up the event listener subscription safely
         enemyAI.OnEnemyKilled -= OnEnemyKilled;
-        
-        enemiesRemainingToKill--;
-        Debug.Log($"[Spawner] Enemy killed! Remaining: {enemiesRemainingToKill}");
+        aliveEnemies = Mathf.Max(0, aliveEnemies - 1);
     }
 
     void OnDrawGizmosSelected()
