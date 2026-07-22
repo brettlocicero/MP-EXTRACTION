@@ -19,6 +19,7 @@ public class ConnectionManager : MonoBehaviour
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
             NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
+            Stop();
         }
     }
 

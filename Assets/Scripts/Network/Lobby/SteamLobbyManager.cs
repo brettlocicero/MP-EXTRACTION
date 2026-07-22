@@ -6,22 +6,16 @@ using UnityEngine;
 
 public class SteamLobbyManager : MonoBehaviour
 {
-    [SerializeField] ConnectionManager connectionManager;
+    Lobby currentLobby;
 
-    private Lobby currentLobby;
-
-    void Start()
+    void OnEnable()
     {
-        // CRITICAL: Subscribe to Steam's overlay and invite events
-        SteamMatchmaking.OnLobbyInvite += OnLobbyInviteReceived;
-        SteamMatchmaking.OnLobbyGameCreated += OnSteamGameJoinAction;
+        SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequested;
     }
 
-    void OnDestroy()
+    void OnDisable()
     {
-        // Always unsubscribe when the object is destroyed to prevent memory leaks
-        SteamMatchmaking.OnLobbyInvite -= OnLobbyInviteReceived;
-        SteamMatchmaking.OnLobbyGameCreated -= OnSteamGameJoinAction;
+        SteamFriends.OnGameLobbyJoinRequested -= OnGameLobbyJoinRequested;
     }
 
     void Update()
@@ -44,34 +38,33 @@ public class SteamLobbyManager : MonoBehaviour
 
         currentLobby = lobbyResult.Value;
         currentLobby.SetPublic();
-        
-        // This makes the lobby searchable to friends
-        currentLobby.SetJoinable(true); 
+        currentLobby.SetJoinable(true);
         currentLobby.SetData("HostId", SteamClient.SteamId.ToString());
 
-        Debug.Log($"Created Steam lobby {currentLobby.Id}");
+        if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is FacepunchTransport transport)
+        {
+            transport.targetSteamId = SteamClient.SteamId;
+        }
+        
+        else
+        {
+            Debug.LogError("The active transport is NOT FacepunchTransport!");
+            return;
+        }
 
         NetworkManager.Singleton.StartHost();
-        
-        // Opens overlay to invite friends
+        Debug.Log($"Created Steam lobby {currentLobby.Id}");
+
         SteamFriends.OpenGameInviteOverlay(currentLobby.Id);
     }
 
-    // 1. This triggers if a friend accepts an invite via Steam Chat
-    private void OnLobbyInviteReceived(Friend friend, Lobby lobby)
+    async void OnGameLobbyJoinRequested(Lobby lobby, SteamId steamId)
     {
-        Debug.Log($"Received lobby invite from {friend.Name}. Joining lobby {lobby.Id}...");
-        JoinLobby(lobby.Id);
+        Debug.Log($"Steam Overlay 'Join Game' requested for Lobby: {lobby.Id}");
+        await JoinLobby(lobby.Id);
     }
 
-    // 2. This triggers when Steam processes the "Join Game" overlay action
-    private void OnSteamGameJoinAction(Lobby lobby, uint ip, ushort port, SteamId steamId)
-    {
-        Debug.Log($"Steam Overlay 'Join Game' clicked! Target Lobby: {lobby.Id}");
-        JoinLobby(lobby.Id);
-    }
-
-    public async void JoinLobby(SteamId lobbyId)
+    public async System.Threading.Tasks.Task JoinLobby(SteamId lobbyId)
     {
         var lobbyResult = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
 
@@ -86,7 +79,7 @@ public class SteamLobbyManager : MonoBehaviour
         string hostIdString = currentLobby.GetData("HostId");
         if (string.IsNullOrEmpty(hostIdString))
         {
-            Debug.LogError("Lobby has no HostId meta-data");
+            Debug.LogError("Lobby has no HostId meta-data!");
             return;
         }
 
@@ -105,5 +98,14 @@ public class SteamLobbyManager : MonoBehaviour
 
         NetworkManager.Singleton.StartClient();
         Debug.Log($"Netcode Client started for Steam lobby {currentLobby.Id}");
+    }
+
+    public void LeaveLobby()
+    {
+        currentLobby.Leave();
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.Shutdown();
+        }
     }
 }
