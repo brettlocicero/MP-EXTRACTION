@@ -5179,7 +5179,7 @@ GameObject:
   - component: {fileID: 7679946380430543039}
   - component: {fileID: 889649534178252016}
   - component: {fileID: -6126094937831301399}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Skeleton Warrior
   m_TagString: Enemy
   m_Icon: {fileID: 0}

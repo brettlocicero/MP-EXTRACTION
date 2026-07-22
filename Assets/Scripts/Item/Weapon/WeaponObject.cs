@@ -14,12 +14,14 @@ public class WeaponObject : ItemObject
     int comboIndex = 0;
 
     AudioSource audioSource;
+    CinemachineShake cinemachineShake;
 
     protected override void Start()
     {
         base.Start();
         weapon = item as WeaponSO;
         audioSource = GetComponent<AudioSource>();
+        cinemachineShake = GetComponentInParent<CinemachineShake>();
     }
 
     protected override void Update()
@@ -53,6 +55,7 @@ public class WeaponObject : ItemObject
 
         yield return new WaitForSeconds(attack.attackDelay);
 
+        cinemachineShake.ShakeCamera(attack.camShakeIntensity, attack.camShakeDuration, 0.5f, 80f);
         PlayAttackAudio();
         TriggerAttackHitbox(attack);
 
@@ -61,9 +64,11 @@ public class WeaponObject : ItemObject
     
     void TriggerAttackHitbox(Attack attack) 
     {
-        Collider[] hits = Physics.OverlapSphere(hitSpot.position, weapon.range, LayerMask.NameToLayer("Enemy"));
+        Collider[] hits = Physics.OverlapSphere(hitSpot.position, weapon.range, LayerMask.GetMask("Enemy"));
         if (hits.Length > 0) 
         {
+            audioSource.PlayOneShot(weapon.contactSound);
+
             foreach (Collider enemyCollider in hits) 
             {
                 if (enemyCollider.TryGetComponent(out EnemyAI enemy)) 

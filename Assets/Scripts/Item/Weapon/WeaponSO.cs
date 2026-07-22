@@ -11,5 +11,6 @@ public class WeaponSO : ItemSO
 
     [Header("FX")]
     public AudioClip attackSound;
+    public AudioClip contactSound;
     public Vector2 attackSoundPitchRange;
 }
