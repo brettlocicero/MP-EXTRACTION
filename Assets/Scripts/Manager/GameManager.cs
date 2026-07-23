@@ -11,6 +11,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] CanvasGroup menuUI;
     [SerializeField] CanvasGroup ingameUI;
 
+    [Header("Runtime")]
+    public PlayerController localPlayer;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -26,6 +29,11 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+    }
+
+    public void RegisterPlayer(PlayerController localPlayer)
+    {
+        this.localPlayer = localPlayer;
     }
 
     public void StartGameSession()

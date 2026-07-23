@@ -2,10 +2,11 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class FirstPersonController : NetworkBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [Header("References")]
     [SerializeField] Transform cameraTransform;
+    public Camera camera;
     [SerializeField] Transform clientObjects;
     [SerializeField] Transform serverObjects;
 

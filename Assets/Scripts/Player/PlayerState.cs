@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerState : NetworkBehaviour
 {
+    [SerializeField] PlayerController playerController;
     [SerializeField] string playerName = "Player";
 
     public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>(
@@ -16,11 +17,13 @@ public class PlayerState : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         PlayerName.OnValueChanged += OnPlayerNameNetworkChanged;
+        InstancedUIManager.Instance.SpawnPlayerNameplate(this);
 
         if (IsOwner)
         {
             string resolvedName = GetSteamOrFallbackName();
             SetPlayerNameServerRpc(resolvedName);
+            GameManager.Instance.RegisterPlayer(playerController);
         }
 
         playerName = PlayerName.Value.ToString();

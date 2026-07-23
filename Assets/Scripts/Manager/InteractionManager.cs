@@ -6,16 +6,6 @@ public class InteractionManager : MonoBehaviour
 	[Header("Settings")]
 	[SerializeField] float interactionRange = 4f;
 	[SerializeField] LayerMask interactionLayerMask;
-	[SerializeField] Transform cam;
-
-	void Start()
-	{
-		if (!NetworkManager.Singleton.IsClient)
-		{
-			enabled = false;
-			return;
-		}
-	}
 
 	void Update()
 	{
@@ -29,6 +19,9 @@ public class InteractionManager : MonoBehaviour
 
     void HandleInteract()
 	{
+		if (!GameManager.Instance.localPlayer) return;
+
+		Transform cam = GameManager.Instance.localPlayer.camera.transform;
 		if (InputManager.Actions.Player.Interact.WasPressedThisFrame())
 		{
 			if (Physics.Raycast(cam.position, cam.forward, out RaycastHit hit, interactionRange, interactionLayerMask))
@@ -44,6 +37,9 @@ public class InteractionManager : MonoBehaviour
 
 	void HandleHoverInteracts()
 	{
+		if (!GameManager.Instance.localPlayer) return;
+
+		Transform cam = GameManager.Instance.localPlayer.camera.transform;
 		if (Physics.Raycast(cam.position, cam.forward, out RaycastHit hit, interactionRange, interactionLayerMask))
 		{
 			if (hit.collider.TryGetComponent(out IInteractable interactable))
