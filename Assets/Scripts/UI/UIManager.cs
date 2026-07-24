@@ -4,16 +4,19 @@ using TMPro;
 using Unity.Collections;
 using UnityEngine;
 
-public class InstancedUIManager : MonoBehaviour
+public class UIManager : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] Transform instancedUIRoot;
+    [SerializeField] Transform healthBar;
+    [SerializeField] TextMeshProUGUI healthText;
 
     [Header("Objects")]
     [SerializeField] TextMeshProUGUI playerNametagPrefab;
 
     readonly List<InstancedUIPair> instancedUI = new();
 
-    public static InstancedUIManager Instance { get; private set; }
+    public static UIManager Instance { get; private set; }
 
     void Awake()
     {
@@ -69,7 +72,7 @@ public class InstancedUIManager : MonoBehaviour
 
         playerState.PlayerName.OnValueChanged += HandleNameChanged;
 
-        AttachUIElement(playerTextObj.rectTransform, playerState.transform);
+        AttachUIElement(playerTextObj.rectTransform, playerState.GetNameplateTransform());
 
         void HandleNameChanged(FixedString64Bytes _, FixedString64Bytes newName)
         {
@@ -81,5 +84,11 @@ public class InstancedUIManager : MonoBehaviour
     void AttachUIElement(RectTransform uiElement, Transform worldTransform)
     {
         instancedUI.Add(new InstancedUIPair(uiElement, worldTransform));
+    }
+
+    public void UpdateHealthBar(int health, int maxHealth)
+    {
+        healthBar.localScale = new Vector3((float)health / maxHealth, 1f, 1f);
+        healthText.text = $"{health} / {maxHealth}";
     }
 }

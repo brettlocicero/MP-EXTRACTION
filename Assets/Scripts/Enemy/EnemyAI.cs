@@ -16,6 +16,13 @@ public class EnemyAI : NetworkBehaviour
     [Header("AI Settings")]
     [SerializeField] float targetUpdateInterval = 0.5f;
 
+    [Header("Attack Settings")]
+    [SerializeField] float attackRange = 2f;
+    [SerializeField] int attackDamage = 10;
+    [SerializeField] float attackHitTime = 0.35f;
+    [SerializeField] float attackDuration = 0.8f;
+    [SerializeField] float attackCooldown = 1f;
+
     [Header("References")]
     [SerializeField] Animator animator;
     
@@ -29,7 +36,10 @@ public class EnemyAI : NetworkBehaviour
     float nextTargetUpdateTime;
     
     bool isStunned = false;
+    float nextAttackTime;
+    bool isAttacking = false;
     Coroutine stunCoroutine;
+    Coroutine attackCoroutine;
 
     NetworkVariable<float> currentHealth = new NetworkVariable<float>(
         100f, 
@@ -67,7 +77,9 @@ public class EnemyAI : NetworkBehaviour
     void Update()
     {
         if (!IsServer) return;
-        if (isStunned) return; 
+
+        if (isStunned || isAttacking)
+            return;
 
         if (Time.time >= nextTargetUpdateTime)
         {
@@ -95,10 +107,74 @@ public class EnemyAI : NetworkBehaviour
             }
         }
 
-        if (closestPlayer != null)
+        if (closestPlayer == null)
+            return;
+
+        float distance = Vector3.Distance(transform.position, closestPlayer.transform.position);
+
+        if (distance <= attackRange)
+        {
+            if (Time.time >= nextAttackTime)
+            {
+                attackCoroutine = StartCoroutine(AttackRoutine(closestPlayer.GetComponent<PlayerState>()));
+            }
+        }
+
+        else
         {
             agent.SetDestination(closestPlayer.transform.position);
         }
+    }
+
+    IEnumerator AttackRoutine(PlayerState target)
+    {
+        isAttacking = true;
+        nextAttackTime = Time.time + attackCooldown;
+
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
+
+        // Face the player once
+        if (target != null)
+        {
+            Vector3 lookPos = target.transform.position - transform.position;
+            lookPos.y = 0f;
+
+            if (lookPos.sqrMagnitude > 0.001f)
+                transform.rotation = Quaternion.LookRotation(lookPos);
+        }
+
+        PlayAttackAnimationRpc();
+
+        yield return new WaitForSeconds(attackHitTime);
+
+        if (target != null)
+        {
+            float distance = Vector3.Distance(transform.position, target.transform.position);
+
+            if (distance <= attackRange)
+            {
+                target.Damage(attackDamage);
+            }
+        }
+
+        yield return new WaitForSeconds(Mathf.Max(0f, attackDuration - attackHitTime));
+
+        isAttacking = false;
+
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void PlayAttackAnimationRpc()
+    {
+        animator.SetTrigger("Attack");
     }
 
     public void TakeDamage(float damage, float stunTime, AttackDirection attackDirection)

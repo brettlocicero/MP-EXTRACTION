@@ -5246,6 +5246,11 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 30
   targetUpdateInterval: 0.5
+  attackRange: 4
+  attackDamage: 10
+  attackHitTime: 0.6666667
+  attackDuration: 1.25
+  attackCooldown: 1
   animator: {fileID: 8620166371696577679}
   hitVFXParticles:
   - {fileID: 5161991466970692268}
@@ -5384,7 +5389,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 1.1
-  m_Speed: 8
+  m_Speed: 10
   m_Acceleration: 200
   avoidancePriority: 50
   m_AngularSpeed: 1000
