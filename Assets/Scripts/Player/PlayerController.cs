@@ -107,4 +107,9 @@ public class PlayerController : NetworkBehaviour
         cameraTransform.localRotation = Quaternion.Euler(cameraPitch, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
     }
+
+    public void PlayAttackAnimation()
+    {
+        modelAnimator.SetTrigger("Attack");
+    }
 }

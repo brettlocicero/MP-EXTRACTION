@@ -8,6 +8,7 @@ public class ItemObject : MonoBehaviour
     [SerializeField] Animator movementAnimator;
 
     CharacterController playerCC;
+    protected PlayerController playerController;
 
     float movementVelocity = 0f;
     float currentMovement = 0f;
@@ -15,6 +16,7 @@ public class ItemObject : MonoBehaviour
     protected virtual void Start()
     {
         playerCC = GetComponentInParent<CharacterController>();
+        playerController = GetComponentInParent<PlayerController>();
     }
 
     protected virtual void Update()

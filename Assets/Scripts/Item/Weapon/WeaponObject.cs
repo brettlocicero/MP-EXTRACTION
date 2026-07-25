@@ -48,6 +48,8 @@ public class WeaponObject : ItemObject
     {
         inAttack = true;
 
+        playerController.PlayAttackAnimation();
+
         attackAnimation.Rewind();
         attackAnimation.Play(attack.animationClip.name);
 
