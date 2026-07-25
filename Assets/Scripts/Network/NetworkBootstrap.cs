@@ -10,80 +10,101 @@ public class NetworkBootstrapper : MonoBehaviour
     [SerializeField] TransportMode transportMode = TransportMode.Unity;
     [SerializeField] uint steamAppId = 480;
 
-    [Header("Transport Component References")]
+    [Header("Transport References")]
     [SerializeField] UnityTransport unityTransport;
     [SerializeField] FacepunchTransport steamTransport;
 
-    void Awake()
+    void Start()
     {
-        DontDestroyOnLoad(gameObject);
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogError("[Bootstrapper] NetworkManager.Singleton was not found!");
+            return;
+        }
+
         if (transportMode == TransportMode.Steam)
         {
             InitializeSteam();
         }
-    }
 
-    void Start()
-    {
         ConfigureTransport();
     }
 
     void InitializeSteam()
     {
-        if (SteamClient.IsValid) return;
+        if (SteamClient.IsValid)
+            return;
 
         try
         {
             SteamClient.Init(steamAppId);
-            Debug.Log($"[Bootstrapper] Steam successfully initialized. AppID: {SteamClient.AppId} ({SteamClient.Name})");
+            Debug.Log($"[Bootstrapper] Steam initialized successfully. AppID: {SteamClient.AppId} ({SteamClient.Name})");
         }
-        
         catch (System.Exception e)
         {
-            Debug.LogError($"[Bootstrapper] Steam failed to initialize! Is Steam desktop app running? Error: {e.Message}");
-            Debug.LogWarning("[Bootstrapper] Falling back to Unity Transport due to Steam initialization failure.");
+            Debug.LogError($"[Bootstrapper] Failed to initialize Steam: {e.Message}");
+            Debug.LogWarning("[Bootstrapper] Falling back to Unity Transport.");
             transportMode = TransportMode.Unity;
         }
     }
 
     void ConfigureTransport()
     {
-        if (NetworkManager.Singleton == null)
-        {
-            Debug.LogError("[Bootstrapper] NetworkManager.Singleton is missing from the scene!");
-            return;
-        }
-
         switch (transportMode)
         {
             case TransportMode.Unity:
                 if (unityTransport == null)
                 {
-                    Debug.LogError("[Bootstrapper] UnityTransport reference is missing in Inspector!");
+                    Debug.LogError("[Bootstrapper] UnityTransport reference is missing.");
                     return;
                 }
+
                 NetworkManager.Singleton.NetworkConfig.NetworkTransport = unityTransport;
-                Debug.Log("[Bootstrapper] Active network transport set to: UnityTransport.");
+                Debug.Log("[Bootstrapper] Using Unity Transport.");
                 break;
 
             case TransportMode.Steam:
                 if (!SteamClient.IsValid)
                 {
-                    Debug.LogError("[Bootstrapper] FacepunchTransport selected, but Steam is not initialized! Swapping to UnityTransport.");
+                    Debug.LogWarning("[Bootstrapper] Steam is not initialized. Falling back to Unity Transport.");
+
+                    if (unityTransport == null)
+                    {
+                        Debug.LogError("[Bootstrapper] UnityTransport reference is missing.");
+                        return;
+                    }
+
                     NetworkManager.Singleton.NetworkConfig.NetworkTransport = unityTransport;
-                    return;
+                    transportMode = TransportMode.Unity;
+                    break;
                 }
 
                 if (steamTransport == null)
                 {
-                    Debug.LogError("[Bootstrapper] FacepunchTransport reference is missing in Inspector!");
+                    Debug.LogError("[Bootstrapper] FacepunchTransport reference is missing.");
                     return;
                 }
-                
+
                 NetworkManager.Singleton.NetworkConfig.NetworkTransport = steamTransport;
-                Debug.Log("[Bootstrapper] Active network transport set to: FacepunchTransport (Steam).");
+                Debug.Log("[Bootstrapper] Using Facepunch Steam Transport.");
                 break;
         }
+
+        LogNetworkConfig();
+    }
+
+    void LogNetworkConfig()
+    {
+        var config = NetworkManager.Singleton.NetworkConfig;
+
+        Debug.Log(
+            $"[Bootstrapper] NetworkConfig\n" +
+            $"Transport: {config.NetworkTransport.GetType().Name}\n" +
+            $"ProtocolVersion: {config.ProtocolVersion}\n" +
+            $"TickRate: {config.TickRate}\n" +
+            $"SceneManagement: {config.EnableSceneManagement}\n" +
+            $"NetworkPrefabs: {config.Prefabs.Prefabs.Count}"
+        );
     }
 
     void OnApplicationQuit()
@@ -91,7 +112,7 @@ public class NetworkBootstrapper : MonoBehaviour
         if (SteamClient.IsValid)
         {
             SteamClient.Shutdown();
-            Debug.Log("[Bootstrapper] Steam Client shut down cleanly.");
+            Debug.Log("[Bootstrapper] Steam shut down.");
         }
     }
 }

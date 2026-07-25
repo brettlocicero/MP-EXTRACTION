@@ -5246,7 +5246,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 30
   targetUpdateInterval: 0.5
-  attackRange: 4
+  attackRange: 3
   attackDamage: 10
   attackHitTime: 0.6666667
   attackDuration: 1.25
@@ -5393,7 +5393,7 @@ NavMeshAgent:
   m_Acceleration: 200
   avoidancePriority: 50
   m_AngularSpeed: 1000
-  m_StoppingDistance: 0
+  m_StoppingDistance: 3
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1

@@ -8,7 +8,8 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] Transform cameraTransform;
     public Camera camera;
     [SerializeField] Transform clientObjects;
-    [SerializeField] Transform serverObjects;
+    [SerializeField] GameObject serverObjects;
+    [SerializeField] Animator modelAnimator;
 
     [Header("Movement")]
     [SerializeField] float moveSpeed = 5f;
@@ -37,15 +38,25 @@ public class PlayerController : NetworkBehaviour
         {
             controller.enabled = false;
             clientObjects.gameObject.SetActive(false);
-            serverObjects.gameObject.SetActive(true);
+            
+            // serverObjects.gameObject.SetActive(true);
             return;
         }
 
         clientObjects.gameObject.SetActive(true);
-        serverObjects.gameObject.SetActive(false);
+        SetLayerRecursively(serverObjects, LayerMask.NameToLayer("LocalHidden"));
+        // serverObjects.gameObject.SetActive(false);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+
+        foreach (Transform child in obj.transform)
+            SetLayerRecursively(child.gameObject, layer);
     }
 
     void Update()
@@ -70,6 +81,8 @@ public class PlayerController : NetworkBehaviour
         {
             verticalVelocity = -2f;
         }
+
+        modelAnimator.SetFloat("Movement", moveInput.magnitude);
 
         Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
         controller.Move(move * moveSpeed * Time.deltaTime);
