@@ -1,18 +1,30 @@
-using UnityEngine;
-using Unity.Netcode;
 using System.Collections;
+using Unity.Netcode;
+using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     [Header("References")]
+    [SerializeField] RegionSO testRegion;
+    [SerializeField] GameObject hubObjects;
     [SerializeField] EnemySpawner spawner;
     [SerializeField] CanvasGroup menuUI;
     [SerializeField] CanvasGroup ingameUI;
 
-    [Header("Runtime")]
-    public PlayerController localPlayer;
+    [Header("Region Database")]
+    [SerializeField] RegionSO[] regions;
+
+    PlayerController localPlayer;
+
+    public PlayerController LocalPlayer => localPlayer;
+
+    public NetworkVariable<int> CurrentRegion = new(
+        -1,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
 
     void Awake()
     {
@@ -23,12 +35,31 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        CurrentRegion.OnValueChanged += OnRegionChanged;
+
+        if (CurrentRegion.Value != -1)
+        {
+            OnRegionChanged(-1, CurrentRegion.Value);
+        }
+
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        CurrentRegion.OnValueChanged -= OnRegionChanged;
+
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+        }
     }
 
     public void RegisterPlayer(PlayerController localPlayer)
@@ -38,12 +69,20 @@ public class GameManager : MonoBehaviour
 
     public void StartGameSession()
     {
-        Debug.Log("[GameManager] Network session verified. Starting initialization check...");
+        if (!IsServer)
+            return;
+
+        Debug.Log("[GameManager] Starting game session...");
+
+        hubObjects.SetActive(false);
+
+        CurrentRegion.Value = GetRegionIndex(testRegion);
+
         if (spawner != null)
         {
             StartCoroutine(WaitForSpawnerAndStartLoop());
         }
-
+        
         else
         {
             Debug.LogWarning("[GameManager] Spawner reference is missing!");
@@ -54,11 +93,31 @@ public class GameManager : MonoBehaviour
     {
         while (spawner == null || !spawner.IsSpawned)
         {
-            yield return null; 
+            yield return null;
         }
 
-        Debug.Log("[GameManager] Spawner Netcode identity confirmed active. Launching game loop!");
+        Debug.Log("[GameManager] Spawner ready. Starting game loop.");
         spawner.StartGameLoop();
+    }
+
+    void OnRegionChanged(int previousRegion, int newRegion)
+    {
+        if (newRegion < 0 || newRegion >= regions.Length)
+            return;
+
+        RegionGenerator.Instance.GenerateRegion(regions[newRegion]);
+    }
+
+    int GetRegionIndex(RegionSO region)
+    {
+        for (int i = 0; i < regions.Length; i++)
+        {
+            if (regions[i] == region)
+                return i;
+        }
+
+        Debug.LogError($"Region '{region.name}' is not present in the GameManager region list.");
+        return -1;
     }
 
     void OnClientConnected(ulong clientId)
@@ -68,13 +127,13 @@ public class GameManager : MonoBehaviour
             SwapToGameUI();
         }
     }
-    
-    void SwapToGameUI() 
+
+    void SwapToGameUI()
     {
         menuUI.alpha = 0f;
         menuUI.blocksRaycasts = false;
         menuUI.interactable = false;
-        
+
         ingameUI.alpha = 1f;
         ingameUI.blocksRaycasts = true;
         ingameUI.interactable = true;

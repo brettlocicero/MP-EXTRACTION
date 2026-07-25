@@ -181,11 +181,11 @@ MonoBehaviour:
   gravity: -20
   jumpHeight: 1.5
   mouseSensitivity: 0.15
-  bobFrequency: 10
-  bobAmount: 0.05
+  bobFrequency: 15
+  bobAmount: 0.1
   bobSideAmount: 0.03
   bobSmoothSpeed: 8
-  maxTilt: 5
+  maxTilt: 2
   tiltSmoothSpeed: 8
   cinemachineCam: {fileID: 4127805230076549100}
   audioSource: {fileID: 3636871715291310565}

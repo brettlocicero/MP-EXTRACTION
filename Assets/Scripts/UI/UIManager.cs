@@ -39,10 +39,10 @@ public class UIManager : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!GameManager.Instance.localPlayer)
+        if (!GameManager.Instance.LocalPlayer)
             return;
 
-        Camera cam = GameManager.Instance.localPlayer.camera;
+        Camera cam = GameManager.Instance.LocalPlayer.camera;
 
         foreach (InstancedUIPair pair in instancedUI)
         {

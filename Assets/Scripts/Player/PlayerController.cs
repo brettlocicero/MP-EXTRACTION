@@ -153,7 +153,7 @@ public class PlayerController : NetworkBehaviour
 
         HandleGroundSounds(grounded);
 
-        modelAnimator.SetFloat("Movement", moveInput.magnitude);
+        modelAnimator.SetFloat("Movement", moveInput.magnitude, 0.1f, Time.deltaTime);
 
         wasGrounded = grounded;
     }

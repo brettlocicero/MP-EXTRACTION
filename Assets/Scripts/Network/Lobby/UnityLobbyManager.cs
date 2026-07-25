@@ -9,7 +9,6 @@ public class UnityLobbyManager : MonoBehaviour
     [SerializeField] string hostAddress = "127.0.0.1";
     [SerializeField] ushort port = 7777;
 
-
     public void CreateLobby()
     {
         UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
@@ -19,7 +18,6 @@ public class UnityLobbyManager : MonoBehaviour
         Debug.Log($"Starting host on port {port}");
         connectionManager.StartHost();
     }
-
 
     public void JoinLobby()
     {

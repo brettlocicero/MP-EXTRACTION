@@ -19,9 +19,9 @@ public class InteractionManager : MonoBehaviour
 
     void HandleInteract()
 	{
-		if (!GameManager.Instance.localPlayer) return;
+		if (!GameManager.Instance.LocalPlayer) return;
 
-		Transform cam = GameManager.Instance.localPlayer.camera.transform;
+		Transform cam = GameManager.Instance.LocalPlayer.camera.transform;
 		if (InputManager.Actions.Player.Interact.WasPressedThisFrame())
 		{
 			if (Physics.Raycast(cam.position, cam.forward, out RaycastHit hit, interactionRange, interactionLayerMask))
@@ -37,9 +37,9 @@ public class InteractionManager : MonoBehaviour
 
 	void HandleHoverInteracts()
 	{
-		if (!GameManager.Instance.localPlayer) return;
+		if (!GameManager.Instance.LocalPlayer) return;
 
-		Transform cam = GameManager.Instance.localPlayer.camera.transform;
+		Transform cam = GameManager.Instance.LocalPlayer.camera.transform;
 		if (Physics.Raycast(cam.position, cam.forward, out RaycastHit hit, interactionRange, interactionLayerMask))
 		{
 			if (hit.collider.TryGetComponent(out IInteractable interactable))

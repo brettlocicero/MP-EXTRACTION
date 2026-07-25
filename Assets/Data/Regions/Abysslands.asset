@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f9480ce99263e24ca81a9eaa6245055, type: 3}
+  m_Name: Abysslands
+  m_EditorClassIdentifier: Assembly-CSharp::RegionSO
+  regionName: Abysslands
+  baseWorldObject: {fileID: 4920668376728799186, guid: 813f05eba027f2b498eec3e6869006e4, type: 3}
+  skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
+  sunColor: {r: 0.67058825, g: 0.67058825, b: 0.67058825, a: 1}
+  ambientSkyColor: {r: 0.48235294, g: 0.48235294, b: 0.48235294, a: 1}
