@@ -9,6 +9,7 @@ public class GameManager : NetworkBehaviour
     [Header("References")]
     [SerializeField] RegionSO testRegion;
     [SerializeField] GameObject hubObjects;
+    [SerializeField] Transform[] playerSpawnPoints;
     [SerializeField] EnemySpawner spawner;
     [SerializeField] CanvasGroup menuUI;
     [SerializeField] CanvasGroup ingameUI;
@@ -74,8 +75,8 @@ public class GameManager : NetworkBehaviour
 
         Debug.Log("[GameManager] Starting game session...");
 
-        hubObjects.SetActive(false);
-
+        ClientGameStartEffectsClientRpc();
+        MoveAllPlayers();
         CurrentRegion.Value = GetRegionIndex(testRegion);
 
         if (spawner != null)
@@ -86,6 +87,31 @@ public class GameManager : NetworkBehaviour
         else
         {
             Debug.LogWarning("[GameManager] Spawner reference is missing!");
+        }
+    }
+
+    [ClientRpc]
+    void ClientGameStartEffectsClientRpc()
+    {
+        hubObjects.SetActive(false);
+    }
+
+    void MoveAllPlayers()
+    {
+        int index = 0;
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            if (client.PlayerObject == null)
+                continue;
+
+            Transform spawn = playerSpawnPoints[index % playerSpawnPoints.Length];
+
+            PlayerController player = client.PlayerObject.GetComponent<PlayerController>();
+            if (player != null)
+                player.Teleport(spawn.position, spawn.rotation);
+
+            index++;
         }
     }
 

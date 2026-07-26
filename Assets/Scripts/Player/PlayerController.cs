@@ -37,8 +37,19 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] AudioClip[] footstepSounds;
     [SerializeField] AudioClip jumpSound;
     [SerializeField] AudioClip landSound;
-
     [SerializeField] float footstepInterval = 0.45f;
+
+    NetworkVariable<Vector3> teleportPosition = new(
+        Vector3.zero,
+        NetworkVariableReadPermission.Owner,
+        NetworkVariableWritePermission.Server
+    );
+
+    NetworkVariable<Quaternion> teleportRotation = new(
+        Quaternion.identity,
+        NetworkVariableReadPermission.Owner,
+        NetworkVariableWritePermission.Server
+    );
 
     CharacterController controller;
 
@@ -67,6 +78,9 @@ public class PlayerController : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        teleportPosition.OnValueChanged += OnTeleportChanged;
+        teleportRotation.OnValueChanged += OnTeleportRotationChanged;
+
         if (!IsOwner)
         {
             controller.enabled = false;
@@ -235,5 +249,34 @@ public class PlayerController : NetworkBehaviour
 
         foreach (Transform child in obj.transform)
             SetLayerRecursively(child.gameObject, layer);
+    }
+
+    void OnTeleportChanged(Vector3 previous, Vector3 current)
+    {
+        if (!IsOwner)
+            return;
+
+        controller.enabled = false;
+        transform.position = current;
+        controller.enabled = true;
+
+        verticalVelocity = 0f;
+    }
+
+    void OnTeleportRotationChanged(Quaternion previous, Quaternion current)
+    {
+        if (!IsOwner)
+            return;
+
+        transform.rotation = current;
+    }
+
+    public void Teleport(Vector3 position, Quaternion rotation)
+    {
+        if (!IsServer)
+            return;
+
+        teleportPosition.Value = position;
+        teleportRotation.Value = rotation;
     }
 }
