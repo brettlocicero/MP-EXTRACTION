@@ -128,7 +128,7 @@ public class SteamLobbyManager : MonoBehaviour
             Debug.LogError("Failed to join Steam lobby.");
             return;
         }
-        
+
         currentLobby = lobbyResult.Value;
         string hostIdString = currentLobby.GetData("HostId");
 

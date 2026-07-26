@@ -60,6 +60,8 @@ public class PlayerState : NetworkBehaviour
         PlayerName.OnValueChanged -= OnPlayerNameNetworkChanged;
         CurrentHealth.OnValueChanged -= OnHealthChanged;
         MaxHealth.OnValueChanged -= OnMaxHealthChanged;
+
+        UIManager.Instance.DeletePlayerNameplate(this);
     }
 
     void OnPlayerNameNetworkChanged(FixedString64Bytes oldName, FixedString64Bytes newName)

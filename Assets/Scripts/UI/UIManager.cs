@@ -72,7 +72,7 @@ public class UIManager : MonoBehaviour
 
         playerState.PlayerName.OnValueChanged += HandleNameChanged;
 
-        AttachUIElement(playerTextObj.rectTransform, playerState.GetNameplateTransform());
+        AttachUIElement(playerTextObj.rectTransform, playerState.GetNameplateTransform(), playerState);
 
         void HandleNameChanged(FixedString64Bytes _, FixedString64Bytes newName)
         {
@@ -81,9 +81,25 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    void AttachUIElement(RectTransform uiElement, Transform worldTransform)
+    public void DeletePlayerNameplate(PlayerState playerState)
     {
-        instancedUI.Add(new InstancedUIPair(uiElement, worldTransform));
+        if (playerState.IsOwner)
+            return;
+
+        foreach (InstancedUIPair pair in instancedUI)
+        {
+            if (pair.player == playerState)
+            {
+                pair.Destroy();
+                instancedUI.Remove(pair);
+                break;
+            }
+        }
+    }
+
+    void AttachUIElement(RectTransform uiElement, Transform worldTransform, PlayerState player)
+    {
+        instancedUI.Add(new InstancedUIPair(uiElement, worldTransform, player));
     }
 
     public void UpdateHealthBar(int health, int maxHealth)
