@@ -1556,8 +1556,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1014872657}
-        m_TargetAssemblyTypeName: SteamLobbyManager, Assembly-CSharp
+      - m_Target: {fileID: 1715662692}
+        m_TargetAssemblyTypeName: UnityLobbyManager, Assembly-CSharp
         m_MethodName: CreateLobby
         m_Mode: 1
         m_Arguments:
@@ -1917,7 +1917,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1522530238
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2406,7 +2406,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkBootstrap
   networkManager: {fileID: 1797928643}
-  transportMode: 1
+  transportMode: 0
   unityTransport: {fileID: 1797928645}
   steamTransport: {fileID: 1797928644}
 --- !u!114 &1797928643

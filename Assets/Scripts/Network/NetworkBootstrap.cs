@@ -28,9 +28,7 @@ public class NetworkBootstrap : MonoBehaviour
     {
         // Lobby callbacks must run before a host/client exists. Once Netcode starts,
         // FacepunchTransport takes over callback processing in OnEarlyUpdate.
-        if (transportMode == TransportMode.Steam &&
-            SteamClient.IsValid &&
-            (networkManager == null || !networkManager.IsListening))
+        if (transportMode == TransportMode.Steam && SteamClient.IsValid && (networkManager == null || !networkManager.IsListening))
         {
             SteamClient.RunCallbacks();
         }

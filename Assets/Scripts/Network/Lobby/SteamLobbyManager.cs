@@ -11,7 +11,7 @@ public class SteamLobbyManager : MonoBehaviour
 
     void Awake()
     {
-        connectionManager ??= FindAnyObjectByType<ConnectionManager>();
+        connectionManager = connectionManager != null ? connectionManager : FindAnyObjectByType<ConnectionManager>();
     }
 
     void OnEnable()
@@ -75,10 +75,7 @@ public class SteamLobbyManager : MonoBehaviour
 
         currentLobby.SetPublic();
         currentLobby.SetJoinable(true);
-        currentLobby.SetData(
-            "HostId",
-            SteamClient.SteamId.ToString()
-        );
+        currentLobby.SetData("HostId", SteamClient.SteamId.ToString());
 
         Debug.Log($"Created Steam Lobby: {currentLobby.Id}");
         SteamFriends.OpenGameInviteOverlay(currentLobby.Id);
@@ -86,6 +83,12 @@ public class SteamLobbyManager : MonoBehaviour
 
     async void OnGameLobbyJoinRequested(Lobby lobby, SteamId steamId)
     {
+        if (NetworkManager.Singleton.IsListening)
+        {
+            Debug.Log("Ignoring Steam join request because already in a game.");
+            return;
+        }
+
         Debug.Log($"Joining Steam Lobby: {lobby.Id}");
         await JoinLobby(lobby.Id);
     }
@@ -113,16 +116,19 @@ public class SteamLobbyManager : MonoBehaviour
         {
             lobbyResult = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
         }
+
         catch (System.Exception exception)
         {
             Debug.LogException(exception);
             return;
         }
+
         if (!lobbyResult.HasValue)
         {
             Debug.LogError("Failed to join Steam lobby.");
             return;
         }
+        
         currentLobby = lobbyResult.Value;
         string hostIdString = currentLobby.GetData("HostId");
 
