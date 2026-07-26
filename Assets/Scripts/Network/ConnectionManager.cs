@@ -5,6 +5,13 @@ public class ConnectionManager : MonoBehaviour
 {
     void Start()
     {
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogError("[ConnectionManager] NetworkManager.Singleton was not found.");
+            enabled = false;
+            return;
+        }
+
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         
@@ -19,7 +26,6 @@ public class ConnectionManager : MonoBehaviour
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
             NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
-            Stop();
         }
     }
 
@@ -53,18 +59,31 @@ public class ConnectionManager : MonoBehaviour
         Debug.Log($"Disconnected: {clientId}");
     }
 
-    public void StartHost()
+    public bool StartHost()
     {
-        NetworkManager.Singleton.StartHost();
+        if (NetworkManager.Singleton == null || NetworkManager.Singleton.IsListening)
+        {
+            return false;
+        }
+
+        return NetworkManager.Singleton.StartHost();
     }
 
-    public void StartClient()
+    public bool StartClient()
     {
-        NetworkManager.Singleton.StartClient();
+        if (NetworkManager.Singleton == null || NetworkManager.Singleton.IsListening)
+        {
+            return false;
+        }
+
+        return NetworkManager.Singleton.StartClient();
     }
 
     public void Stop()
     {
-        NetworkManager.Singleton.Shutdown();
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+        {
+            NetworkManager.Singleton.Shutdown();
+        }
     }
 }

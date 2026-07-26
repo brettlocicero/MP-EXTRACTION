@@ -367,14 +367,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 279570859}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1998794973}
   - {fileID: 1616472854}
-  m_Father: {fileID: 1790986716}
+  m_Father: {fileID: 1054252472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
@@ -1198,6 +1198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4069851f429f134daee9d2c06aa9cee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SteamLobbyManager
+  connectionManager: {fileID: 1883309324}
 --- !u!1 &1022474372
 GameObject:
   m_ObjectHideFlags: 0
@@ -1555,8 +1556,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1715662692}
-        m_TargetAssemblyTypeName: UnityLobbyManager, Assembly-CSharp
+      - m_Target: {fileID: 1014872657}
+        m_TargetAssemblyTypeName: SteamLobbyManager, Assembly-CSharp
         m_MethodName: CreateLobby
         m_Mode: 1
         m_Arguments:
@@ -1634,6 +1635,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 279570860}
   - {fileID: 2082462119}
   - {fileID: 1991307179}
   - {fileID: 1971158920}
@@ -1915,7 +1917,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1522530238
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2346,7 +2348,6 @@ RectTransform:
   m_Children:
   - {fileID: 1054252472}
   - {fileID: 1007663513}
-  - {fileID: 279570860}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2404,8 +2405,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff23820fdca48c44886e5cc1f1e14291, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkBootstrap
-  transportMode: 0
-  steamAppId: 480
+  networkManager: {fileID: 1797928643}
+  transportMode: 1
   unityTransport: {fileID: 1797928645}
   steamTransport: {fileID: 1797928644}
 --- !u!114 &1797928643
@@ -2423,7 +2424,7 @@ MonoBehaviour:
   NetworkManagerExpanded: 0
   NetworkConfig:
     ProtocolVersion: 0
-    NetworkTransport: {fileID: 1797928645}
+    NetworkTransport: {fileID: 1797928644}
     PlayerPrefab: {fileID: 3744818073237477762, guid: 0b9e50181fd70f440820d5a027232791, type: 3}
     Prefabs:
       NetworkPrefabsLists:

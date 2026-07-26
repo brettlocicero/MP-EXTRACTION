@@ -3,5 +3,6 @@
   <Project Path="OccaSoftware.Buto.Editor.csproj" />
   <Project Path="OccaSoftware.Buto.Runtime.csproj" />
   <Project Path="OccaSoftware.Buto.Shaders.csproj" />
+  <Project Path="Facepunch Transport for Netcode for GameObjects.csproj" />
   <Project Path="OccaSoftware.Buto.Demo.csproj" />
 </Solution>

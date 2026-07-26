@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.community.netcode.transport.facepunch": "https://github.com/Unity-Technologies/multiplayer-community-contributions.git?path=/Transports/com.community.netcode.transport.facepunch",
+    "com.community.netcode.transport.facepunch": "file:com.community.netcode.transport.facepunch",
     "com.unity.ai.navigation": "2.0.13",
     "com.unity.cinemachine": "3.1.7",
     "com.unity.collab-proxy": "2.12.4",

@@ -6,7 +6,13 @@ using UnityEngine;
 
 public class SteamLobbyManager : MonoBehaviour
 {
+    [SerializeField] ConnectionManager connectionManager;
     Lobby currentLobby;
+
+    void Awake()
+    {
+        connectionManager ??= FindAnyObjectByType<ConnectionManager>();
+    }
 
     void OnEnable()
     {
@@ -18,94 +24,172 @@ public class SteamLobbyManager : MonoBehaviour
         SteamFriends.OnGameLobbyJoinRequested -= OnGameLobbyJoinRequested;
     }
 
-    void Update()
-    {
-        if (SteamClient.IsValid)
-        {
-            SteamClient.RunCallbacks();
-        }
-    }
-
     public async void CreateLobby()
     {
-        var lobbyResult = await SteamMatchmaking.CreateLobbyAsync(4);
+        if (!TryGetSteamTransport(out FacepunchTransport transport))
+        {
+            return;
+        }
+
+        if (!SteamClient.IsValid)
+        {
+            Debug.LogError("Steam is not ready. Select Steam in NetworkBootstrap and make sure the Facepunch transport can initialize.");
+            return;
+        }
+
+        if (NetworkManager.Singleton.IsListening)
+        {
+            Debug.LogWarning("Network is already running.");
+            return;
+        }
+
+        transport.targetSteamId = SteamClient.SteamId;
+
+        if (!connectionManager.StartHost())
+        {
+            Debug.LogError("Failed to start host.");
+            return;
+        }
+
+        Lobby? lobbyResult;
+        try
+        {
+            lobbyResult = await SteamMatchmaking.CreateLobbyAsync(4);
+        }
+        catch (System.Exception exception)
+        {
+            Debug.LogException(exception);
+            connectionManager.Stop();
+            return;
+        }
 
         if (!lobbyResult.HasValue)
         {
-            Debug.LogError("Failed to create Steam lobby: Result was null.");
+            Debug.LogError("Failed to create Steam lobby.");
+
+            NetworkManager.Singleton.Shutdown();
             return;
         }
 
         currentLobby = lobbyResult.Value;
+
         currentLobby.SetPublic();
         currentLobby.SetJoinable(true);
-        currentLobby.SetData("HostId", SteamClient.SteamId.ToString());
+        currentLobby.SetData(
+            "HostId",
+            SteamClient.SteamId.ToString()
+        );
 
-        if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is FacepunchTransport transport)
-        {
-            transport.targetSteamId = SteamClient.SteamId;
-        }
-        
-        else
-        {
-            Debug.LogError("The active transport is NOT FacepunchTransport!");
-            return;
-        }
-
-        NetworkManager.Singleton.StartHost();
-        Debug.Log($"Created Steam lobby {currentLobby.Id}");
-
+        Debug.Log($"Created Steam Lobby: {currentLobby.Id}");
         SteamFriends.OpenGameInviteOverlay(currentLobby.Id);
     }
 
     async void OnGameLobbyJoinRequested(Lobby lobby, SteamId steamId)
     {
-        Debug.Log($"Steam Overlay 'Join Game' requested for Lobby: {lobby.Id}");
+        Debug.Log($"Joining Steam Lobby: {lobby.Id}");
         await JoinLobby(lobby.Id);
     }
 
     public async System.Threading.Tasks.Task JoinLobby(SteamId lobbyId)
     {
-        var lobbyResult = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
+        if (!TryGetSteamTransport(out FacepunchTransport transport))
+        {
+            return;
+        }
 
+        if (!SteamClient.IsValid)
+        {
+            Debug.LogError("Steam is not ready. Select Steam in NetworkBootstrap and make sure the Facepunch transport can initialize.");
+            return;
+        }
+
+        if (NetworkManager.Singleton.IsListening)
+        {
+            connectionManager.Stop();
+        }
+
+        Lobby? lobbyResult;
+        try
+        {
+            lobbyResult = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
+        }
+        catch (System.Exception exception)
+        {
+            Debug.LogException(exception);
+            return;
+        }
         if (!lobbyResult.HasValue)
         {
-            Debug.LogError("Failed to join Steam lobby: Result was null.");
+            Debug.LogError("Failed to join Steam lobby.");
             return;
         }
-
         currentLobby = lobbyResult.Value;
-
         string hostIdString = currentLobby.GetData("HostId");
+
         if (string.IsNullOrEmpty(hostIdString))
         {
-            Debug.LogError("Lobby has no HostId meta-data!");
+            Debug.LogError("Lobby has no HostId.");
             return;
         }
 
-        SteamId hostId = ulong.Parse(hostIdString);
-
-        if (NetworkManager.Singleton.NetworkConfig.NetworkTransport is FacepunchTransport transport)
+        if (!ulong.TryParse(hostIdString, out ulong hostIdValue))
         {
-            transport.targetSteamId = hostId;
-            Debug.Log($"Transport target set to Host SteamID: {hostId}");
-        }
-        else
-        {
-            Debug.LogError("The active transport is NOT FacepunchTransport!");
+            Debug.LogError("Lobby HostId is invalid.");
             return;
         }
 
-        NetworkManager.Singleton.StartClient();
-        Debug.Log($"Netcode Client started for Steam lobby {currentLobby.Id}");
+        SteamId hostId = hostIdValue;
+        transport.targetSteamId = hostId;
+        Debug.Log($"Connecting to host SteamID: {hostId}");
+
+        if (!connectionManager.StartClient())
+        {
+            Debug.LogError("Failed to start client.");
+            return;
+        }
+
+        Debug.Log($"Client started for lobby {currentLobby.Id}");
     }
 
     public void LeaveLobby()
     {
-        currentLobby.Leave();
-        if (NetworkManager.Singleton != null)
+        if (currentLobby.Id != 0)
         {
-            NetworkManager.Singleton.Shutdown();
+            currentLobby.Leave();
+            currentLobby = default;
         }
+
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+        {
+            connectionManager.Stop();
+        }
+
+        Debug.Log("Left Steam lobby.");
+    }
+
+    bool TryGetSteamTransport(out FacepunchTransport transport)
+    {
+        transport = null;
+
+        if (connectionManager == null)
+        {
+            Debug.LogError("SteamLobbyManager requires a ConnectionManager.");
+            return false;
+        }
+
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogError("NetworkManager.Singleton was not found.");
+            return false;
+        }
+
+        transport = NetworkManager.Singleton.NetworkConfig.NetworkTransport as FacepunchTransport;
+        if (transport == null)
+        {
+            Debug.LogError("Steam lobbies require TransportMode.Steam (FacepunchTransport).");
+            return false;
+        }
+
+        return true;
     }
 }
