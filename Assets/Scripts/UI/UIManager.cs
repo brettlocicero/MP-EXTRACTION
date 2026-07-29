@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] Transform instancedUIRoot;
     [SerializeField] Transform healthBar;
     [SerializeField] TextMeshProUGUI healthText;
+    [SerializeField] TextMeshProUGUI soulsText;
 
     [Header("Objects")]
     [SerializeField] TextMeshProUGUI playerNametagPrefab;
@@ -17,6 +18,7 @@ public class UIManager : MonoBehaviour
     readonly List<InstancedUIPair> instancedUI = new();
 
     public static UIManager Instance { get; private set; }
+    public TextMeshProUGUI SoulsText => soulsText;
 
     void Awake()
     {

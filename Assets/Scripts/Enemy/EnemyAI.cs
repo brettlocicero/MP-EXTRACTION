@@ -32,12 +32,17 @@ public class EnemyAI : NetworkBehaviour
     [SerializeField] GameObject deathVFXPrefab;
     [SerializeField] AudioClip deathSFX;
     [SerializeField] AudioSource audioSource;
+
+    [Header("Loot")]
+    [SerializeField] GameObject soulsPickupPrefab;
+    [SerializeField] int soulsDropAmount = 10;
     
     float nextTargetUpdateTime;
     
     bool isStunned = false;
     float nextAttackTime;
     bool isAttacking = false;
+    bool isDead = false;
     Coroutine stunCoroutine;
     Coroutine attackCoroutine;
 
@@ -198,14 +203,14 @@ public class EnemyAI : NetworkBehaviour
 
     void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection)
     {
-        if (!IsServer) return;
+        if (!IsServer || isDead) return;
 
         currentHealth.Value -= damage;
 
         if (currentHealth.Value <= 0)
         {
-            // Call client RPC for death visuals right before despawning the object
-            PlayDeathFXRpc(); 
+            isDead = true;
+            PlayDeathFXRpc();
             Die();
             return;
         }
@@ -307,6 +312,16 @@ public class EnemyAI : NetworkBehaviour
     void Die()
     {
         OnEnemyKilled?.Invoke(this);
+        SpawnSoulsDrop();
         GetComponent<NetworkObject>().Despawn();
+    }
+
+    void SpawnSoulsDrop()
+    {
+        if (!IsServer || soulsPickupPrefab == null) return;
+
+        GameObject drop = Instantiate(soulsPickupPrefab, transform.position, Quaternion.identity);
+        drop.GetComponent<SoulsPickup>().Init(soulsDropAmount);
+        drop.GetComponent<NetworkObject>().Spawn();
     }
 }

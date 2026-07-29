@@ -50,6 +50,7 @@ public class GameManager : NetworkBehaviour
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
     }
 
@@ -60,6 +61,7 @@ public class GameManager : NetworkBehaviour
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
     }
 
@@ -151,6 +153,17 @@ public class GameManager : NetworkBehaviour
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
             SwapToGameUI();
+        }
+    }
+
+    void OnClientDisconnected(ulong clientId)
+    {
+        if (!IsServer) return;
+
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
+        {
+            PlayerCurrency currency = client.PlayerObject.GetComponent<PlayerCurrency>();
+            currency.PersistCurrentSouls();
         }
     }
 
