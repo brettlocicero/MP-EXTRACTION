@@ -18,11 +18,18 @@ public class GameManager : NetworkBehaviour
     [SerializeField] RegionSO[] regions;
 
     PlayerController localPlayer;
+    bool hasGeneratedRegion = false;
 
     public PlayerController LocalPlayer => localPlayer;
 
     public NetworkVariable<int> CurrentRegion = new(
         -1,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    public NetworkVariable<int> RegionSeed = new(
+        0,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
@@ -77,15 +84,20 @@ public class GameManager : NetworkBehaviour
 
         Debug.Log("[GameManager] Starting game session...");
 
-        ClientGameStartEffectsClientRpc();
         MoveAllPlayers();
-        CurrentRegion.Value = GetRegionIndex(testRegion);
+
+        int seed = new System.Random().Next(int.MinValue, int.MaxValue);
+        int regionIndex = GetRegionIndex(testRegion);
+
+        RegionSeed.Value = seed;
+        CurrentRegion.Value = regionIndex;
+
+        GenerateRegionClientRpc(regionIndex, seed);
 
         if (spawner != null)
         {
-            StartCoroutine(WaitForSpawnerAndStartLoop());
+            // StartCoroutine(WaitForSpawnerAndStartLoop());
         }
-        
         else
         {
             Debug.LogWarning("[GameManager] Spawner reference is missing!");
@@ -93,9 +105,12 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    void ClientGameStartEffectsClientRpc()
+    void GenerateRegionClientRpc(int regionIndex, int seed)
     {
-        hubObjects.SetActive(false);
+        if (regionIndex < 0 || regionIndex >= regions.Length)
+            return;
+
+        GenerateRegion(regions[regionIndex], seed);
     }
 
     void MoveAllPlayers()
@@ -133,7 +148,16 @@ public class GameManager : NetworkBehaviour
         if (newRegion < 0 || newRegion >= regions.Length)
             return;
 
-        RegionGenerator.Instance.GenerateRegion(regions[newRegion]);
+        GenerateRegion(regions[newRegion], RegionSeed.Value);
+    }
+
+    void GenerateRegion(RegionSO region, int seed)
+    {
+        if (hasGeneratedRegion) return;
+
+        hubObjects.SetActive(false);
+        RegionGenerator.Instance.GenerateRegion(region, seed);
+        hasGeneratedRegion = true;
     }
 
     int GetRegionIndex(RegionSO region)

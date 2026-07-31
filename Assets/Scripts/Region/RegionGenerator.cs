@@ -10,16 +10,21 @@ public class RegionGenerator : MonoBehaviour
 
     GameObject instancedRegion;
 
-    public void GenerateRegion(RegionSO region)
+    public void GenerateRegion(RegionSO region, int regionSeed)
     {
+        Random.InitState(regionSeed);
         ClearInstancedRegion();
 
-        // TODO: Add generation extra logic here.
+        Debug.Log($"Spawning region with {regionSeed}");
+
+        // Create based region root object.
         instancedRegion = new GameObject($"Region: {region.RegionName}");
         GameObject baseWorldObj = region.GenerateBaseWorld();
         baseWorldObj.transform.SetParent(instancedRegion.transform);
 
+        // Build the environment for the region.
         region.ApplyRegionAtmosphere();
+        region.GeneratePointsOfInterest();
     }
 
     void ClearInstancedRegion()

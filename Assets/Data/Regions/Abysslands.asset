@@ -14,6 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RegionSO
   regionName: Abysslands
   baseWorldObject: {fileID: 4920668376728799186, guid: 813f05eba027f2b498eec3e6869006e4, type: 3}
+  radius: 1000
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
   sunColor: {r: 0.67058825, g: 0.67058825, b: 0.67058825, a: 1}
   ambientSkyColor: {r: 0.48235294, g: 0.48235294, b: 0.48235294, a: 1}
+  pointsOfInterest:
+  - {fileID: 11400000, guid: 5984a95f2c0d1f9468f663632bfcf2a0, type: 2}
+  edgeMargin: 50
+  maxPlacementAttempts: 30
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
