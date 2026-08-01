@@ -8,17 +8,18 @@ public class RegionSO : ScriptableObject
     [SerializeField] GameObject baseWorldObject;
     [SerializeField] float radius = 1000f;
 
-    [Header("Atmosphere")]
-    [SerializeField] Material skybox;
-    [SerializeField] Color sunColor;
-    [SerializeField] Color ambientSkyColor;
-
     [Header("Points of Interest")]
     [SerializeField] PointOfInterestSO[] pointsOfInterest;
     [SerializeField] int poiSpawnAmount = 8;
     [SerializeField] float edgeMargin = 50f;
     [SerializeField] int maxPlacementAttempts = 30;
     [SerializeField] LayerMask groundLayerMask;
+
+    [Header("Atmosphere")]
+    [SerializeField] Material skybox;
+    [SerializeField] Color sunColor;
+    [SerializeField] Color ambientSkyColor;
+    [SerializeField] Color fogColor;
 
     public string RegionName => regionName;
     public GameObject BaseWorldObject => baseWorldObject;
@@ -28,6 +29,7 @@ public class RegionSO : ScriptableObject
         RenderSettings.skybox = skybox;
         RenderSettings.sun.color = sunColor;
         RenderSettings.ambientSkyColor = ambientSkyColor;
+        RenderSettings.fogColor = fogColor;
     }
 
     public GameObject GenerateBaseWorld()
