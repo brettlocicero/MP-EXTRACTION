@@ -1,37 +1,87 @@
+using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class RegionGenerator : MonoBehaviour
+public class RegionGenerator : NetworkBehaviour
 {
     public static RegionGenerator Instance;
+
+    [SerializeField] Transform regionRoot;
+    [SerializeField] RegionSO[] availableRegions;
+
+    RegionSO currentRegion;
+    readonly List<NetworkObject> spawnedRooms = new List<NetworkObject>();
+
+    readonly NetworkVariable<int> currentRoomIndex = new NetworkVariable<int>(
+        -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
+    );
+
+    public int CurrentRoomIndex => currentRoomIndex.Value;
+
     void Awake()
     {
         Instance = this;
     }
 
-    GameObject instancedRegion;
-
     public void GenerateRegion(RegionSO region, int regionSeed)
     {
-        Random.InitState(regionSeed);
+        if (!IsServer)
+            return;
+
+        Debug.Log($"Generating region '{region.RegionName}' with seed {regionSeed}");
+
+        int regionIndex = System.Array.IndexOf(availableRegions, region);
+        var rng = new System.Random(regionSeed);
+
         ClearInstancedRegion();
+        currentRegion = region;
 
-        Debug.Log($"Spawning region with {regionSeed}");
-
-        // Create based region root object.
-        instancedRegion = new GameObject($"Region: {region.RegionName}");
-        GameObject baseWorldObj = region.GenerateBaseWorld();
-        baseWorldObj.transform.SetParent(instancedRegion.transform);
-
-        // Build the environment for the region.
-        region.ApplyRegionAtmosphere();
-        region.GeneratePointsOfInterest();
+        ApplyAtmosphereClientRpc(regionIndex);
+        currentRoomIndex.Value = -1;
+        SpawnFloor(rng);
     }
 
     void ClearInstancedRegion()
     {
-        if (instancedRegion)
+        if (!IsServer) return;
+
+        foreach (var room in spawnedRooms)
         {
-            Destroy(instancedRegion);
+            if (room != null && room.IsSpawned)
+            {
+                room.Despawn(true);
+            }
         }
+
+        spawnedRooms.Clear();
+    }
+
+    void SpawnFloor(System.Random rng)
+    {
+        Vector3 cursor = regionRoot != null ? regionRoot.position : Vector3.zero;
+
+        for (int i = 0; i < currentRegion.FloorLength; i++)
+        {
+            currentRoomIndex.Value = i;
+            RoomObject roomDef = currentRegion.Rooms[rng.Next(currentRegion.Rooms.Length)];
+            SpawnRoom(roomDef, ref cursor);
+        }
+    }
+
+    void SpawnRoom(RoomObject roomDef, ref Vector3 cursor)
+    {
+        RoomObject roomObj = Instantiate(roomDef, cursor, Quaternion.identity);
+
+        NetworkObject netObj = roomObj.GetComponent<NetworkObject>();
+        netObj.Spawn(true);
+        spawnedRooms.Add(netObj);
+
+        cursor = roomObj.Connector.position;
+    }
+
+    [ClientRpc]
+    void ApplyAtmosphereClientRpc(int regionIndex)
+    {
+        availableRegions[regionIndex].ApplyRegionAtmosphere();
     }
 }

@@ -13,17 +13,10 @@ MonoBehaviour:
   m_Name: Abysslands
   m_EditorClassIdentifier: Assembly-CSharp::RegionSO
   regionName: Abysslands
-  baseWorldObject: {fileID: 4920668376728799186, guid: 813f05eba027f2b498eec3e6869006e4, type: 3}
-  radius: 1000
-  pointsOfInterest:
-  - {fileID: 11400000, guid: 5984a95f2c0d1f9468f663632bfcf2a0, type: 2}
-  poiSpawnAmount: 8
-  edgeMargin: 50
-  maxPlacementAttempts: 30
-  groundLayerMask:
-    serializedVersion: 2
-    m_Bits: 1024
+  rooms:
+  - {fileID: 8618735367935135754, guid: fea366e6f1d5c5c40a21e345e15e911c, type: 3}
+  floorLength: 6
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
-  sunColor: {r: 0.34117648, g: 0.34117648, b: 0.34117648, a: 1}
-  ambientSkyColor: {r: 0.34117648, g: 0.22745098, b: 0.23137255, a: 1}
+  sunColor: {r: 0.34901962, g: 0.34901962, b: 0.34901962, a: 1}
+  ambientSkyColor: {r: 0.21568628, g: 0.03529412, b: 0.03529412, a: 1}
   fogColor: {r: 0.6039216, g: 0.6039216, b: 0.6039216, a: 1}
