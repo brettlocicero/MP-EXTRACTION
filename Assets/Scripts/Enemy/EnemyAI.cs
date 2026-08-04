@@ -1,17 +1,20 @@
 using UnityEngine;
 using Unity.Netcode;
-using UnityEngine.AI;
 using System.Collections;
 
-[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Rigidbody))]
 public class EnemyAI : NetworkBehaviour
 {
     public System.Action<EnemyAI> OnEnemyKilled;
 
-    NavMeshAgent agent;
-    
+    Rigidbody rb;
+
     [Header("Stats")]
     [SerializeField] float maxHealth = 100f;
+
+    [Header("Movement Settings")]
+    [SerializeField] float moveSpeed = 3.5f;
+    [SerializeField] float rotationSpeed = 10f;
 
     [Header("AI Settings")]
     [SerializeField] float targetUpdateInterval = 0.5f;
@@ -25,7 +28,7 @@ public class EnemyAI : NetworkBehaviour
 
     [Header("References")]
     [SerializeField] Animator animator;
-    
+
     [Header("FX & Audio Settings")]
     [SerializeField] ParticleSystem[] hitVFXParticles;
     [SerializeField] AudioClip hitSFX;
@@ -36,9 +39,9 @@ public class EnemyAI : NetworkBehaviour
     [Header("Loot")]
     [SerializeField] GameObject soulsPickupPrefab;
     [SerializeField] int soulsDropAmount = 10;
-    
+
     float nextTargetUpdateTime;
-    
+
     bool isStunned = false;
     float nextAttackTime;
     bool isAttacking = false;
@@ -46,26 +49,25 @@ public class EnemyAI : NetworkBehaviour
     Coroutine stunCoroutine;
     Coroutine attackCoroutine;
 
+    bool isMoving = false;
+    Vector3 moveTarget;
+
     NetworkVariable<float> currentHealth = new NetworkVariable<float>(
-        100f, 
-        NetworkVariableReadPermission.Everyone, 
+        100f,
+        NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
 
     void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
-        // Fallback in case AudioSource isn't assigned via inspector
+        rb = GetComponent<Rigidbody>();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
     public override void OnNetworkSpawn()
     {
-        if (!IsServer)
-        {
-            agent.enabled = false;
-        }
-
         if (IsServer)
         {
             currentHealth.Value = maxHealth;
@@ -91,6 +93,14 @@ public class EnemyAI : NetworkBehaviour
             nextTargetUpdateTime = Time.time + targetUpdateInterval;
             TargetClosestPlayer();
         }
+    }
+
+    void FixedUpdate()
+    {
+        if (!IsServer) return;
+        if (!isMoving) return;
+
+        MoveTowards(moveTarget);
     }
 
     void TargetClosestPlayer()
@@ -119,6 +129,8 @@ public class EnemyAI : NetworkBehaviour
 
         if (distance <= attackRange)
         {
+            isMoving = false;
+
             if (Time.time >= nextAttackTime)
             {
                 attackCoroutine = StartCoroutine(AttackRoutine(closestPlayer.GetComponent<PlayerState>()));
@@ -127,20 +139,33 @@ public class EnemyAI : NetworkBehaviour
 
         else
         {
-            agent.SetDestination(closestPlayer.transform.position);
+            moveTarget = closestPlayer.transform.position;
+            isMoving = true;
         }
+    }
+
+    void MoveTowards(Vector3 destination)
+    {
+        Vector3 direction = destination - rb.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.01f)
+            return;
+
+        direction.Normalize();
+
+        Vector3 newPosition = rb.position + direction * moveSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(newPosition);
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
     }
 
     IEnumerator AttackRoutine(PlayerState target)
     {
         isAttacking = true;
+        isMoving = false;
         nextAttackTime = Time.time + attackCooldown;
-
-        if (agent.isOnNavMesh)
-        {
-            agent.isStopped = true;
-            agent.velocity = Vector3.zero;
-        }
 
         // Face the player once
         if (target != null)
@@ -149,7 +174,7 @@ public class EnemyAI : NetworkBehaviour
             lookPos.y = 0f;
 
             if (lookPos.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.LookRotation(lookPos);
+                rb.MoveRotation(Quaternion.LookRotation(lookPos));
         }
 
         PlayAttackAnimationRpc();
@@ -169,11 +194,6 @@ public class EnemyAI : NetworkBehaviour
         yield return new WaitForSeconds(Mathf.Max(0f, attackDuration - attackHitTime));
 
         isAttacking = false;
-
-        if (agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-        }
     }
 
     [Rpc(SendTo.Everyone)]
@@ -188,7 +208,7 @@ public class EnemyAI : NetworkBehaviour
         {
             ModifyHealth(damage, stunTime, attackDirection);
         }
-        
+
         else
         {
             TakeDamageServerRpc(damage, stunTime, attackDirection);
@@ -235,20 +255,11 @@ public class EnemyAI : NetworkBehaviour
     IEnumerator StunRoutine(float duration)
     {
         isStunned = true;
-
-        if (agent.isOnNavMesh)
-        {
-            agent.isStopped = true;
-            agent.velocity = Vector3.zero;
-        }
+        isMoving = false;
 
         yield return new WaitForSeconds(duration);
 
         isStunned = false;
-        if (agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-        }
     }
 
     [Rpc(SendTo.Everyone)]
@@ -268,7 +279,6 @@ public class EnemyAI : NetworkBehaviour
         }
     }
 
-    // Automatically triggers on all clients whenever the NetworkVariable updates
     void OnHealthChanged(float previousValue, float newValue)
     {
         if (newValue < previousValue && newValue > 0f)
@@ -285,24 +295,20 @@ public class EnemyAI : NetworkBehaviour
         }
     }
 
-    // Client RPC to handle Death FX simultaneously across all screens
     [Rpc(SendTo.Everyone)]
     void PlayDeathFXRpc()
     {
-        // Play death audio at the enemy's location. 
-        // AudioSource.PlayClipAtPoint ensures the audio keeps playing even if this GameObject is immediately destroyed.
         if (deathSFX != null)
         {
             AudioSource.PlayClipAtPoint(deathSFX, transform.position, 0.2f);
         }
 
-        // Spawn Death Particles
         if (deathVFXPrefab != null)
         {
             GameObject deathFX = Instantiate(deathVFXPrefab, transform.position, transform.rotation);
-            foreach (Rigidbody rb in deathFX.GetComponentsInChildren<Rigidbody>())
+            foreach (Rigidbody deathRb in deathFX.GetComponentsInChildren<Rigidbody>())
             {
-                rb.AddForce(-transform.forward * 10f, ForceMode.Impulse);
+                deathRb.AddForce(-transform.forward * 10f, ForceMode.Impulse);
             }
 
             Destroy(deathFX, 10f);

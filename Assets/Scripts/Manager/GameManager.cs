@@ -10,7 +10,6 @@ public class GameManager : NetworkBehaviour
     [SerializeField] RegionSO testRegion;
     [SerializeField] GameObject hubObjects;
     [SerializeField] Transform[] playerSpawnPoints;
-    [SerializeField] EnemySpawner spawner;
     [SerializeField] CanvasGroup menuUI;
     [SerializeField] CanvasGroup ingameUI;
 
@@ -93,15 +92,6 @@ public class GameManager : NetworkBehaviour
         CurrentRegion.Value = regionIndex;
 
         GenerateRegionClientRpc(regionIndex, seed);
-
-        if (spawner != null)
-        {
-            // StartCoroutine(WaitForSpawnerAndStartLoop());
-        }
-        else
-        {
-            Debug.LogWarning("[GameManager] Spawner reference is missing!");
-        }
     }
 
     [ClientRpc]
@@ -130,17 +120,6 @@ public class GameManager : NetworkBehaviour
 
             index++;
         }
-    }
-
-    IEnumerator WaitForSpawnerAndStartLoop()
-    {
-        while (spawner == null || !spawner.IsSpawned)
-        {
-            yield return null;
-        }
-
-        Debug.Log("[GameManager] Spawner ready. Starting game loop.");
-        spawner.StartGameLoop();
     }
 
     void OnRegionChanged(int previousRegion, int newRegion)

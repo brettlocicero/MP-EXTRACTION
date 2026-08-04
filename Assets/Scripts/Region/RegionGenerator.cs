@@ -59,7 +59,6 @@ public class RegionGenerator : NetworkBehaviour
     void SpawnFloor(System.Random rng)
     {
         Vector3 cursor = regionRoot != null ? regionRoot.position : Vector3.zero;
-
         for (int i = 0; i < currentRegion.FloorLength; i++)
         {
             currentRoomIndex.Value = i;
