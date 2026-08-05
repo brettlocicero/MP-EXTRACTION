@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Abysslands
   m_EditorClassIdentifier: Assembly-CSharp::RegionSO
   regionName: Abysslands
-  floorLength: 1
+  floorLength: 6
   regionLength: 10
   rooms:
   - {fileID: 8618735367935135754, guid: fea366e6f1d5c5c40a21e345e15e911c, type: 3}
