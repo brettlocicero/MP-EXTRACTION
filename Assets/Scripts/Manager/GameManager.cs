@@ -83,8 +83,6 @@ public class GameManager : NetworkBehaviour
 
         Debug.Log("[GameManager] Starting game session...");
 
-        MoveAllPlayers();
-
         int seed = new System.Random().Next(int.MinValue, int.MaxValue);
         int regionIndex = GetRegionIndex(testRegion);
 
@@ -101,25 +99,6 @@ public class GameManager : NetworkBehaviour
             return;
 
         GenerateRegion(regions[regionIndex], seed);
-    }
-
-    void MoveAllPlayers()
-    {
-        int index = 0;
-
-        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
-        {
-            if (client.PlayerObject == null)
-                continue;
-
-            Transform spawn = playerSpawnPoints[index % playerSpawnPoints.Length];
-
-            PlayerController player = client.PlayerObject.GetComponent<PlayerController>();
-            if (player != null)
-                player.Teleport(spawn.position, spawn.rotation);
-
-            index++;
-        }
     }
 
     void OnRegionChanged(int previousRegion, int newRegion)

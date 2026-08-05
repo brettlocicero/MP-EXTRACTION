@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -8,19 +9,74 @@ public class RegionGenerator : NetworkBehaviour
 
     [SerializeField] Transform regionRoot;
     [SerializeField] RegionSO[] availableRegions;
+    [SerializeField] TextMeshProUGUI regionFloorText;
 
     RegionSO currentRegion;
+    System.Random regionRng;
+    Vector3 cursor;
     readonly List<NetworkObject> spawnedRooms = new List<NetworkObject>();
 
     readonly NetworkVariable<int> currentRoomIndex = new NetworkVariable<int>(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
     );
 
+    readonly NetworkVariable<int> currentFloorIndex = new NetworkVariable<int>(
+        -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
+    );
+
+    readonly NetworkVariable<int> currentRegionIndex = new NetworkVariable<int>(
+        -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
+    );
+
     public int CurrentRoomIndex => currentRoomIndex.Value;
+    public int CurrentFloorIndex => currentFloorIndex.Value;
 
     void Awake()
     {
         Instance = this;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        currentFloorIndex.OnValueChanged += OnFloorIndexChanged;
+        currentRegionIndex.OnValueChanged += OnRegionIndexChanged;
+
+        UpdateFloorText(currentFloorIndex.Value);
+        ApplyAtmosphere(currentRegionIndex.Value);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        currentFloorIndex.OnValueChanged -= OnFloorIndexChanged;
+        currentRegionIndex.OnValueChanged -= OnRegionIndexChanged;
+    }
+
+    void OnFloorIndexChanged(int previous, int current)
+    {
+        UpdateFloorText(current);
+    }
+
+    void OnRegionIndexChanged(int previous, int current)
+    {
+        UpdateFloorText(currentFloorIndex.Value);
+        ApplyAtmosphere(current);
+    }
+
+    void UpdateFloorText(int floorIndex)
+    {
+        if (currentRegionIndex.Value < 0)
+            return;
+
+        RegionSO region = availableRegions[currentRegionIndex.Value];
+        regionFloorText.text = $"{region.RegionName} - {floorIndex + 1}";
+    }
+
+    void ApplyAtmosphere(int regionIndex)
+    {
+        if (regionIndex < 0)
+            return;
+
+        availableRegions[regionIndex].ApplyRegionAtmosphere();
     }
 
     public void GenerateRegion(RegionSO region, int regionSeed)
@@ -31,14 +87,33 @@ public class RegionGenerator : NetworkBehaviour
         Debug.Log($"Generating region '{region.RegionName}' with seed {regionSeed}");
 
         int regionIndex = System.Array.IndexOf(availableRegions, region);
-        var rng = new System.Random(regionSeed);
 
         ClearInstancedRegion();
         currentRegion = region;
+        regionRng = new System.Random(regionSeed);
+        cursor = regionRoot != null ? regionRoot.position : Vector3.zero;
 
-        ApplyAtmosphereClientRpc(regionIndex);
         currentRoomIndex.Value = -1;
-        SpawnFloor(rng);
+        currentFloorIndex.Value = 0;
+        currentRegionIndex.Value = regionIndex;
+        SpawnFloor(currentRegion.FloorLength);
+
+        // After generation, run more commands
+        MoveAllPlayers();
+    }
+
+    public void GenerateNextFloor()
+    {
+        if (!IsServer) return;
+        if (currentRegion == null) return;
+
+        ClearInstancedRegion();
+        cursor = regionRoot != null ? regionRoot.position : Vector3.zero;
+
+        currentFloorIndex.Value++;
+        SpawnFloor(currentRegion.FloorLength);
+
+        MoveAllPlayers();
     }
 
     void ClearInstancedRegion()
@@ -56,18 +131,24 @@ public class RegionGenerator : NetworkBehaviour
         spawnedRooms.Clear();
     }
 
-    void SpawnFloor(System.Random rng)
+    void SpawnFloor(int floorLength)
     {
-        Vector3 cursor = regionRoot != null ? regionRoot.position : Vector3.zero;
-        for (int i = 0; i < currentRegion.FloorLength; i++)
+        for (int i = 0; i < floorLength; i++)
         {
-            currentRoomIndex.Value = i;
-            RoomObject roomDef = currentRegion.Rooms[rng.Next(currentRegion.Rooms.Length)];
-            SpawnRoom(roomDef, ref cursor);
+            currentRoomIndex.Value++;
+            RoomObject roomDef = currentRegion.Rooms[regionRng.Next(currentRegion.Rooms.Length)];
+
+            // If it is the last room of the floor, spawn a final room.
+            if (i == floorLength - 1)
+            {
+                roomDef = currentRegion.FinalRoom;
+            }
+
+            SpawnRoom(roomDef);
         }
     }
 
-    void SpawnRoom(RoomObject roomDef, ref Vector3 cursor)
+    void SpawnRoom(RoomObject roomDef)
     {
         RoomObject roomObj = Instantiate(roomDef, cursor, Quaternion.identity);
 
@@ -78,9 +159,18 @@ public class RegionGenerator : NetworkBehaviour
         cursor = roomObj.Connector.position;
     }
 
-    [ClientRpc]
-    void ApplyAtmosphereClientRpc(int regionIndex)
+    void MoveAllPlayers()
     {
-        availableRegions[regionIndex].ApplyRegionAtmosphere();
+        Vector3 spawnPosition = regionRoot != null ? regionRoot.position : Vector3.zero;
+        foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            if (client.PlayerObject == null)
+                continue;
+
+            if (client.PlayerObject.TryGetComponent<PlayerController>(out var player))
+            {
+                player.Teleport(spawnPosition, Quaternion.identity);
+            }
+        }
     }
 }

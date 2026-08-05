@@ -5,10 +5,12 @@ using UnityEngine;
 public class RegionSO : ScriptableObject
 {
     [SerializeField] string regionName;
-
-    [Header("Floor Settings")]
-    [SerializeField] RoomObject[] rooms;
     [SerializeField] int floorLength = 6;
+    [SerializeField] int regionLength = 10;
+
+    [Header("")]
+    [SerializeField] RoomObject[] rooms;
+    [SerializeField] RoomObject finalRoom;
 
     [Header("Atmosphere")]
     [SerializeField] Material skybox;
@@ -18,7 +20,9 @@ public class RegionSO : ScriptableObject
 
     public string RegionName => regionName;
     public int FloorLength => floorLength;
+
     public RoomObject[] Rooms => rooms;
+    public RoomObject FinalRoom => finalRoom;
 
     public void ApplyRegionAtmosphere()
     {

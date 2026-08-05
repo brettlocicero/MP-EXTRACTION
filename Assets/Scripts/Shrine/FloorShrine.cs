@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameStartShrine : MonoBehaviour, IInteractable
+public class FloorShrine : MonoBehaviour, IInteractable
 {
     bool used = false;
 
@@ -9,7 +9,7 @@ public class GameStartShrine : MonoBehaviour, IInteractable
     {
         if (!used && NetworkManager.Singleton.IsHost)
         {
-            GameManager.Instance.StartGameSession();
+            RegionGenerator.Instance.GenerateNextFloor();
             used = true;
         }
     }
