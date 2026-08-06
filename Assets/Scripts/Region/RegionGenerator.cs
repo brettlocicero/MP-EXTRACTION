@@ -10,6 +10,7 @@ public class RegionGenerator : NetworkBehaviour
     [SerializeField] Transform regionRoot;
     [SerializeField] RegionSO[] availableRegions;
     [SerializeField] TextMeshProUGUI regionFloorText;
+    [SerializeField] Vector3 playerSpawnPos;
 
     RegionSO currentRegion;
     System.Random regionRng;
@@ -138,11 +139,11 @@ public class RegionGenerator : NetworkBehaviour
             currentRoomIndex.Value++;
             RoomObject roomDef = currentRegion.Rooms[regionRng.Next(currentRegion.Rooms.Length)];
 
-            // If it is the last room of the floor, spawn a final room.
-            if (i == floorLength - 1)
-            {
+            // If it is the first/last room of the floor, spawn a special room.
+            if (i == 0)
+                roomDef = currentRegion.StartRoom;
+            else if (i == floorLength - 1)
                 roomDef = currentRegion.FinalRoom;
-            }
 
             SpawnRoom(roomDef);
         }
@@ -161,7 +162,6 @@ public class RegionGenerator : NetworkBehaviour
 
     void MoveAllPlayers()
     {
-        Vector3 spawnPosition = regionRoot != null ? regionRoot.position : Vector3.zero;
         foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
         {
             if (client.PlayerObject == null)
@@ -169,7 +169,7 @@ public class RegionGenerator : NetworkBehaviour
 
             if (client.PlayerObject.TryGetComponent<PlayerController>(out var player))
             {
-                player.Teleport(spawnPosition, Quaternion.identity);
+                player.Teleport(playerSpawnPos, Quaternion.identity);
             }
         }
     }

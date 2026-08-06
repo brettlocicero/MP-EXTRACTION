@@ -9,8 +9,9 @@ public class RegionSO : ScriptableObject
     [SerializeField] int regionLength = 10;
 
     [Header("")]
-    [SerializeField] RoomObject[] rooms;
+    [SerializeField] RoomObject startRoom;
     [SerializeField] RoomObject finalRoom;
+    [SerializeField] RoomObject[] rooms;
 
     [Header("Atmosphere")]
     [SerializeField] Material skybox;
@@ -22,6 +23,7 @@ public class RegionSO : ScriptableObject
     public int FloorLength => floorLength;
 
     public RoomObject[] Rooms => rooms;
+    public RoomObject StartRoom => startRoom;
     public RoomObject FinalRoom => finalRoom;
 
     public void ApplyRegionAtmosphere()
