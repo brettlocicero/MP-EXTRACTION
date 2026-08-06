@@ -63,13 +63,15 @@ public class WeaponObject : ItemObject
 
         inAttack = false;
     }
-    
+
     void TriggerAttackHitbox(Attack attack) 
     {
         Collider[] hits = Physics.OverlapSphere(hitSpot.position, weapon.range, LayerMask.GetMask("Enemy"));
         if (hits.Length > 0) 
         {
+            float hitstopDuration = 0.1f;
             audioSource.PlayOneShot(weapon.contactSound);
+            StartCoroutine(HitstopWorker(attack.animationClip.name, hitstopDuration));
 
             foreach (Collider enemyCollider in hits) 
             {
@@ -79,6 +81,16 @@ public class WeaponObject : ItemObject
                 }
             }
         }
+    }
+
+    IEnumerator HitstopWorker(string clipName, float duration)
+    {
+        AnimationState state = attackAnimation[clipName];
+        state.speed = 0f;
+
+        yield return new WaitForSeconds(duration);
+
+        state.speed = 1f;
     }
 
     void PlayAttackAudio()
