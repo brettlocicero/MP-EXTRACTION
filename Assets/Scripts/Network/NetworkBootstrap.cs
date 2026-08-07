@@ -3,6 +3,7 @@ using Steamworks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NetworkBootstrap : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class NetworkBootstrap : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] TransportMode transportMode = TransportMode.Unity;
+    [SerializeField] Button createLobbyButton;
+    [SerializeField] Button joinLobbyButton;
 
     [Header("Transports")]
     [SerializeField] UnityTransport unityTransport;
@@ -51,6 +54,12 @@ public class NetworkBootstrap : MonoBehaviour
                     return false;
                 }
 
+                createLobbyButton.onClick.AddListener(
+                    transform.GetComponentInChildren<UnityLobbyManager>().CreateLobby
+                );
+
+                joinLobbyButton.gameObject.SetActive(true);
+
                 networkManager.NetworkConfig.NetworkTransport = unityTransport;
                 Debug.Log("[NetworkBootstrap] Using Unity Transport.");
                 return true;
@@ -61,6 +70,12 @@ public class NetworkBootstrap : MonoBehaviour
                     Debug.LogError("[NetworkBootstrap] Assign a FacepunchTransport in the inspector.");
                     return false;
                 }
+
+                createLobbyButton.onClick.AddListener(
+                    transform.GetComponentInChildren<SteamLobbyManager>().CreateLobby
+                );
+
+                joinLobbyButton.gameObject.SetActive(false);
 
                 networkManager.NetworkConfig.NetworkTransport = steamTransport;
                 Debug.Log("[NetworkBootstrap] Using Facepunch Transport.");
@@ -83,6 +98,7 @@ public class NetworkBootstrap : MonoBehaviour
             ownsSteamClient = SteamClient.IsValid;
             Debug.Log($"[NetworkBootstrap] Steam initialized for App ID {steamTransport.SteamAppId}.");
         }
+
         catch (System.Exception exception)
         {
             Debug.LogException(exception);

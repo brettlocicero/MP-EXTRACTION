@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class ConnectionManager : MonoBehaviour
 {
+    [SerializeField] Camera lobbyCamera;
+
     void Start()
     {
         if (NetworkManager.Singleton == null)
@@ -14,7 +16,6 @@ public class ConnectionManager : MonoBehaviour
 
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-        
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
     }
 
@@ -66,6 +67,9 @@ public class ConnectionManager : MonoBehaviour
             return false;
         }
 
+        // Disable the main menu camera
+        lobbyCamera.gameObject.SetActive(false);
+
         return NetworkManager.Singleton.StartHost();
     }
 
@@ -75,6 +79,9 @@ public class ConnectionManager : MonoBehaviour
         {
             return false;
         }
+
+        // Disable the main menu camera
+        lobbyCamera.gameObject.SetActive(false);
 
         return NetworkManager.Singleton.StartClient();
     }

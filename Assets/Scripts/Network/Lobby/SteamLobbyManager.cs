@@ -78,7 +78,7 @@ public class SteamLobbyManager : MonoBehaviour
         currentLobby.SetData("HostId", SteamClient.SteamId.ToString());
 
         Debug.Log($"Created Steam Lobby: {currentLobby.Id}");
-        SteamFriends.OpenGameInviteOverlay(currentLobby.Id);
+        // SteamFriends.OpenGameInviteOverlay(currentLobby.Id);
     }
 
     async void OnGameLobbyJoinRequested(Lobby lobby, SteamId steamId)
