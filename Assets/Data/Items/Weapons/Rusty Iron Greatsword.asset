@@ -18,7 +18,7 @@ MonoBehaviour:
   - attackName: Left Swing
     animationClip: {fileID: 7400000, guid: 30a02ab8a68cd294695e64059bfde137, type: 2}
     direction: 0
-    attackDelay: 0.33333334
+    attackDelay: 0.39
     damage: 10
     stunTime: 1
     camShakeIntensity: 3
@@ -26,7 +26,7 @@ MonoBehaviour:
   - attackName: Right Swing
     animationClip: {fileID: 7400000, guid: 7cf44fb0814eb09419a70557fa07f9fc, type: 2}
     direction: 1
-    attackDelay: 0.33333334
+    attackDelay: 0.39
     damage: 10
     stunTime: 1
     camShakeIntensity: 3

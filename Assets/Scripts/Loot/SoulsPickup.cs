@@ -11,13 +11,23 @@ public class SoulsPickup : NetworkBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (!IsServer || collected) return;
+        if (!other.TryGetComponent<NetworkObject>(out var networkObject) || !networkObject.IsOwner) return;
 
         if (other.TryGetComponent<PlayerCurrency>(out var currency))
-        {
-            collected = true;
-            currency.AddSouls(soulsValue);
-            GetComponent<NetworkObject>().Despawn();
-        }
+            CollectRpc(networkObject.OwnerClientId);
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    void CollectRpc(ulong clientId)
+    {
+        if (collected) return;
+
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client)) return;
+
+        if (!client.PlayerObject.TryGetComponent<PlayerCurrency>(out var currency)) return;
+
+        collected = true;
+        currency.AddSouls(soulsValue);
+        GetComponent<NetworkObject>().Despawn();
     }
 }

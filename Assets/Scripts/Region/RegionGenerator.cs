@@ -66,7 +66,12 @@ public class RegionGenerator : NetworkBehaviour
     void UpdateFloorText(int floorIndex)
     {
         if (currentRegionIndex.Value < 0)
+        {
+            regionFloorText.gameObject.SetActive(false);
             return;
+        }
+
+        regionFloorText.gameObject.SetActive(true);
 
         RegionSO region = availableRegions[currentRegionIndex.Value];
         regionFloorText.text = $"{region.RegionName} - {floorIndex + 1}";
