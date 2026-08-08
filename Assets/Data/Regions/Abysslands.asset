@@ -19,7 +19,8 @@ MonoBehaviour:
   finalRoom: {fileID: 8618735367935135754, guid: 793c2194baef525428b97696cbe675ed, type: 3}
   rooms:
   - {fileID: 8618735367935135754, guid: fea366e6f1d5c5c40a21e345e15e911c, type: 3}
+  - {fileID: 8618735367935135754, guid: b751ab4d8ff0f424ea51c0fc109152af, type: 3}
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
-  sunColor: {r: 0.34901962, g: 0.34901962, b: 0.34901962, a: 1}
-  ambientSkyColor: {r: 0.12156863, g: 0.12156863, b: 0.12156863, a: 1}
+  sunColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 1}
+  ambientSkyColor: {r: 0.24705882, g: 0.11372549, b: 0.11372549, a: 1}
   fogColor: {r: 0.6039216, g: 0.6039216, b: 0.6039216, a: 1}
