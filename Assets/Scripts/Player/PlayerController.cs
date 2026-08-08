@@ -241,7 +241,7 @@ public class PlayerController : NetworkBehaviour
         if (!IsServer)
             return;
 
-        ClientRpcParams rpcParams = new ClientRpcParams
+        ClientRpcParams rpcParams = new()
         {
             Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
         };

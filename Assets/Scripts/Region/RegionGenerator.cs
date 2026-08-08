@@ -15,17 +15,17 @@ public class RegionGenerator : NetworkBehaviour
     RegionSO currentRegion;
     System.Random regionRng;
     Vector3 cursor;
-    readonly List<NetworkObject> spawnedRooms = new List<NetworkObject>();
+    readonly List<NetworkObject> spawnedRooms = new();
 
-    readonly NetworkVariable<int> currentRoomIndex = new NetworkVariable<int>(
+    readonly NetworkVariable<int> currentRoomIndex = new(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
     );
 
-    readonly NetworkVariable<int> currentFloorIndex = new NetworkVariable<int>(
+    readonly NetworkVariable<int> currentFloorIndex = new(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
     );
 
-    readonly NetworkVariable<int> currentRegionIndex = new NetworkVariable<int>(
+    readonly NetworkVariable<int> currentRegionIndex = new(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
     );
 

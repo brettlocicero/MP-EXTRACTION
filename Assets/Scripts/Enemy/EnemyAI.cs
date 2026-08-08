@@ -52,7 +52,7 @@ public class EnemyAI : NetworkBehaviour
     bool isMoving = false;
     Vector3 moveTarget;
 
-    NetworkVariable<float> currentHealth = new NetworkVariable<float>(
+    NetworkVariable<float> currentHealth = new(
         100f,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server

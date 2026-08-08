@@ -15,7 +15,7 @@ public class RoomObject : NetworkBehaviour
     bool hasTriggered = false;
     int enemiesAlive = 0;
 
-    NetworkVariable<bool> barrierUp = new NetworkVariable<bool>(
+    NetworkVariable<bool> barrierUp = new(
         true, 
         NetworkVariableReadPermission.Everyone, 
         NetworkVariableWritePermission.Server
