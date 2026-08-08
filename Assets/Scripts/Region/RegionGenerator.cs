@@ -14,7 +14,8 @@ public class RegionGenerator : NetworkBehaviour
 
     RegionSO currentRegion;
     System.Random regionRng;
-    Vector3 cursor;
+    Vector3 cursorPos;
+    Quaternion cursorRot;
     readonly List<NetworkObject> spawnedRooms = new();
 
     readonly NetworkVariable<int> currentRoomIndex = new(
@@ -97,7 +98,8 @@ public class RegionGenerator : NetworkBehaviour
         ClearInstancedRegion();
         currentRegion = region;
         regionRng = new System.Random(regionSeed);
-        cursor = regionRoot != null ? regionRoot.position : Vector3.zero;
+        cursorPos = regionRoot != null ? regionRoot.position : Vector3.zero;
+        cursorRot = Quaternion.identity;
 
         currentRoomIndex.Value = -1;
         currentFloorIndex.Value = 0;
@@ -114,7 +116,8 @@ public class RegionGenerator : NetworkBehaviour
         if (currentRegion == null) return;
 
         ClearInstancedRegion();
-        cursor = regionRoot != null ? regionRoot.position : Vector3.zero;
+        cursorPos = regionRoot != null ? regionRoot.position : Vector3.zero;
+        cursorRot = Quaternion.identity;
 
         currentFloorIndex.Value++;
         SpawnFloor(currentRegion.FloorLength);
@@ -156,15 +159,15 @@ public class RegionGenerator : NetworkBehaviour
 
     void SpawnRoom(RoomObject roomDef)
     {
-        RoomObject roomObj = Instantiate(roomDef, cursor, Quaternion.identity);
+        RoomObject roomObj = Instantiate(roomDef, cursorPos, cursorRot);
 
         NetworkObject netObj = roomObj.GetComponent<NetworkObject>();
         netObj.Spawn(true);
         spawnedRooms.Add(netObj);
 
-        cursor = roomObj.Connector.position;
+        cursorPos = roomObj.Connector.position;
+        cursorRot = roomObj.Connector.rotation;
     }
-
     void MoveAllPlayers()
     {
         foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
