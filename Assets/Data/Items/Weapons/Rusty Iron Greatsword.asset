@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
   itemName: Rusty Iron Greatsword
   description: Worn but proven.
+  itemSize: {x: 1, y: 2}
+  icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   attacks:
   - attackName: Left Swing
     animationClip: {fileID: 7400000, guid: 30a02ab8a68cd294695e64059bfde137, type: 2}
