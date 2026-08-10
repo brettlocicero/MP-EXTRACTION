@@ -12,7 +12,6 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] RectTransform itemParent;
     [SerializeField] GameObject slotPrefab;
     [SerializeField] InventoryItemUI itemPrefab;
-    [SerializeField] ItemSO testItem;
 
     readonly Dictionary<InventoryItem, InventoryItemUI> itemUIs = new();
     
@@ -29,10 +28,6 @@ public class InventoryUI : MonoBehaviour
         bool tabPressed = InputManager.Actions.Player.Tab.WasPressedThisFrame();
         if (tabPressed) 
             ToggleInventory();
-
-        bool testKey = InputManager.Actions.Player.Jump.WasPressedThisFrame();
-        if (testKey)
-            InventoryManager.Instance.AddItem(testItem);
     }
 
     void OnEnable()

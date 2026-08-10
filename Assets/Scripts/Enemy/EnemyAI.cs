@@ -37,6 +37,7 @@ public class EnemyAI : NetworkBehaviour
     [SerializeField] AudioSource audioSource;
 
     [Header("Loot")]
+    [SerializeField] LootDrop[] lootDrops;
     [SerializeField] GameObject soulsPickupPrefab;
     [SerializeField] int soulsDropAmount = 10;
 
@@ -319,6 +320,7 @@ public class EnemyAI : NetworkBehaviour
     {
         OnEnemyKilled?.Invoke(this);
         SpawnSoulsDrop();
+        SpawnLootDrops();
         GetComponent<NetworkObject>().Despawn();
     }
 
@@ -329,5 +331,19 @@ public class EnemyAI : NetworkBehaviour
         GameObject drop = Instantiate(soulsPickupPrefab, transform.position, Quaternion.identity);
         drop.GetComponent<SoulsPickup>().Init(soulsDropAmount);
         drop.GetComponent<NetworkObject>().Spawn();
+    }
+
+    void SpawnLootDrops()
+    {
+        if (!IsServer) return;
+
+        foreach (LootDrop lootDrop in lootDrops)
+        {
+            if (lootDrop.RollDrop)
+            {
+                LootItem drop = Instantiate(lootDrop.LootItem, transform.position, Quaternion.identity);
+                drop.GetComponent<NetworkObject>().Spawn();
+            }
+        }
     }
 }

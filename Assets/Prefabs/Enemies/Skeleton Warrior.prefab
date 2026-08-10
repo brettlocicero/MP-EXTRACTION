@@ -5218,7 +5218,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3366770810
+  GlobalObjectIdHash: 993351479
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -5262,6 +5262,7 @@ MonoBehaviour:
   deathVFXPrefab: {fileID: 2375243330899510526, guid: 097b6f0124bc4174fb1055b391a00c59, type: 3}
   deathSFX: {fileID: 8300000, guid: fd1311da168b8584f978ba8bd054e726, type: 3}
   audioSource: {fileID: 7679946380430543039}
+  lootDrops: []
   soulsPickupPrefab: {fileID: 5368100601339162271, guid: 57dca7348365f45409c2a3bf07a27ee6, type: 3}
   soulsDropAmount: 10
 --- !u!136 &8274500225571209933

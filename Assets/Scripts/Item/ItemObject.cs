@@ -17,6 +17,8 @@ public class ItemObject : MonoBehaviour
     {
         playerCC = GetComponentInParent<CharacterController>();
         playerController = GetComponentInParent<PlayerController>();
+        
+        CursorManager.LockCursor();
     }
 
     protected virtual void Update()
