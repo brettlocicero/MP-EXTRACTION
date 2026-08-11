@@ -21,6 +21,6 @@ MonoBehaviour:
   - {fileID: 8618735367935135754, guid: fea366e6f1d5c5c40a21e345e15e911c, type: 3}
   - {fileID: 8618735367935135754, guid: b751ab4d8ff0f424ea51c0fc109152af, type: 3}
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
-  sunColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 1}
-  ambientSkyColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
-  fogColor: {r: 0.6039216, g: 0.6039216, b: 0.6039216, a: 1}
+  sunColor: {r: 0.34117648, g: 0.34117648, b: 0.34117648, a: 1}
+  ambientSkyColor: {r: 0.5372549, g: 0.5372549, b: 0.5372549, a: 1}
+  fogColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}

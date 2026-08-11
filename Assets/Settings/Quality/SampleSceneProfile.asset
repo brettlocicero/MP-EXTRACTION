@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9392aacf3349be549bb1fd9eece49154, type: 3}
   m_Name: ButoVolumetricFog
   m_EditorClassIdentifier: OccaSoftware.Buto.Runtime::OccaSoftware.Buto.Runtime.ButoVolumetricFog
-  active: 1
+  active: 0
   mode:
     m_OverrideState: 1
     m_Value: 1
@@ -235,7 +235,7 @@ MonoBehaviour:
     m_Value: 1
   lacunarity:
     m_OverrideState: 0
-    m_Value: 2
+    m_Value: 1
   gain:
     m_OverrideState: 0
     m_Value: 0.3

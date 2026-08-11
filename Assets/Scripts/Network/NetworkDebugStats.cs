@@ -67,6 +67,10 @@ public class NetworkDebugStats : MonoBehaviour
         }
 
         ulong rtt = NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.ServerClientId);
+        if (rtt > 0)
+            builder.AppendLine($"RTT: {rtt} ms");
+        else
+            builder.AppendLine("RTT: N/A");
 
         builder.AppendLine($"RTT: {rtt} ms");
 
