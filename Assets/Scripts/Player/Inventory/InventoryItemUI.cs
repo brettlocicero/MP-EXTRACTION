@@ -92,11 +92,19 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (!inventoryUI.DropItem(this, eventData) && !Dropped)
+        if (!Dropped)
         {
-            rectTransform.anchoredPosition = dragStartPosition;
+            if (ItemSlot != null)
+                ItemSlot.ReAcceptItem(this);
+            else
+                rectTransform.anchoredPosition = dragStartPosition;
         }
 
         canvasGroup.blocksRaycasts = true;
+    }
+
+    public void Untrack()
+    {
+        inventoryUI.UntrackItem(Item);
     }
 }

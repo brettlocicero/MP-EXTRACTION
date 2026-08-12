@@ -13,6 +13,12 @@ public class ItemSlot : MonoBehaviour, IDropHandler
         if (!eventData.pointerDrag.TryGetComponent<InventoryItemUI>(out var droppedItem))
             return;
 
+        if (InventoryManager.Instance.ContainsItem(droppedItem.Item))
+        {
+            droppedItem.Untrack();
+            InventoryManager.Instance.RemoveItem(droppedItem.Item);
+        }
+
         if (droppedItem.transform.parent.TryGetComponent<ItemSlot>(out var sourceSlot))
             sourceSlot.currentItem = null;
 
@@ -27,5 +33,14 @@ public class ItemSlot : MonoBehaviour, IDropHandler
     public void ResetSlot()
     {
         currentItem = null;
+    }
+
+    public void ReAcceptItem(InventoryItemUI item)
+    {
+        item.transform.SetParent(transform);
+        item.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
+        item.Dropped = true;
+        item.ItemSlot = this;
+        currentItem = item;
     }
 }

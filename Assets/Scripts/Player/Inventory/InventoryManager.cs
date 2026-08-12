@@ -151,4 +151,21 @@ public class InventoryManager : MonoBehaviour
     {
         return inventoryUI.inventoryOpen;
     }
+
+    public bool ReAddItem(InventoryItem item, Vector2Int position)
+    {
+        if (items.Contains(item))
+            return false;
+
+        if (!grid.CanPlaceItem(item.Size, position))
+            return false;
+
+        grid.PlaceItem(item, position);
+        items.Add(item);
+
+        OnItemAdded?.Invoke(item);
+        OnInventoryChanged?.Invoke();
+
+        return true;
+    }
 }

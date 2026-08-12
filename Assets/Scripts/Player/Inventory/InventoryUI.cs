@@ -14,7 +14,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] InventoryItemUI itemPrefab;
 
     readonly Dictionary<InventoryItem, InventoryItemUI> itemUIs = new();
-    
+
     [HideInInspector] public bool inventoryOpen = false;
 
     public RectTransform ItemParent => itemParent;
@@ -22,9 +22,11 @@ public class InventoryUI : MonoBehaviour
     void Start()
     {
         BuildGrid();
-        Refresh();
+
+        foreach (InventoryItem item in inventoryManager.Items)
+            HandleItemAdded(item);
     }
-    
+
     void Update() 
     {
         bool tabPressed = InputManager.Actions.Player.Tab.WasPressedThisFrame();
@@ -34,12 +36,43 @@ public class InventoryUI : MonoBehaviour
 
     void OnEnable()
     {
-        inventoryManager.OnInventoryChanged += Refresh;
+        inventoryManager.OnItemAdded += HandleItemAdded;
+        inventoryManager.OnItemRemoved += HandleItemRemoved;
+        inventoryManager.OnItemMoved += RefreshItem;
     }
 
     void OnDisable()
     {
-        inventoryManager.OnInventoryChanged -= Refresh;
+        inventoryManager.OnItemAdded -= HandleItemAdded;
+        inventoryManager.OnItemRemoved -= HandleItemRemoved;
+        inventoryManager.OnItemMoved -= RefreshItem;
+    }
+
+    void HandleItemAdded(InventoryItem item)
+    {
+        if (itemUIs.ContainsKey(item)) return;
+
+        InventoryItemUI ui = Instantiate(itemPrefab, itemParent);
+        ui.Initialize(item, this, gridLayout);
+        itemUIs.Add(item, ui);
+    }
+
+    void HandleItemRemoved(InventoryItem item)
+    {
+        if (!itemUIs.TryGetValue(item, out InventoryItemUI ui)) return;
+
+        Destroy(ui.gameObject);
+        itemUIs.Remove(item);
+    }
+
+    public void TrackItem(InventoryItem item, InventoryItemUI ui)
+    {
+        itemUIs[item] = ui;
+    }
+
+    public void UntrackItem(InventoryItem item)
+    {
+        itemUIs.Remove(item);
     }
 
     void BuildGrid()
@@ -52,24 +85,6 @@ public class InventoryUI : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             Instantiate(slotPrefab, gridLayout.transform);
-        }
-    }
-
-    public void Refresh()
-    {
-        foreach (var ui in itemUIs.Values)
-        {
-            if (ui != null)
-                Destroy(ui.gameObject);
-        }
-
-        itemUIs.Clear();
-
-        foreach (InventoryItem item in inventoryManager.Items)
-        {
-            InventoryItemUI ui = Instantiate(itemPrefab, itemParent);
-            ui.Initialize(item, this, gridLayout);
-            itemUIs.Add(item, ui);
         }
     }
 
@@ -97,7 +112,51 @@ public class InventoryUI : MonoBehaviour
         Vector2 itemPosition = pointerPosition + itemUI.DragOffset;
         Vector2Int gridPosition = AnchoredPositionToGridPosition(itemPosition);
 
+        if (!inventoryManager.ContainsItem(itemUI.Item))
+        {
+            TrackItem(itemUI.Item, itemUI);
+
+            if (!inventoryManager.ReAddItem(itemUI.Item, gridPosition))
+                return false;
+
+            itemUI.Refresh(gridLayout);
+            return true;
+        }
+
         return inventoryManager.MoveItem(itemUI.Item, gridPosition);
+    }
+
+    public bool DropOnGrid(InventoryItemUI itemUI, PointerEventData eventData)
+    {
+        if (!TryGetPointerAnchoredPosition(eventData, out Vector2 pointerPosition))
+            return false;
+
+        Vector2 itemPosition = pointerPosition + itemUI.DragOffset;
+        Vector2Int gridPosition = AnchoredPositionToGridPosition(itemPosition);
+
+        bool success;
+
+        if (!inventoryManager.ContainsItem(itemUI.Item))
+        {
+            TrackItem(itemUI.Item, itemUI);
+            success = inventoryManager.ReAddItem(itemUI.Item, gridPosition);
+
+            if (success)
+                itemUI.Refresh(gridLayout);
+        }
+        else
+        {
+            success = inventoryManager.MoveItem(itemUI.Item, gridPosition);
+        }
+
+        if (success)
+        {
+            itemUI.transform.SetParent(itemParent);
+            itemUI.ItemSlot = null;
+            itemUI.Dropped = true;
+        }
+
+        return success;
     }
 
     public Vector2 GetDragOffset(InventoryItemUI itemUI, PointerEventData eventData)
