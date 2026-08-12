@@ -8,6 +8,8 @@ public class ItemSlot : MonoBehaviour, IDropHandler
 
     public void OnDrop(PointerEventData eventData)
     {
+        if (currentItem != null) return;
+
         if (!eventData.pointerDrag.TryGetComponent<InventoryItemUI>(out var droppedItem))
             return;
 
@@ -18,6 +20,12 @@ public class ItemSlot : MonoBehaviour, IDropHandler
         droppedItem.GetComponent<RectTransform>().anchoredPosition = Vector3.zero;
 
         droppedItem.Dropped = true;
+        droppedItem.ItemSlot = this;
         currentItem = droppedItem;
+    }
+
+    public void ResetSlot()
+    {
+        currentItem = null;
     }
 }

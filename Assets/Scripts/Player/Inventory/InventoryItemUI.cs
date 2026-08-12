@@ -13,11 +13,13 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     GridLayoutGroup layout;
     Vector2 dragStartPosition;
     CanvasGroup canvasGroup;
+    ItemSlot itemSlot;
 
     public InventoryItem Item { get; private set; }
     public Vector2 AnchoredPosition => rectTransform.anchoredPosition;
     public Vector2 DragOffset { get; private set; }
     public bool Dropped { get; set; }
+    public ItemSlot ItemSlot { get; set; }
 
     private void Awake()
     {
@@ -78,6 +80,9 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
         canvasGroup.blocksRaycasts = false;
         Dropped = false;
+
+        if (ItemSlot) 
+            ItemSlot.ResetSlot();
     }
 
     public void OnDrag(PointerEventData eventData)
