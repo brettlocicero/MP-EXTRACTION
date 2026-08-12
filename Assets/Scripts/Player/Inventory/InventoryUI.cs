@@ -17,6 +17,8 @@ public class InventoryUI : MonoBehaviour
     
     [HideInInspector] public bool inventoryOpen = false;
 
+    public RectTransform ItemParent => itemParent;
+
     void Start()
     {
         BuildGrid();

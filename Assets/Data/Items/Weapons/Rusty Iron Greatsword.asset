@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Rusty Iron Greatsword
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
   itemName: Rusty Iron Greatsword
+  id: 0
   description: Worn but proven.
   itemSize: {x: 1, y: 2}
   icon: {fileID: 21300000, guid: bfc2159910b23294c9ae47ea90611e5d, type: 3}

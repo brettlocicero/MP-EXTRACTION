@@ -6,19 +6,23 @@ using UnityEngine.UI;
 public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [SerializeField] Image icon;
-
+    
+    bool dropped = false;
     RectTransform rectTransform;
     InventoryUI inventoryUI;
     GridLayoutGroup layout;
     Vector2 dragStartPosition;
+    CanvasGroup canvasGroup;
 
     public InventoryItem Item { get; private set; }
     public Vector2 AnchoredPosition => rectTransform.anchoredPosition;
     public Vector2 DragOffset { get; private set; }
+    public bool Dropped { get; set; }
 
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
+        canvasGroup = GetComponent<CanvasGroup>();
     }
 
     public void Initialize(InventoryItem item, InventoryUI inventoryUI, GridLayoutGroup layout)
@@ -66,9 +70,14 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        transform.SetParent(inventoryUI.ItemParent);
+        transform.SetAsLastSibling();
+
         dragStartPosition = rectTransform.anchoredPosition;
         DragOffset = inventoryUI.GetDragOffset(this, eventData);
-        transform.SetAsLastSibling();
+
+        canvasGroup.blocksRaycasts = false;
+        Dropped = false;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -78,9 +87,11 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (!inventoryUI.DropItem(this, eventData))
+        if (!inventoryUI.DropItem(this, eventData) && !Dropped)
         {
             rectTransform.anchoredPosition = dragStartPosition;
         }
+
+        canvasGroup.blocksRaycasts = true;
     }
 }

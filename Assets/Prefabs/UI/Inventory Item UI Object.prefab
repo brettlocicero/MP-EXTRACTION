@@ -87,6 +87,7 @@ GameObject:
   - component: {fileID: 7429476696282117173}
   - component: {fileID: 2588299599310611326}
   - component: {fileID: 2051323849245661707}
+  - component: {fileID: 7967768257779305592}
   m_Layer: 5
   m_Name: Inventory Item UI Object
   m_TagString: Untagged
@@ -166,6 +167,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemUI
   icon: {fileID: 490343617761760753}
+--- !u!225 &7967768257779305592
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7780184862146430139}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8959179251900457760
 GameObject:
   m_ObjectHideFlags: 0
