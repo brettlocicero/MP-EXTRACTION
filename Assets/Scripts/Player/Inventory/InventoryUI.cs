@@ -208,6 +208,8 @@ public class InventoryUI : MonoBehaviour
             inventoryCanvasGroup.alpha = 1f;
             inventoryCanvasGroup.interactable = true;
             inventoryCanvasGroup.blocksRaycasts = true;
+
+            GameManager.Instance.LocalPlayer.LockSensitivity();
             CursorManager.UnlockCursor();
         }
 
@@ -216,6 +218,8 @@ public class InventoryUI : MonoBehaviour
             inventoryCanvasGroup.alpha = 0f;
             inventoryCanvasGroup.interactable = false;
             inventoryCanvasGroup.blocksRaycasts = false;
+
+            GameManager.Instance.LocalPlayer.UnlockSensitivity();
             CursorManager.LockCursor();
         }
     }

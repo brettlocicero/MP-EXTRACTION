@@ -55,6 +55,7 @@ public class PlayerController : NetworkBehaviour
     Vector3 cameraDefaultPosition;
     float bobTimer;
     float currentTilt;
+    float cachedSensitivity = 0;
 
     void Awake()
     {
@@ -62,6 +63,11 @@ public class PlayerController : NetworkBehaviour
 
         if (cameraTransform != null)
             cameraDefaultPosition = cameraTransform.localPosition;
+    }
+
+    void Start()
+    {
+        cachedSensitivity = mouseSensitivity;
     }
 
     public override void OnNetworkSpawn()
@@ -258,5 +264,16 @@ public class PlayerController : NetworkBehaviour
         controller.enabled = true;
 
         verticalVelocity = 0f;
+    }
+
+    public void LockSensitivity()
+    {
+        cachedSensitivity = mouseSensitivity;
+        mouseSensitivity = 0f;
+    }
+
+    public void UnlockSensitivity()
+    {
+        mouseSensitivity = cachedSensitivity;
     }
 }
