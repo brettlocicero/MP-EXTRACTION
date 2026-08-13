@@ -13,6 +13,8 @@ public class ItemObject : MonoBehaviour
     float movementVelocity = 0f;
     float currentMovement = 0f;
 
+    public ItemSO ItemData => item;
+
     protected virtual void Start()
     {
         playerCC = GetComponentInParent<CharacterController>();

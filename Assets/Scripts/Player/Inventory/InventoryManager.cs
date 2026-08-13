@@ -12,6 +12,10 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] int width = 8;
     [SerializeField] int height = 6;
 
+    [Header("Item Slots")]
+    [SerializeField] ItemSlot[] weaponItemSlots;
+    [SerializeField] ItemSlot[] ringItemSlots;
+
     InventoryGrid grid;
 
     readonly List<InventoryItem> items = new();
@@ -167,5 +171,19 @@ public class InventoryManager : MonoBehaviour
         OnInventoryChanged?.Invoke();
 
         return true;
+    }
+
+    public ItemSlot GetWeaponSlot(int index)
+    {
+        return weaponItemSlots[index];
+    }
+
+    public ItemSO GetWeaponItemFromSlot(int index)
+    {
+        InventoryItemUI slotItem = weaponItemSlots[index].currentItem;
+        if (slotItem)
+            return slotItem.Item.Data;
+
+        return null;
     }
 }
