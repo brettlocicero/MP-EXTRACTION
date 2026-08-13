@@ -12,12 +12,14 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] RectTransform itemParent;
     [SerializeField] GameObject slotPrefab;
     [SerializeField] InventoryItemUI itemPrefab;
+    [SerializeField] ItemInfoPanel itemInfoPanel;
 
     readonly Dictionary<InventoryItem, InventoryItemUI> itemUIs = new();
 
     [HideInInspector] public bool inventoryOpen = false;
 
     public RectTransform ItemParent => itemParent;
+    public ItemInfoPanel ItemInfoPanel => itemInfoPanel;
 
     void Start()
     {

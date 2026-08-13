@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(RectTransform))]
-public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] Image icon;
     
@@ -106,5 +106,15 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public void Untrack()
     {
         inventoryUI.UntrackItem(Item);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        inventoryUI.ItemInfoPanel.DisplayItemPanel(Item.Data);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        inventoryUI.ItemInfoPanel.HideItemPanel();
     }
 }

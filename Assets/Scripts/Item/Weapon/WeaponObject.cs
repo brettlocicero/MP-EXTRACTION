@@ -16,12 +16,15 @@ public class WeaponObject : ItemObject
     AudioSource audioSource;
     CinemachineShake cinemachineShake;
 
+    InventoryManager inventoryManager;
+
     protected override void Start()
     {
         base.Start();
         weapon = item as WeaponSO;
         audioSource = GetComponent<AudioSource>();
         cinemachineShake = GetComponentInParent<CinemachineShake>();
+        inventoryManager = InventoryManager.Instance;
     }
 
     protected override void Update()
@@ -34,7 +37,7 @@ public class WeaponObject : ItemObject
     {
         attackTimer += Time.deltaTime;
 
-        if (inAttack) return;
+        if (inAttack || inventoryManager.IsInventoryOpen()) return;
 
         bool pressedAttack = InputManager.Actions.Player.Attack.WasPressedThisFrame();
         if (pressedAttack && attackTimer >= weapon.attackRate)
