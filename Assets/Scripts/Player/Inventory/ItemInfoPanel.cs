@@ -1,3 +1,4 @@
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -34,7 +35,27 @@ public class ItemInfoPanel : MonoBehaviour
         canvasGroup.alpha = 1f;
 
         itemNameText.text = item.itemName;
-        descriptionText.text = item.description;
+        descriptionText.text = BuildDescriptionText(item);
+    }
+
+    string BuildDescriptionText(ItemSO item)
+    {
+        if (item is WeaponSO weapon)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var damageRange = weapon.GetDamageRange();
+            if (damageRange.Item1.Equals(damageRange.Item2))
+                sb.AppendLine($"Damage {damageRange.Item1}");
+            else
+                sb.AppendLine($"Damage {damageRange.Item1} - {damageRange.Item2}");
+
+            sb.AppendLine($"Range {weapon.range}");
+            sb.AppendLine($"Attack Rate {weapon.attackRate}");
+            return sb.ToString();
+        }
+
+        return item.description;
     }
 
     public void HideItemPanel()
