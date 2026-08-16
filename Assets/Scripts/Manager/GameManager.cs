@@ -8,7 +8,6 @@ public class GameManager : NetworkBehaviour
 
     [Header("References")]
     [SerializeField] RegionSO testRegion;
-    [SerializeField] GameObject hubObjects;
     [SerializeField] Transform[] playerSpawnPoints;
     [SerializeField] CanvasGroup menuUI;
     [SerializeField] CanvasGroup ingameUI;
@@ -113,7 +112,6 @@ public class GameManager : NetworkBehaviour
     {
         if (hasGeneratedRegion) return;
 
-        hubObjects.SetActive(false);
         RegionGenerator.Instance.GenerateRegion(region, seed);
         hasGeneratedRegion = true;
     }

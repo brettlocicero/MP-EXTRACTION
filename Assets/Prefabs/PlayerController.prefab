@@ -533,7 +533,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2702077606120933827}
   - component: {fileID: 2367919966336138519}
-  - component: {fileID: 4217728281410537797}
   - component: {fileID: 4671731162517025333}
   m_Layer: 0
   m_Name: Inventory Camera
@@ -608,14 +607,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &4217728281410537797
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4540882426462453773}
-  m_Enabled: 1
 --- !u!114 &4671731162517025333
 MonoBehaviour:
   m_ObjectHideFlags: 0

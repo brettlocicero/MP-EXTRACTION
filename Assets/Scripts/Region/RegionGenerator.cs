@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,10 +9,13 @@ public class RegionGenerator : NetworkBehaviour
 {
     public static RegionGenerator Instance;
 
+    [SerializeField] GameObject hubObjects;
     [SerializeField] Transform regionRoot;
     [SerializeField] RegionSO[] availableRegions;
     [SerializeField] TextMeshProUGUI regionFloorText;
     [SerializeField] Vector3 playerSpawnPos;
+    [SerializeField] RegionTransitionAnimator regionTransitionAnimator;
+    [SerializeField] float transitionDuration = 2f;
 
     RegionSO currentRegion;
     System.Random regionRng;
@@ -91,10 +96,18 @@ public class RegionGenerator : NetworkBehaviour
         if (!IsServer)
             return;
 
+        StartCoroutine(GenerateRegionRoutine(region, regionSeed));
+    }
+
+    IEnumerator GenerateRegionRoutine(RegionSO region, int regionSeed)
+    {
         Debug.Log($"Generating region '{region.RegionName}' with seed {regionSeed}");
 
         int regionIndex = System.Array.IndexOf(availableRegions, region);
 
+        PlayTransitionRpc();
+        yield return new WaitForSeconds(transitionDuration);
+        
         ClearInstancedRegion();
         currentRegion = region;
         regionRng = new System.Random(regionSeed);
@@ -106,14 +119,25 @@ public class RegionGenerator : NetworkBehaviour
         currentRegionIndex.Value = regionIndex;
         SpawnFloor(currentRegion.FloorLength);
 
-        // After generation, run more commands
+        PostGenerationRpc();
         MoveAllPlayers();
     }
 
     public void GenerateNextFloor()
     {
-        if (!IsServer) return;
-        if (currentRegion == null) return;
+        if (!IsServer)
+            return;
+
+        if (currentRegion == null)
+            return;
+
+        StartCoroutine(GenerateNextFloorRoutine());
+    }
+
+    IEnumerator GenerateNextFloorRoutine()
+    {
+        PlayTransitionRpc();
+        yield return new WaitForSeconds(transitionDuration);
 
         ClearInstancedRegion();
         cursorPos = regionRoot != null ? regionRoot.position : Vector3.zero;
@@ -125,9 +149,23 @@ public class RegionGenerator : NetworkBehaviour
         MoveAllPlayers();
     }
 
+    [Rpc(SendTo.Everyone)]
+    void PlayTransitionRpc()
+    {
+        Sequence seq = regionTransitionAnimator.PlayTransition();
+
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void PostGenerationRpc()
+    {
+        hubObjects.SetActive(false);
+    }
+
     void ClearInstancedRegion()
     {
-        if (!IsServer) return;
+        if (!IsServer)
+            return;
 
         foreach (var room in spawnedRooms)
         {
@@ -168,6 +206,7 @@ public class RegionGenerator : NetworkBehaviour
         cursorPos = roomObj.Connector.position;
         cursorRot = roomObj.Connector.rotation;
     }
+
     void MoveAllPlayers()
     {
         foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
