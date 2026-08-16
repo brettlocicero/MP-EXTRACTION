@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.35355338, y: -0.1464466, z: 0.35355338, w: 0.8535535}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.0864973, y: 1.0864973, z: 1.0864973}
+  m_LocalScale: {x: 0.47187662, y: 0.47187662, z: 0.47187662}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4894867488117939600}
@@ -118,7 +118,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 0.217155, y: 0.217155, z: 0.217155}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4894867488117939600}
@@ -208,7 +208,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.35355338, y: -0.1464466, z: 0.35355338, w: 0.8535535}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.86919785, y: 0.86919785, z: 0.86919785}
+  m_LocalScale: {x: 0.3775013, y: 0.3775013, z: 0.3775013}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4894867488117939600}
@@ -298,7 +298,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.35355338, y: -0.1464466, z: 0.35355338, w: 0.8535535}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.3037966, y: 1.3037966, z: 1.3037966}
+  m_LocalScale: {x: 0.56625193, y: 0.56625193, z: 0.56625193}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4894867488117939600}
@@ -388,7 +388,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.146, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.43431, y: 0.43431, z: 0.43431}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4894867488117939600}
@@ -5253,7 +5253,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 53501029
+  GlobalObjectIdHash: 1573814459
   InScenePlacedSourceGlobalObjectIdHash: 53501029
   DeferredDespawnTick: 0
   Ownership: 1
@@ -5403,8 +5403,8 @@ Light:
   serializedVersion: 13
   m_Type: 2
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 10
-  m_Range: 10
+  m_Intensity: 5
+  m_Range: 5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -5514,7 +5514,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.35355338, y: -0.1464466, z: 0.35355338, w: 0.8535535}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.6518983, y: 0.6518983, z: 0.6518983}
+  m_LocalScale: {x: 0.28312597, y: 0.28312597, z: 0.28312597}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4894867488117939600}
