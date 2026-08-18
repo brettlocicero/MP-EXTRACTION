@@ -5,19 +5,29 @@ using Unity.Netcode;
 
 public class RoomObject : NetworkBehaviour
 {
-    [SerializeField] Transform[] enemyWaypoints;
-    [SerializeField] GameObject[] enemyPrefabs;
-    [SerializeField] Vector2Int enemyAmountRange;
-    [SerializeField] float spawnInterval = 0.5f;
+    [SerializeField] RoomEnemySpawner enemySpawner;
     [SerializeField] Transform connector;
     [SerializeField] GameObject barrierObject;
 
     bool hasTriggered = false;
+    bool spawningComplete = false;
     int enemiesAlive = 0;
 
     NetworkVariable<bool> barrierUp = new(
         true, 
         NetworkVariableReadPermission.Everyone, 
+        NetworkVariableWritePermission.Server
+    );
+
+    NetworkVariable<bool> combatActive = new(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
+    NetworkVariable<int> killCount = new(
+        0,
+        NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
 
@@ -30,6 +40,15 @@ public class RoomObject : NetworkBehaviour
             barrierUp.OnValueChanged += OnBarrierChanged;
             barrierObject.SetActive(barrierUp.Value);
         }
+
+        combatActive.OnValueChanged += OnCombatActiveChanged;
+        killCount.OnValueChanged += OnKillCountChanged;
+
+        if (combatActive.Value)
+        {
+            CombatUIManager.Instance.NotifyCombatStarted(enemySpawner.SpawnDuration);
+            CombatUIManager.Instance.UpdateKillCount(killCount.Value);
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -37,6 +56,14 @@ public class RoomObject : NetworkBehaviour
         if (barrierObject)
         {
             barrierUp.OnValueChanged -= OnBarrierChanged;
+        }
+
+        combatActive.OnValueChanged -= OnCombatActiveChanged;
+        killCount.OnValueChanged -= OnKillCountChanged;
+
+        if (combatActive.Value)
+        {
+            CombatUIManager.Instance.NotifyCombatEnded();
         }
     }
 
@@ -46,6 +73,23 @@ public class RoomObject : NetworkBehaviour
         {
             barrierObject.SetActive(current);
         }
+    }
+
+    void OnCombatActiveChanged(bool previous, bool current)
+    {
+        if (current)
+        {
+            CombatUIManager.Instance.NotifyCombatStarted(enemySpawner.SpawnDuration);
+        }
+        else
+        {
+            CombatUIManager.Instance.NotifyCombatEnded();
+        }
+    }
+
+    void OnKillCountChanged(int previous, int current)
+    {
+        CombatUIManager.Instance.UpdateKillCount(current);
     }
 
     void OnTriggerEnter(Collider other)
@@ -65,22 +109,21 @@ public class RoomObject : NetworkBehaviour
         if (hasTriggered) return;
 
         hasTriggered = true;
-        StartCoroutine(SpawnEnemiesRoutine());
+        combatActive.Value = true;
+
+        enemySpawner.OnEnemySpawned += RegisterEnemy;
+        enemySpawner.OnSpawningComplete += OnSpawningComplete;
+        enemySpawner.StartEnemySpawning();
     }
 
-    IEnumerator SpawnEnemiesRoutine()
+    void OnSpawningComplete()
     {
-        int enemyAmount = Random.Range(enemyAmountRange.x, enemyAmountRange.y);
-        for (int i = 0; i < enemyAmount; i++)
+        spawningComplete = true;
+        enemySpawner.OnSpawningComplete -= OnSpawningComplete;
+
+        if (enemiesAlive <= 0)
         {
-            Transform waypoint = enemyWaypoints[Random.Range(0, enemyWaypoints.Length)];
-            GameObject prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-            GameObject enemy = Instantiate(prefab, waypoint.position, waypoint.rotation);
-            enemy.GetComponent<NetworkObject>().Spawn();
-
-            RegisterEnemy(enemy);
-
-            yield return new WaitForSeconds(spawnInterval);
+            ClearRoom();
         }
     }
 
@@ -96,10 +139,18 @@ public class RoomObject : NetworkBehaviour
     {
         enemy.OnEnemyKilled -= OnEnemyKilled;
         enemiesAlive--;
+        enemySpawner.NotifyEnemyDied();
+        killCount.Value++;
 
-        if (enemiesAlive <= 0)
+        if (spawningComplete && enemiesAlive <= 0)
         {
-            barrierUp.Value = false;
+            ClearRoom();
         }
+    }
+
+    void ClearRoom()
+    {
+        barrierUp.Value = false;
+        combatActive.Value = false;
     }
 }
