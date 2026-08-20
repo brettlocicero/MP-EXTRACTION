@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public class WeaponObject : ItemObject
@@ -60,11 +61,21 @@ public class WeaponObject : ItemObject
 
         yield return new WaitForSeconds(attack.attackDelay);
 
+
         cinemachineShake.ShakeCamera(attack.camShakeIntensity, attack.camShakeDuration, 0.5f, 80f);
         PlayAttackAudio();
-        TriggerAttackHitbox(attack);
+        
+        // Build out the attack modularly
+        if (attack.projectile) LaunchProjectile(attack);
+        if (attack.useHitbox) TriggerAttackHitbox(attack);
 
         inAttack = false;
+    }
+
+    void LaunchProjectile(Attack attack)
+    {
+        Vector3 forwardVec = cameraTransform.forward;
+        playerController.LaunchProjectileRpc(weapon.id, comboIndex, hitSpot.position, hitSpot.rotation, forwardVec);
     }
 
     void TriggerAttackHitbox(Attack attack) 

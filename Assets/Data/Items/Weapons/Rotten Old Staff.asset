@@ -25,6 +25,9 @@ MonoBehaviour:
   - attackName: Spellblast
     animationClip: {fileID: 7400000, guid: 047890c279c2ce54daffed1cccc76bfd, type: 2}
     direction: 0
+    projectile: {fileID: 6387734543243932331, guid: 8c40ca4ff441f9f4bafe4598b4eae673, type: 3}
+    projectileForce: 50
+    useHitbox: 0
     attackDelay: 0
     damage: 7
     stunTime: 0.25

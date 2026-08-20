@@ -276,4 +276,15 @@ public class PlayerController : NetworkBehaviour
     {
         mouseSensitivity = cachedSensitivity;
     }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void LaunchProjectileRpc(int weaponId, int attackIndex, Vector3 spawnPos, Quaternion spawnRot, Vector3 forwardVec)
+    {
+        WeaponSO weapon = ItemDatabase.Instance.GetItem(weaponId) as WeaponSO;
+        Attack attack = weapon.attacks[attackIndex];
+
+        Rigidbody projObj = Instantiate(attack.projectile, spawnPos, spawnRot);
+        projObj.GetComponent<NetworkObject>().Spawn();
+        projObj.AddForce(forwardVec * attack.projectileForce, ForceMode.Impulse);
+    }
 }

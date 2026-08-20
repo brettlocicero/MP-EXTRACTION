@@ -9,6 +9,7 @@ public class ItemObject : MonoBehaviour
 
     CharacterController playerCC;
     protected PlayerController playerController;
+    protected Transform cameraTransform;
 
     float movementVelocity = 0f;
     float currentMovement = 0f;
@@ -19,6 +20,7 @@ public class ItemObject : MonoBehaviour
     {
         playerCC = GetComponentInParent<CharacterController>();
         playerController = GetComponentInParent<PlayerController>();
+        cameraTransform = GetComponentInParent<Camera>().transform;
         
         CursorManager.LockCursor();
     }
