@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c26c9b351262b943ba81875fb3c68f7, type: 3}
+  m_Name: Rotten Old Staff
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
+  itemName: Rotten Old Staff
+  id: 1
+  description: 'Damage 7
+
+    Range 30
+
+    Attack Rate 1'
+  itemSize: {x: 1, y: 2}
+  icon: {fileID: 21300000, guid: bfc2159910b23294c9ae47ea90611e5d, type: 3}
+  attacks:
+  - attackName: Spellblast
+    animationClip: {fileID: 7400000, guid: 047890c279c2ce54daffed1cccc76bfd, type: 2}
+    direction: 0
+    attackDelay: 0
+    damage: 7
+    stunTime: 0.25
+    camShakeIntensity: 2
+    camShakeDuration: 0.25
+  range: 30
+  attackRate: 0.8
+  attackSound: {fileID: 8300000, guid: 7a9b1e5f1e9066849af4f18f8a51c9dc, type: 3}
+  contactSound: {fileID: 8300000, guid: 99f7a4a19ce0272418d4cdbad0bb6bca, type: 3}
+  attackSoundPitchRange: {x: 0.9, y: 1.1}
