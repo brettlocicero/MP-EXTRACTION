@@ -4,6 +4,8 @@ using UnityEngine;
 public class LootItem : NetworkBehaviour, IInteractable
 {
     [SerializeField] ItemSO item;
+    [SerializeField] bool destroyOnPickup = true;
+    
     bool collected = false;
 
     public void Interact()
@@ -20,7 +22,9 @@ public class LootItem : NetworkBehaviour, IInteractable
         ulong collectorId = rpcParams.Receive.SenderClientId;
 
         GrantItemRpc(RpcTarget.Single(collectorId, RpcTargetUse.Temp));
-        GetComponent<NetworkObject>().Despawn();
+
+        if (destroyOnPickup)
+            GetComponent<NetworkObject>().Despawn();
     }
 
     [Rpc(SendTo.SpecifiedInParams)]

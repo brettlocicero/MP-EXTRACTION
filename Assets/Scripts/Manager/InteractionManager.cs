@@ -50,7 +50,7 @@ public class InteractionManager : MonoBehaviour
 
 		else
 		{
-			// PopupManager.instance.HidePopup();
+			InteractionText.Instance.HidePopup();
 		}
 	}
 }

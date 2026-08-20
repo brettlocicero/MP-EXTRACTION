@@ -4,13 +4,13 @@ public interface IInteractable
 {
 	public void Interact();
 
-	public void Hover(string text)
+	public void Hover(string message)
 	{
-		// PopupManager.instance.DisplayPopup(text);
+		InteractionText.Instance.ShowPopup(message);
 	}
 
 	public void ExitHover()
 	{
-		// PopupManager.instance.HidePopup();
+		InteractionText.Instance.HidePopup();
 	}
 }
