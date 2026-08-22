@@ -14,11 +14,16 @@ public class PlayerItems : MonoBehaviour
         instancedItemObjects = GetComponentsInChildren<ItemObject>(true);
     }
 
-    public void EquipItem(ItemSO item)
+    public void EquipItem(InventoryItem inventoryItem)
     {
         foreach (ItemObject itemObj in instancedItemObjects)
         {
-            itemObj.gameObject.SetActive(itemObj.ItemData == item);
+            bool isMatch = itemObj.ItemData.id == inventoryItem.Data.id;
+
+            if (isMatch)
+                itemObj.AssignInstance(inventoryItem.Instance);
+
+            itemObj.gameObject.SetActive(isMatch);
         }
     }
 
@@ -27,16 +32,16 @@ public class PlayerItems : MonoBehaviour
         bool pressedOne = InputManager.Actions.Player.Alpha1.WasPressedThisFrame();
         if (pressedOne)
         {
-            ItemSO item = InventoryManager.Instance.GetWeaponItemFromSlot(0);
-            if (item)
+            InventoryItem item = InventoryManager.Instance.GetWeaponInventoryItemFromSlot(0);
+            if (item != null)
                 EquipItem(item);
         }
 
         bool pressedTwo = InputManager.Actions.Player.Alpha2.WasPressedThisFrame();
         if (pressedTwo)
         {
-            ItemSO item = InventoryManager.Instance.GetWeaponItemFromSlot(1);
-            if (item)
+            InventoryItem item = InventoryManager.Instance.GetWeaponInventoryItemFromSlot(1);
+            if (item != null)
                 EquipItem(item);
         }
     }

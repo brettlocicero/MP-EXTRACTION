@@ -15,6 +15,7 @@ public class ItemObject : MonoBehaviour
     float currentMovement = 0f;
 
     public ItemSO ItemData => item;
+    public ItemInstance Instance { get; private set; }
 
     protected virtual void Start()
     {
@@ -28,6 +29,11 @@ public class ItemObject : MonoBehaviour
     protected virtual void Update()
     {
         HandleMovementAnimation();
+    }
+
+    public void AssignInstance(ItemInstance instance)
+    {
+        Instance = instance;
     }
 
     void HandleMovementAnimation()

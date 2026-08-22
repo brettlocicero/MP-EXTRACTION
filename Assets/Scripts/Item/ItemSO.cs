@@ -9,4 +9,14 @@ public class ItemSO : ScriptableObject
     [TextArea] public string description;
     public Vector2Int itemSize;
     public Sprite icon;
+
+    public virtual ItemInstance CreateInstance()
+    {
+        ItemInstance instance = new ItemInstance(id)
+        {
+            customName = itemName
+        };
+
+        return instance;
+    }
 }

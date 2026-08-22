@@ -38,12 +38,14 @@ public class InventoryManager : MonoBehaviour
         grid = new InventoryGrid(width, height);
     }
 
-    public bool AddItem(ItemSO itemData)
+    public bool AddItem(ItemInstance instance)
     {
+        ItemSO itemData = ItemDatabase.Instance.GetItem(instance.baseItemId);
+
         if (!grid.FindSpace(itemData.itemSize, out Vector2Int position))
             return false;
 
-        InventoryItem item = new InventoryItem(itemData);
+        InventoryItem item = new InventoryItem(itemData, instance);
 
         grid.PlaceItem(item, position);
 
@@ -55,12 +57,14 @@ public class InventoryManager : MonoBehaviour
         return true;
     }
 
-    public bool AddItem(ItemSO itemData, Vector2Int position)
+    public bool AddItem(ItemInstance instance, Vector2Int position)
     {
+        ItemSO itemData = ItemDatabase.Instance.GetItem(instance.baseItemId);
+
         if (!grid.CanPlaceItem(itemData.itemSize, position))
             return false;
 
-        InventoryItem item = new InventoryItem(itemData);
+        InventoryItem item = new InventoryItem(itemData, instance);
 
         grid.PlaceItem(item, position);
 
@@ -183,6 +187,15 @@ public class InventoryManager : MonoBehaviour
         InventoryItemUI slotItem = weaponItemSlots[index].currentItem;
         if (slotItem)
             return slotItem.Item.Data;
+
+        return null;
+    }
+
+    public InventoryItem GetWeaponInventoryItemFromSlot(int index)
+    {
+        InventoryItemUI slotItem = weaponItemSlots[index].currentItem;
+        if (slotItem)
+            return slotItem.Item;
 
         return null;
     }

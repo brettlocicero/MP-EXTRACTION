@@ -343,6 +343,7 @@ public class EnemyAI : NetworkBehaviour
             {
                 LootItem drop = Instantiate(lootDrop.LootItem, transform.position, Quaternion.identity);
                 drop.GetComponent<NetworkObject>().Spawn();
+                // drop.Init();
             }
         }
     }

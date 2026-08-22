@@ -7,13 +7,10 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 {
     [SerializeField] Image icon;
     
-    bool dropped = false;
     RectTransform rectTransform;
     InventoryUI inventoryUI;
-    GridLayoutGroup layout;
     Vector2 dragStartPosition;
     CanvasGroup canvasGroup;
-    ItemSlot itemSlot;
 
     public InventoryItem Item { get; private set; }
     public Vector2 AnchoredPosition => rectTransform.anchoredPosition;
@@ -36,7 +33,6 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public void Initialize(InventoryItem item, GridLayoutGroup layout)
     {
         Item = item;
-        this.layout = layout;
 
         if (icon != null)
             icon.sprite = item.Data.icon;
