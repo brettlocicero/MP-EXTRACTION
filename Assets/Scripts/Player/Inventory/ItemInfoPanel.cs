@@ -30,17 +30,18 @@ public class ItemInfoPanel : MonoBehaviour
         rectTransform.anchoredPosition = localPoint + offset;
     }
 
-    public void DisplayItemPanel(ItemSO item)
+    public void DisplayItemPanel(InventoryItem item)
     {
         canvasGroup.alpha = 1f;
 
-        itemNameText.text = item.itemName;
+        itemNameText.text = item.Instance.customName;
         descriptionText.text = BuildDescriptionText(item);
     }
 
-    string BuildDescriptionText(ItemSO item)
+    // TODO: Update this function to account for the ItemInstance's stats, instead of the base data stats.
+    string BuildDescriptionText(InventoryItem item)
     {
-        if (item is WeaponSO weapon)
+        if (item.Data is WeaponSO weapon)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -55,7 +56,7 @@ public class ItemInfoPanel : MonoBehaviour
             return sb.ToString();
         }
 
-        return item.description;
+        return item.Data.description;
     }
 
     public void HideItemPanel()

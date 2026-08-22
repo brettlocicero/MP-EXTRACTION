@@ -157,4 +157,9 @@ public class GameManager : NetworkBehaviour
         ingameUI.blocksRaycasts = true;
         ingameUI.interactable = true;
     }
+
+    public PlayerItems GetLocalPlayerItems()
+    {
+        return LocalPlayer.GetComponentInChildren<PlayerItems>();
+    }
 }

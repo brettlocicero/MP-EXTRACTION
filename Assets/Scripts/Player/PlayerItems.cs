@@ -4,6 +4,8 @@ public class PlayerItems : MonoBehaviour
 {
     ItemObject[] instancedItemObjects;
 
+    public ItemInstance EquippedItem { get; private set; }
+
     void Start()
     {
         InitItemObjects();
@@ -34,7 +36,10 @@ public class PlayerItems : MonoBehaviour
         {
             InventoryItem item = InventoryManager.Instance.GetWeaponInventoryItemFromSlot(0);
             if (item != null)
+            {
                 EquipItem(item);
+                EquippedItem = item.Instance;
+            }
         }
 
         bool pressedTwo = InputManager.Actions.Player.Alpha2.WasPressedThisFrame();
@@ -42,7 +47,10 @@ public class PlayerItems : MonoBehaviour
         {
             InventoryItem item = InventoryManager.Instance.GetWeaponInventoryItemFromSlot(1);
             if (item != null)
+            {
                 EquipItem(item);
+                EquippedItem = item.Instance;
+            }
         }
     }
 }

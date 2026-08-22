@@ -106,7 +106,7 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        inventoryUI.ItemInfoPanel.DisplayItemPanel(Item.Data);
+        inventoryUI.ItemInfoPanel.DisplayItemPanel(Item);
     }
 
     public void OnPointerExit(PointerEventData eventData)

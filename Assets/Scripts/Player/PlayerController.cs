@@ -268,7 +268,9 @@ public class PlayerController : NetworkBehaviour
 
     public void LockSensitivity()
     {
-        cachedSensitivity = mouseSensitivity;
+        if (mouseSensitivity > 0f)
+            cachedSensitivity = mouseSensitivity;
+
         mouseSensitivity = 0f;
     }
 
