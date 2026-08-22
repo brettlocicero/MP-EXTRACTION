@@ -92,5 +92,7 @@ public class ConnectionManager : MonoBehaviour
         {
             NetworkManager.Singleton.Shutdown();
         }
+
+        lobbyCamera.gameObject.SetActive(true);
     }
 }

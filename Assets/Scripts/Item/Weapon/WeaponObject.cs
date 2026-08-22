@@ -28,6 +28,12 @@ public class WeaponObject : ItemObject
         inventoryManager = InventoryManager.Instance;
     }
 
+    void OnEnable()
+    {
+        attackAnimation.Rewind();
+        inAttack = false;
+    }
+
     protected override void Update()
     {
         base.Update();
