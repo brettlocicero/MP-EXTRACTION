@@ -8,14 +8,18 @@ public class Sway : MonoBehaviour
     [SerializeField] float walkTiltScale = 10f;
 
     Quaternion def;
+    PlayerController playerController;
 
     void Start()
     {
         def = transform.localRotation;
+        playerController = GetComponentInParent<PlayerController>();
     }
 
     void Update()
     {
+        if (playerController.IsMovementLocked()) return;
+
         Vector2 lookInput = InputManager.Actions.Player.Look.ReadValue<Vector2>() / 10f;
         Vector2 moveInput = InputManager.Actions.Player.Move.ReadValue<Vector2>();
 

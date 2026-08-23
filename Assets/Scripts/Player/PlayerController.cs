@@ -291,6 +291,11 @@ public class PlayerController : NetworkBehaviour
         return isSensLocked;
     }
 
+    public bool IsMovementLocked()
+    {
+        return isMovementLocked;
+    }
+
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void LaunchProjectileRpc(int weaponId, int attackIndex, Vector3 spawnPos, Quaternion spawnRot, Vector3 forwardVec)
     {

@@ -38,6 +38,8 @@ public class ItemObject : MonoBehaviour
 
     void HandleMovementAnimation()
     {
+        if (playerController.IsMovementLocked()) return;
+
         float targetMovement = InputManager.Actions.Player.Move.ReadValue<Vector2>().magnitude;
 
         if (!playerCC.isGrounded)
