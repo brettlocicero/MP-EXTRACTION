@@ -21,6 +21,7 @@ public class ItemDatabase : MonoBehaviour
             }
         }
 
+        Debug.LogError($"Item ID {itemId} not found in the database!");
         return null;
     }
 }

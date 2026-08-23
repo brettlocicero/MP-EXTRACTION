@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 
 [Serializable]
@@ -9,6 +10,8 @@ public class ItemInstance : INetworkSerializable
     public ulong instanceId;
     public int baseItemId;
     public string customName;
+
+    public List<SoulShardSO> soulShards = new();
 
     public ItemInstance() { }
 
@@ -23,5 +26,10 @@ public class ItemInstance : INetworkSerializable
         serializer.SerializeValue(ref instanceId);
         serializer.SerializeValue(ref baseItemId);
         serializer.SerializeValue(ref customName);
+    }
+
+    public void AddSoulShard(SoulShardSO soulShard)
+    {
+        soulShards.Add(soulShard);
     }
 }

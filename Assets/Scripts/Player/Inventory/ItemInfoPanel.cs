@@ -47,12 +47,12 @@ public class ItemInfoPanel : MonoBehaviour
 
             var damageRange = weapon.GetDamageRange();
             if (damageRange.Item1.Equals(damageRange.Item2))
-                sb.AppendLine($"Damage {damageRange.Item1}");
+                sb.AppendLine($"Damage <color=red>{damageRange.Item1}</color>");
             else
-                sb.AppendLine($"Damage {damageRange.Item1} - {damageRange.Item2}");
+                sb.AppendLine($"Damage <color=red>{damageRange.Item1} - {damageRange.Item2}</color>");
 
-            sb.AppendLine($"Range {weapon.range}");
-            sb.AppendLine($"Attack Rate {weapon.attackRate}");
+            sb.AppendLine($"Range <color=green>{weapon.range}</color>");
+            sb.AppendLine($"Attack Rate <color=orange>{weapon.attackRate}</color>");
             return sb.ToString();
         }
 

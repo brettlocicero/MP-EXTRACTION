@@ -15,6 +15,9 @@ public class WeaponSO : ItemSO
     public AudioClip contactSound;
     public Vector2 attackSoundPitchRange;
 
+    [Header("Soul Shards")]
+    public int maxSlots = 5;
+
     public (float, float) GetDamageRange()
     {
         float minDmg = Mathf.Infinity;
