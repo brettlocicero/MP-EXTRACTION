@@ -20,7 +20,7 @@ MonoBehaviour:
 
     Attack Rate 1'
   itemSize: {x: 1, y: 2}
-  icon: {fileID: 21300000, guid: bfc2159910b23294c9ae47ea90611e5d, type: 3}
+  icon: {fileID: 21300000, guid: e8a6f4190208e73478b5f700aaaa1d1b, type: 3}
   attacks:
   - attackName: Spellblast
     animationClip: {fileID: 7400000, guid: 047890c279c2ce54daffed1cccc76bfd, type: 2}

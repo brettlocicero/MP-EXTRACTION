@@ -7,6 +7,7 @@ public class LootItem : NetworkBehaviour, IInteractable
     [SerializeField] bool isFactory;
 
     ItemInstance instance;
+    bool collected;
 
     public override void OnNetworkSpawn()
     {
@@ -29,10 +30,18 @@ public class LootItem : NetworkBehaviour, IInteractable
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     void CollectRpc(RpcParams rpcParams = default)
     {
+        if (!isFactory && collected) return;
+
+        if (!isFactory)
+            collected = true;
+
         ItemInstance grantedInstance = isFactory ? item.CreateInstance() : instance;
 
         ulong collectorId = rpcParams.Receive.SenderClientId;
         GrantItemRpc(grantedInstance, RpcTarget.Single(collectorId, RpcTargetUse.Temp));
+
+        if (!isFactory)
+            NetworkObject.Despawn();
     }
 
     [Rpc(SendTo.SpecifiedInParams)]
