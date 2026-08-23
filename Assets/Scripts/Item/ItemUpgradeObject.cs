@@ -27,9 +27,7 @@ public class ItemUpgradeObject : MonoBehaviour, IInteractable
             upgradePanelUI.interactable = true;
 
             UpdatePanelFromItem(itemInstance);
-
-            CursorManager.UnlockCursor();
-            GameManager.Instance.LocalPlayer.LockSensitivity();
+            UIPanelManager.Instance.PanelOpened(upgradePanelUI.gameObject, lockMovement: false, lockSensitivity: true);
 
             isOpen = true;
         }
@@ -43,8 +41,7 @@ public class ItemUpgradeObject : MonoBehaviour, IInteractable
             upgradePanelUI.blocksRaycasts = false;
             upgradePanelUI.interactable = false;
 
-            CursorManager.LockCursor();
-            GameManager.Instance.LocalPlayer.UnlockSensitivity();
+            UIPanelManager.Instance.PanelClosed(upgradePanelUI.gameObject);
 
             isOpen = false;
         }
@@ -52,7 +49,7 @@ public class ItemUpgradeObject : MonoBehaviour, IInteractable
 
     void FixedUpdate()
     {
-        if (GameManager.Instance.LocalPlayer == null) return;
+        if (GameManager.Instance.LocalPlayer == null || !isOpen) return;
         
         float dist = Vector3.Distance(GameManager.Instance.LocalPlayer.transform.position, transform.position);
         if (dist >= 5f) ClosePanel();

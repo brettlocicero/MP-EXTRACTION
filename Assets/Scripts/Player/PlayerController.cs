@@ -55,7 +55,8 @@ public class PlayerController : NetworkBehaviour
     Vector3 cameraDefaultPosition;
     float bobTimer;
     float currentTilt;
-    float cachedSensitivity = 0;
+    bool isSensLocked = false;
+    bool isMovementLocked = false;
 
     void Awake()
     {
@@ -63,11 +64,6 @@ public class PlayerController : NetworkBehaviour
 
         if (cameraTransform != null)
             cameraDefaultPosition = cameraTransform.localPosition;
-    }
-
-    void Start()
-    {
-        cachedSensitivity = mouseSensitivity;
     }
 
     public override void OnNetworkSpawn()
@@ -104,6 +100,9 @@ public class PlayerController : NetworkBehaviour
     {
         moveInput = InputManager.Actions.Player.Move.ReadValue<Vector2>();
         lookInput = InputManager.Actions.Player.Look.ReadValue<Vector2>();
+
+        if (isMovementLocked) moveInput = Vector2.zero;
+        if (isSensLocked) lookInput = Vector2.zero;
     }
 
     void HandleHeadBob()
@@ -121,6 +120,7 @@ public class PlayerController : NetworkBehaviour
 
             cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, targetPosition, Time.deltaTime * bobSmoothSpeed);
         }
+
         else
         {
             bobTimer = 0;
@@ -268,15 +268,22 @@ public class PlayerController : NetworkBehaviour
 
     public void LockSensitivity()
     {
-        if (mouseSensitivity > 0f)
-            cachedSensitivity = mouseSensitivity;
-
-        mouseSensitivity = 0f;
+        isSensLocked = true;
     }
 
     public void UnlockSensitivity()
     {
-        mouseSensitivity = cachedSensitivity;
+        isSensLocked = false;
+    }
+
+    public void LockMovement()
+    {
+        isMovementLocked = true;
+    }
+
+    public void UnlockMovement()
+    {
+        isMovementLocked = false;
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

@@ -211,8 +211,7 @@ public class InventoryUI : MonoBehaviour
             inventoryCanvasGroup.interactable = true;
             inventoryCanvasGroup.blocksRaycasts = true;
 
-            GameManager.Instance.LocalPlayer.LockSensitivity();
-            CursorManager.UnlockCursor();
+            UIPanelManager.Instance.PanelOpened(inventoryCanvasGroup.gameObject, lockMovement: false, lockSensitivity: true);
         }
 
         else
@@ -221,8 +220,7 @@ public class InventoryUI : MonoBehaviour
             inventoryCanvasGroup.interactable = false;
             inventoryCanvasGroup.blocksRaycasts = false;
 
-            GameManager.Instance.LocalPlayer.UnlockSensitivity();
-            CursorManager.LockCursor();
+            UIPanelManager.Instance.PanelClosed(inventoryCanvasGroup.gameObject);
         }
     }
 }
