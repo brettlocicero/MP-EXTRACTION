@@ -4,13 +4,16 @@ using UnityEngine.UI;
 
 public class ItemSlot : MonoBehaviour, IDropHandler
 {
-    public InventoryItemUI currentItem;
+    [SerializeField] bool isWeaponSlot = true;
+    public InventoryItemUI currentItem; 
 
     public void OnDrop(PointerEventData eventData)
     {
-        if (currentItem != null) return;
-
+        if (currentItem != null) 
+            return;
         if (!eventData.pointerDrag.TryGetComponent<InventoryItemUI>(out var droppedItem))
+            return;
+        if (droppedItem.Item.Data is not WeaponSO)
             return;
 
         if (InventoryManager.Instance.ContainsItem(droppedItem.Item))

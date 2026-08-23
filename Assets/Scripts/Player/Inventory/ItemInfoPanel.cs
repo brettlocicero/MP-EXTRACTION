@@ -2,6 +2,7 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class ItemInfoPanel : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class ItemInfoPanel : MonoBehaviour
     [SerializeField] TextMeshProUGUI descriptionText;
     [SerializeField] Canvas canvas;
     [SerializeField] Vector2 offset = new Vector2(16f, -16f);
+    [SerializeField] GameObject shardsParent;
+    [SerializeField] Image[] shards;
 
     RectTransform rectTransform;
     CanvasGroup canvasGroup;
@@ -36,6 +39,24 @@ public class ItemInfoPanel : MonoBehaviour
 
         itemNameText.text = item.Instance.customName;
         descriptionText.text = BuildDescriptionText(item);
+
+        // Build out shards if it's a weapon
+        if (item.Data is WeaponSO)
+        {
+            shardsParent.SetActive(true);
+
+            int i = 0;
+            foreach (SoulShardSO shard in item.Instance.soulShards)
+            {
+                shards[i].gameObject.SetActive(true);
+                i++;
+            }
+        }
+
+        else
+        {
+            shardsParent.SetActive(false);
+        }
     }
 
     // TODO: Update this function to account for the ItemInstance's stats, instead of the base data stats.
