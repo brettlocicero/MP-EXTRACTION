@@ -13,12 +13,16 @@ public class ItemUpgradeObject : MonoBehaviour, IInteractable
     void Awake()
     {
         itemNameRenameField.onEndEdit.AddListener(RenameItemEvent);
+        itemNameRenameField.onSelect.AddListener(OnFieldFocused);
+        itemNameRenameField.onDeselect.AddListener(OnFieldBlurred);
     }
 
     public void Interact()
     {
         itemInstance = GameManager.Instance.GetLocalPlayerItems().EquippedItem;
-        if (itemInstance == null) return;
+
+        if (itemInstance == null)
+            return;
 
         if (!isOpen)
         {
@@ -42,6 +46,7 @@ public class ItemUpgradeObject : MonoBehaviour, IInteractable
             upgradePanelUI.interactable = false;
 
             UIPanelManager.Instance.PanelClosed(upgradePanelUI.gameObject);
+            UIPanelManager.Instance.PanelClosed(itemNameRenameField.gameObject);
 
             isOpen = false;
         }
@@ -49,10 +54,13 @@ public class ItemUpgradeObject : MonoBehaviour, IInteractable
 
     void FixedUpdate()
     {
-        if (GameManager.Instance.LocalPlayer == null || !isOpen) return;
-        
+        if (GameManager.Instance.LocalPlayer == null || !isOpen)
+            return;
+
         float dist = Vector3.Distance(GameManager.Instance.LocalPlayer.transform.position, transform.position);
-        if (dist >= 5f) ClosePanel();
+
+        if (dist >= 5f)
+            ClosePanel();
     }
 
     public void UpdatePanelFromItem(ItemInstance itemInstance)
@@ -65,21 +73,35 @@ public class ItemUpgradeObject : MonoBehaviour, IInteractable
 
     string GetDisplayName(ItemInstance itemInstance)
     {
-        if (!string.IsNullOrWhiteSpace(itemInstance.customName)) return itemInstance.customName;
+        if (!string.IsNullOrWhiteSpace(itemInstance.customName))
+            return itemInstance.customName;
 
         return ItemDatabase.Instance.GetItem(itemInstance.baseItemId).itemName;
     }
 
     void RenameItemEvent(string newName)
     {
-        if (itemInstance == null) return;
+        if (itemInstance == null)
+            return;
 
         itemInstance.customName = newName;
         UpdatePanelFromItem(itemInstance);
     }
 
+    void OnFieldFocused(string text)
+    {
+        UIPanelManager.Instance.PanelOpened(itemNameRenameField.gameObject, lockMovement: true);
+    }
+
+    void OnFieldBlurred(string text)
+    {
+        UIPanelManager.Instance.PanelClosed(itemNameRenameField.gameObject);
+    }
+
     void OnDestroy()
     {
         itemNameRenameField.onEndEdit.RemoveListener(RenameItemEvent);
+        itemNameRenameField.onSelect.RemoveListener(OnFieldFocused);
+        itemNameRenameField.onDeselect.RemoveListener(OnFieldBlurred);
     }
 }

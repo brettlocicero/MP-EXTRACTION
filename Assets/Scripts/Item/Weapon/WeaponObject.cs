@@ -44,7 +44,7 @@ public class WeaponObject : ItemObject
     {
         attackTimer += Time.deltaTime;
 
-        if (inAttack || inventoryManager.IsInventoryOpen()) return;
+        if (inAttack || inventoryManager.IsInventoryOpen() || playerController.IsSensitivityLocked()) return;
 
         bool pressedAttack = InputManager.Actions.Player.Attack.WasPressedThisFrame();
         if (pressedAttack && attackTimer >= weapon.attackRate)

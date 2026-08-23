@@ -165,7 +165,7 @@ public class PlayerController : NetworkBehaviour
 
     void HandleJump(bool grounded)
     {
-        if (!grounded)
+        if (!grounded || isMovementLocked)
             return;
 
         if (InputManager.Actions.Player.Jump.WasPressedThisFrame())
@@ -284,6 +284,11 @@ public class PlayerController : NetworkBehaviour
     public void UnlockMovement()
     {
         isMovementLocked = false;
+    }
+
+    public bool IsSensitivityLocked()
+    {
+        return isSensLocked;
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
