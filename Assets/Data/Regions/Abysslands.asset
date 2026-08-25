@@ -13,12 +13,8 @@ MonoBehaviour:
   m_Name: Abysslands
   m_EditorClassIdentifier: Assembly-CSharp::RegionSO
   regionName: Abysslands
-  floorLength: 5
   regionLength: 10
-  startRoom: {fileID: 8618735367935135754, guid: fc6ed0b7c4d383f43904907a75ffb5b5, type: 3}
-  finalRoom: {fileID: 8618735367935135754, guid: 793c2194baef525428b97696cbe675ed, type: 3}
-  rooms:
-  - {fileID: 8618735367935135754, guid: fea366e6f1d5c5c40a21e345e15e911c, type: 3}
+  regionBase: {fileID: 4920668376728799186, guid: 813f05eba027f2b498eec3e6869006e4, type: 3}
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
   sunColor: {r: 0.46226418, g: 0.39030796, b: 0.39030796, a: 1}
   ambientSkyColor: {r: 0.40392157, g: 0.28235295, b: 0.28235295, a: 1}
