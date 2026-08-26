@@ -39,6 +39,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] AudioClip[] sprintFootstepSounds;
     [SerializeField] AudioClip jumpSound;
     [SerializeField] AudioClip landSound;
+    [SerializeField] float landSoundVelocityThreshold = -4f;
     [SerializeField] float footstepInterval = 0.45f;
     [SerializeField] float sprintFootstepInterval = 0.3f;
 
@@ -148,23 +149,22 @@ public class PlayerController : NetworkBehaviour
     void Move()
     {
         bool grounded = controller.isGrounded;
+        float fallVelocity = verticalVelocity;
 
         if (grounded && verticalVelocity < 0)
-        {
             verticalVelocity = -2f;
-        }
 
         float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
-
-        Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
-        controller.Move(move * currentSpeed * Time.deltaTime);
+        Vector3 horizontalMove = transform.right * moveInput.x + transform.forward * moveInput.y;
 
         HandleJump(grounded);
 
         verticalVelocity += gravity * Time.deltaTime;
-        controller.Move(Vector3.up * verticalVelocity * Time.deltaTime);
 
-        HandleGroundSounds(grounded);
+        Vector3 fullMove = horizontalMove * currentSpeed + Vector3.up * verticalVelocity;
+        controller.Move(fullMove * Time.deltaTime);
+
+        HandleGroundSounds(grounded, fallVelocity);
 
         modelAnimator.SetFloat("Movement", moveInput.magnitude, 0.1f, Time.deltaTime);
 
@@ -187,14 +187,14 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    void HandleGroundSounds(bool grounded)
+    void HandleGroundSounds(bool grounded, float fallVelocity)
     {
         // Landing
         if (!wasGrounded && grounded)
         {
             isJumping = false;
 
-            if (landSound)
+            if (landSound && fallVelocity < landSoundVelocityThreshold)
                 audioSource.PlayOneShot(landSound);
         }
 
@@ -209,6 +209,7 @@ public class PlayerController : NetworkBehaviour
                 footstepTimer = isSprinting ? sprintFootstepInterval : footstepInterval;
             }
         }
+
         else
         {
             footstepTimer = 0;
