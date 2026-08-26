@@ -40,11 +40,22 @@ public class WeaponObject : ItemObject
         HandleAttack();
     }
 
+    // List reasons why we cannot attack, and then invert the result - no reason to do it this way other than it makes the most sense to me.
+    bool CanAttack()
+    {
+        return !(
+            inAttack || 
+            inventoryManager.IsInventoryOpen() || 
+            playerController.IsSensitivityLocked() || 
+            playerController.IsSprinting()
+        );
+    }
+
     void HandleAttack()
     {
         attackTimer += Time.deltaTime;
 
-        if (inAttack || inventoryManager.IsInventoryOpen() || playerController.IsSensitivityLocked()) return;
+        if (!CanAttack()) return;
 
         bool pressedAttack = InputManager.Actions.Player.Attack.WasPressedThisFrame();
         if (pressedAttack && attackTimer >= weapon.attackRate)

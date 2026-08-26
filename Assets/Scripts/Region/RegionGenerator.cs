@@ -87,7 +87,7 @@ public class RegionGenerator : NetworkBehaviour
 
         SpawnRegionBaseRpc(regionIndex);
         PostGenerationRpc();
-        MoveAllPlayers();
+        // MoveAllPlayers();
     }
 
     public void GenerateNextFloor()
@@ -109,7 +109,7 @@ public class RegionGenerator : NetworkBehaviour
         currentFloorIndex.Value++;
 
         SpawnRegionBaseRpc(currentRegionIndex.Value);
-        MoveAllPlayers();
+        // MoveAllPlayers();
     }
 
     // --- Region base spawn/clear (local per-client, non-networked) ---

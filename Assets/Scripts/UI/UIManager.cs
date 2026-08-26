@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] Transform healthBar;
     [SerializeField] TextMeshProUGUI healthText;
     [SerializeField] TextMeshProUGUI soulsText;
+    [SerializeField] GameObject crosshair;
 
     [Header("Objects")]
     [SerializeField] TextMeshProUGUI playerNametagPrefab;
@@ -59,6 +60,8 @@ public class UIManager : MonoBehaviour
             pair.uiElement.gameObject.SetActive(true);
             pair.uiElement.position = screenPos;
         }
+
+        HandleCrosshairVisibility();
     }
 
     public void SpawnPlayerNameplate(PlayerState playerState)
@@ -108,5 +111,12 @@ public class UIManager : MonoBehaviour
     {
         healthBar.localScale = new Vector3((float)health / maxHealth, 1f, 1f);
         healthText.text = $"{health} / {maxHealth}";
+    }
+
+    void HandleCrosshairVisibility()
+    {
+        if (GameManager.Instance.LocalPlayer == null) return;
+        
+        crosshair.SetActive(!GameManager.Instance.LocalPlayer.IsSprinting());
     }
 }

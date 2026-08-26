@@ -16,6 +16,6 @@ MonoBehaviour:
   regionLength: 10
   regionBase: {fileID: 4920668376728799186, guid: 813f05eba027f2b498eec3e6869006e4, type: 3}
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
-  sunColor: {r: 0.46226418, g: 0.39030796, b: 0.39030796, a: 1}
-  ambientSkyColor: {r: 0.40392157, g: 0.28235295, b: 0.28235295, a: 1}
+  sunColor: {r: 0.39269945, g: 0.39215687, b: 0.4627451, a: 1}
+  ambientSkyColor: {r: 0.47792813, g: 0.48867318, b: 0.5660378, a: 1}
   fogColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}

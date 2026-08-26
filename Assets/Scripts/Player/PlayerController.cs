@@ -14,6 +14,7 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Movement")]
     [SerializeField] float moveSpeed = 5f;
+    [SerializeField] float sprintSpeed = 8f;
     [SerializeField] float gravity = -30f;
     [SerializeField] float jumpHeight = 1.5f;
 
@@ -35,9 +36,11 @@ public class PlayerController : NetworkBehaviour
     [Header("Audio")]
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip[] footstepSounds;
+    [SerializeField] AudioClip[] sprintFootstepSounds;
     [SerializeField] AudioClip jumpSound;
     [SerializeField] AudioClip landSound;
     [SerializeField] float footstepInterval = 0.45f;
+    [SerializeField] float sprintFootstepInterval = 0.3f;
 
     CharacterController controller;
 
@@ -51,6 +54,7 @@ public class PlayerController : NetworkBehaviour
 
     bool wasGrounded;
     bool isJumping;
+    bool isSprinting;
 
     Vector3 cameraDefaultPosition;
     float bobTimer;
@@ -101,6 +105,8 @@ public class PlayerController : NetworkBehaviour
         moveInput = InputManager.Actions.Player.Move.ReadValue<Vector2>();
         lookInput = InputManager.Actions.Player.Look.ReadValue<Vector2>();
 
+        isSprinting = InputManager.Actions.Player.Sprint.IsPressed() && !isMovementLocked && moveInput.y > 0.1f;
+
         if (isMovementLocked) moveInput = Vector2.zero;
         if (isSensLocked) lookInput = Vector2.zero;
     }
@@ -148,8 +154,10 @@ public class PlayerController : NetworkBehaviour
             verticalVelocity = -2f;
         }
 
+        float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
+
         Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        controller.Move(move * currentSpeed * Time.deltaTime);
 
         HandleJump(grounded);
 
@@ -198,7 +206,7 @@ public class PlayerController : NetworkBehaviour
             if (footstepTimer <= 0)
             {
                 PlayFootstep();
-                footstepTimer = footstepInterval;
+                footstepTimer = isSprinting ? sprintFootstepInterval : footstepInterval;
             }
         }
         else
@@ -209,10 +217,12 @@ public class PlayerController : NetworkBehaviour
 
     void PlayFootstep()
     {
-        if (footstepSounds.Length == 0)
+        AudioClip[] clips = isSprinting ? sprintFootstepSounds : footstepSounds;
+
+        if (clips.Length == 0)
             return;
 
-        AudioClip clip = footstepSounds[Random.Range(0, footstepSounds.Length)];
+        AudioClip clip = clips[Random.Range(0, clips.Length)];
 
         audioSource.PlayOneShot(clip);
     }
@@ -294,6 +304,11 @@ public class PlayerController : NetworkBehaviour
     public bool IsMovementLocked()
     {
         return isMovementLocked;
+    }
+
+    public bool IsSprinting()
+    {
+        return isSprinting;
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
