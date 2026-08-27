@@ -11,6 +11,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Transform[] playerSpawnPoints;
     [SerializeField] CanvasGroup menuUI;
     [SerializeField] CanvasGroup ingameUI;
+    [SerializeField] EnemySpawner enemySpawner;
 
     [Header("Region Database")]
     [SerializeField] RegionSO[] regions;
@@ -89,6 +90,7 @@ public class GameManager : NetworkBehaviour
         CurrentRegion.Value = regionIndex;
 
         GenerateRegionClientRpc(regionIndex, seed);
+        enemySpawner.StartSpawning();
     }
 
     [ClientRpc]

@@ -1,122 +1,114 @@
-using UnityEngine;
+using System.Collections.Generic;
 using Unity.Netcode;
-using System.Collections;
+using UnityEngine;
 
-public class EnemySpawner : NetworkBehaviour
+public class EnemySpawner : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] GameObject enemyPrefab;
+    [Header("Enemies")]
+    public GameObject[] enemyPrefabs;
 
-    [Header("Spawning")]
-    [SerializeField] float spawnRadius = 10f;
-    [SerializeField] int minSpawnPerTick = 1;
-    [SerializeField] int maxSpawnPerTick = 3;
-    [SerializeField] int maxAliveEnemies = 50;
+    [Header("Spawn Settings")]
+    public float spawnInterval = 3f;
+    public int maxConcurrentEnemies = 10;
 
-    [Header("Malevolence")]
-    [SerializeField] float malevolenceStepTime = 180f; // 3 minutes
-    [SerializeField] int maxMalevolence = 5;
+    [Header("Placement")]
+    public float minSpawnDistance = 50f;
+    public float maxSpawnDistance = 75f;
+    public float raycastHeight = 100f;
+    public float raycastDistance = 200f;
+    public LayerMask groundMask;
 
-    [Header("Spawn Rates (seconds between spawns)")]
-    [SerializeField] float[] spawnIntervals =
+    List<NetworkObject> aliveEnemies = new List<NetworkObject>();
+    float spawnTimer;
+    bool spawning;
+
+    void Update()
     {
-        5f,     // Malevolence 1
-        3.5f,   // Malevolence 2
-        2.5f,   // Malevolence 3
-        1.75f,  // Malevolence 4
-        1f      // Malevolence 5
-    };
-
-    public NetworkVariable<int> malevolence = new(1);
-    public NetworkVariable<float> malevolenceCountdown = new(180f);
-    int aliveEnemies = 0;
-
-    public void StartGameLoop()
-    {
-        if (!IsServer)
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
             return;
 
-        StartCoroutine(SpawnRoutine());
-        StartCoroutine(MalevolenceRoutine());
-    }
-
-    IEnumerator SpawnRoutine()
-    {
-        while (true)
-        {
-            int amountToSpawn = Random.Range(minSpawnPerTick, maxSpawnPerTick + 1);
-
-            for (int i = 0; i < amountToSpawn; i++)
-            {
-                if (aliveEnemies >= maxAliveEnemies)
-                    break;
-
-                SpawnSingleEnemy();
-            }
-
-            int index = Mathf.Clamp(malevolence.Value - 1, 0, spawnIntervals.Length - 1);
-            yield return new WaitForSeconds(spawnIntervals[index]);
-        }
-    }
-
-    IEnumerator MalevolenceRoutine()
-    {
-        while (malevolence.Value < maxMalevolence)
-        {
-            malevolenceCountdown.Value = malevolenceStepTime;
-
-            while (malevolenceCountdown.Value > 0f)
-            {
-                yield return new WaitForSeconds(1f);
-                malevolenceCountdown.Value--;
-            }
-
-            malevolence.Value++;
-
-            Debug.Log($"Malevolence increased to {malevolence.Value}");
-        }
-
-        // At max level, stop the timer.
-        malevolenceCountdown.Value = 0f;
-    }
-
-    void SpawnSingleEnemy()
-    {
-        if (!IsServer || aliveEnemies >= maxAliveEnemies)
+        if (!spawning)
             return;
 
-        Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
-        Vector3 spawnPosition = transform.position + new Vector3(randomCircle.x, 0.5f, randomCircle.y);
+        spawnTimer += Time.deltaTime;
 
-        GameObject enemy = Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
+        if (spawnTimer < spawnInterval)
+            return;
 
-        if (enemy.TryGetComponent(out NetworkObject netObj))
+        spawnTimer = 0f;
+        aliveEnemies.RemoveAll(enemy => enemy == null);
+
+        if (aliveEnemies.Count >= maxConcurrentEnemies)
+            return;
+
+        TrySpawnEnemy();
+    }
+
+    public void StartSpawning()
+    {
+        spawning = true;
+    }
+
+    void TrySpawnEnemy()
+    {
+        if (enemyPrefabs == null || enemyPrefabs.Length == 0)
+            return;
+
+        Transform playerTransform = GetRandomPlayerTransform();
+
+        if (playerTransform == null)
+            return;
+
+        if (!TryGetGroundPoint(playerTransform.position, out Vector3 spawnPos))
+            return;
+
+        GameObject enemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+        GameObject instance = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+
+        if (instance.TryGetComponent(out NetworkObject networkObject))
         {
-            netObj.Spawn();
-            aliveEnemies++;
-
-            if (enemy.TryGetComponent(out EnemyAI enemyAI))
-                enemyAI.OnEnemyKilled += OnEnemyKilled;
+            networkObject.Spawn();
+            aliveEnemies.Add(networkObject);
         }
-        
+
         else
         {
-            Destroy(enemy);
+            Debug.LogWarning("EnemySpawner: enemyPrefab has no NetworkObject component.");
         }
     }
 
-    void OnEnemyKilled(EnemyAI enemyAI)
+    Transform GetRandomPlayerTransform()
     {
-        if (!IsServer)
-            return;
+        List<Transform> players = new List<Transform>();
 
-        enemyAI.OnEnemyKilled -= OnEnemyKilled;
-        aliveEnemies = Mathf.Max(0, aliveEnemies - 1);
+        foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            if (client.PlayerObject != null)
+                players.Add(client.PlayerObject.transform);
+        }
+
+        if (players.Count == 0)
+            return null;
+
+        return players[Random.Range(0, players.Count)];
     }
 
-    void OnDrawGizmosSelected()
+    bool TryGetGroundPoint(Vector3 playerPos, out Vector3 groundPoint)
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, spawnRadius);
+        float angle = Random.Range(0f, Mathf.PI * 2f);
+        float distance = Random.Range(minSpawnDistance, maxSpawnDistance);
+
+        Vector3 offset = new Vector3(Mathf.Cos(angle) * distance, 0f, Mathf.Sin(angle) * distance);
+        Vector3 samplePos = playerPos + offset;
+        Vector3 rayOrigin = new Vector3(samplePos.x, playerPos.y + raycastHeight, samplePos.z);
+
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastDistance, groundMask))
+        {
+            groundPoint = hit.point;
+            return true;
+        }
+
+        groundPoint = Vector3.zero;
+        return false;
     }
 }
