@@ -18,6 +18,10 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] float gravity = -30f;
     [SerializeField] float jumpHeight = 1.5f;
 
+    [Header("Ground Stick")]
+    [SerializeField] float groundStickVelocity = 8f;
+    [SerializeField] float minAirborneTimeForLandSound = 0.15f;
+
     [Header("Look")]
     [SerializeField] float mouseSensitivity = 0.15f;
 
@@ -31,7 +35,6 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] float maxTilt = 5f;
     [SerializeField] float tiltSmoothSpeed = 8f;
     [SerializeField] CinemachineCamera cinemachineCam;
-
 
     [Header("Audio")]
     [SerializeField] AudioSource audioSource;
@@ -52,6 +55,7 @@ public class PlayerController : NetworkBehaviour
     float cameraPitch;
 
     float footstepTimer;
+    float airborneTimer;
 
     bool wasGrounded;
     bool isJumping;
@@ -151,8 +155,8 @@ public class PlayerController : NetworkBehaviour
         bool grounded = controller.isGrounded;
         float fallVelocity = verticalVelocity;
 
-        if (grounded && verticalVelocity < 0)
-            verticalVelocity = -2f;
+        if (grounded)
+            verticalVelocity = -groundStickVelocity;
 
         float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
         Vector3 horizontalMove = transform.right * moveInput.x + transform.forward * moveInput.y;
@@ -189,13 +193,18 @@ public class PlayerController : NetworkBehaviour
 
     void HandleGroundSounds(bool grounded, float fallVelocity)
     {
+        if (!grounded)
+            airborneTimer += Time.deltaTime;
+
         // Landing
         if (!wasGrounded && grounded)
         {
             isJumping = false;
 
-            if (landSound && fallVelocity < landSoundVelocityThreshold)
+            if (landSound && fallVelocity < landSoundVelocityThreshold && airborneTimer >= minAirborneTimeForLandSound)
                 audioSource.PlayOneShot(landSound);
+
+            airborneTimer = 0f;
         }
 
         // Footsteps
