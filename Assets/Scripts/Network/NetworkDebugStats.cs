@@ -31,49 +31,51 @@ public class NetworkDebugStats : MonoBehaviour
             return;
 
         builder.Clear();
-        
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening) return;
+        AppendFrameStats();
 
+        bool networkRunning = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+
+        if (networkRunning)
+            AppendNetworkStats(NetworkManager.Singleton);
+        else
+            builder.AppendLine("\nNetwork: Not Running");
+
+        debugText.text = builder.ToString();
+    }
+
+    void AppendFrameStats()
+    {
         float fps = 1f / Mathf.Max(Time.unscaledDeltaTime, 0.0001f);
         float frameMs = Time.unscaledDeltaTime * 1000f;
 
         builder.AppendLine($"FPS: {fps:F0}");
         builder.AppendLine($"Frame: {frameMs:F1} ms");
+    }
 
-        if (NetworkManager.Singleton == null)
-        {
-            builder.AppendLine();
-            builder.AppendLine("Network: Not Running");
-
-            debugText.text = builder.ToString();
-            return;
-        }
-
+    void AppendNetworkStats(NetworkManager networkManager)
+    {
         builder.AppendLine();
+        builder.AppendLine($"Transport: {networkManager.NetworkConfig.NetworkTransport.GetType().Name}");
+        builder.AppendLine($"Is Server: {networkManager.IsServer}");
+        builder.AppendLine($"Is Client: {networkManager.IsClient}");
+        builder.AppendLine($"Is Host: {networkManager.IsHost}");
+        builder.AppendLine($"Players: {networkManager.ConnectedClients.Count}");
 
-        builder.AppendLine($"Is Server: {NetworkManager.Singleton.IsServer}");
-        builder.AppendLine($"Is Client: {NetworkManager.Singleton.IsClient}");
-        builder.AppendLine($"Is Host: {NetworkManager.Singleton.IsHost}");
+        if (networkManager.SpawnManager != null)
+            builder.AppendLine($"Objects: {networkManager.SpawnManager.SpawnedObjects.Count}");
 
-        builder.AppendLine($"Players: {NetworkManager.Singleton.ConnectedClients.Count}");
-
-        if (NetworkManager.Singleton.SpawnManager != null)
-            builder.AppendLine($"Objects: {NetworkManager.Singleton.SpawnManager.SpawnedObjects.Count}");
-
-        if (NetworkManager.Singleton.NetworkTickSystem != null)
+        if (networkManager.NetworkTickSystem != null)
         {
-            builder.AppendLine($"Tick: {NetworkManager.Singleton.NetworkTickSystem.LocalTime.Tick}");
-            builder.AppendLine($"Tick Rate: {NetworkManager.Singleton.NetworkTickSystem.TickRate}");
+            builder.AppendLine($"Tick: {networkManager.NetworkTickSystem.LocalTime.Tick}");
+            builder.AppendLine($"Tick Rate: {networkManager.NetworkTickSystem.TickRate}");
         }
 
-        ulong rtt = NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.ServerClientId);
-        if (rtt > 0)
-            builder.AppendLine($"RTT: {rtt} ms");
-        else
-            builder.AppendLine("RTT: N/A");
+        AppendRttStats(networkManager);
+    }
 
+    void AppendRttStats(NetworkManager networkManager)
+    {
+        ulong rtt = networkManager.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.ServerClientId);
         builder.AppendLine($"RTT: {rtt} ms");
-
-        debugText.text = builder.ToString();
     }
 }

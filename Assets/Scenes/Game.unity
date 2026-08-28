@@ -10853,7 +10853,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkBootstrap
   networkManager: {fileID: 1797928643}
-  transportMode: 0
+  transportMode: 1
   createLobbyButton: {fileID: 1047048191}
   joinLobbyButton: {fileID: 1522530239}
   unityTransport: {fileID: 1797928645}

@@ -8,6 +8,7 @@ public class SteamLobbyManager : MonoBehaviour
 {
     [SerializeField] ConnectionManager connectionManager;
     Lobby currentLobby;
+    bool lobbyOperationInProgress;
 
     void Awake()
     {
@@ -26,59 +27,75 @@ public class SteamLobbyManager : MonoBehaviour
 
     public async void CreateLobby()
     {
-        if (!TryGetSteamTransport(out FacepunchTransport transport))
+        if (lobbyOperationInProgress)
         {
+            Debug.LogWarning("A Steam lobby operation is already in progress.");
             return;
         }
 
-        if (!SteamClient.IsValid)
-        {
-            Debug.LogError("Steam is not ready. Select Steam in NetworkBootstrap and make sure the Facepunch transport can initialize.");
-            return;
-        }
+        lobbyOperationInProgress = true;
 
-        if (NetworkManager.Singleton.IsListening)
-        {
-            Debug.LogWarning("Network is already running.");
-            return;
-        }
-
-        transport.targetSteamId = SteamClient.SteamId;
-
-        if (!connectionManager.StartHost())
-        {
-            Debug.LogError("Failed to start host.");
-            return;
-        }
-
-        Lobby? lobbyResult;
         try
         {
-            lobbyResult = await SteamMatchmaking.CreateLobbyAsync(4);
+            if (!TryGetSteamTransport(out FacepunchTransport transport))
+            {
+                return;
+            }
+
+            if (!SteamClient.IsValid)
+            {
+                Debug.LogError("Steam is not ready. Select Steam in NetworkBootstrap and make sure the Facepunch transport can initialize.");
+                return;
+            }
+
+            if (NetworkManager.Singleton.IsListening)
+            {
+                Debug.LogWarning("Network is already running.");
+                return;
+            }
+
+            Lobby? lobbyResult;
+            try
+            {
+                lobbyResult = await SteamMatchmaking.CreateLobbyAsync(4);
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogException(exception);
+                return;
+            }
+
+            if (!lobbyResult.HasValue)
+            {
+                Debug.LogError("Failed to create Steam lobby.");
+
+                return;
+            }
+
+            currentLobby = lobbyResult.Value;
+
+            currentLobby.SetData("HostId", SteamClient.SteamId.ToString());
+
+            // Steam and relay access are ready before NGO starts. New lobbies are
+            // private by default, so do not expose this one until the host is ready.
+            transport.targetSteamId = SteamClient.SteamId;
+            if (!connectionManager.StartHost())
+            {
+                Debug.LogError("Failed to start host.");
+                currentLobby.Leave();
+                currentLobby = default;
+                return;
+            }
+
+            currentLobby.SetPublic();
+            currentLobby.SetJoinable(true);
+            Debug.Log($"Created Steam Lobby: {currentLobby.Id}");
+            // SteamFriends.OpenGameInviteOverlay(currentLobby.Id);
         }
-        catch (System.Exception exception)
+        finally
         {
-            Debug.LogException(exception);
-            connectionManager.Stop();
-            return;
+            lobbyOperationInProgress = false;
         }
-
-        if (!lobbyResult.HasValue)
-        {
-            Debug.LogError("Failed to create Steam lobby.");
-
-            NetworkManager.Singleton.Shutdown();
-            return;
-        }
-
-        currentLobby = lobbyResult.Value;
-
-        currentLobby.SetPublic();
-        currentLobby.SetJoinable(true);
-        currentLobby.SetData("HostId", SteamClient.SteamId.ToString());
-
-        Debug.Log($"Created Steam Lobby: {currentLobby.Id}");
-        // SteamFriends.OpenGameInviteOverlay(currentLobby.Id);
     }
 
     async void OnGameLobbyJoinRequested(Lobby lobby, SteamId steamId)
@@ -95,66 +112,81 @@ public class SteamLobbyManager : MonoBehaviour
 
     public async System.Threading.Tasks.Task JoinLobby(SteamId lobbyId)
     {
-        if (!TryGetSteamTransport(out FacepunchTransport transport))
+        if (lobbyOperationInProgress)
         {
+            Debug.LogWarning("A Steam lobby operation is already in progress.");
             return;
         }
 
-        if (!SteamClient.IsValid)
-        {
-            Debug.LogError("Steam is not ready. Select Steam in NetworkBootstrap and make sure the Facepunch transport can initialize.");
-            return;
-        }
+        lobbyOperationInProgress = true;
 
-        if (NetworkManager.Singleton.IsListening)
-        {
-            connectionManager.Stop();
-        }
-
-        Lobby? lobbyResult;
         try
         {
-            lobbyResult = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
-        }
+            if (!TryGetSteamTransport(out FacepunchTransport transport))
+            {
+                return;
+            }
 
-        catch (System.Exception exception)
+            if (!SteamClient.IsValid)
+            {
+                Debug.LogError("Steam is not ready. Select Steam in NetworkBootstrap and make sure the Facepunch transport can initialize.");
+                return;
+            }
+
+            if (NetworkManager.Singleton.IsListening)
+            {
+                connectionManager.Stop();
+            }
+
+            Lobby? lobbyResult;
+            try
+            {
+                lobbyResult = await SteamMatchmaking.JoinLobbyAsync(lobbyId);
+            }
+
+            catch (System.Exception exception)
+            {
+                Debug.LogException(exception);
+                return;
+            }
+
+            if (!lobbyResult.HasValue)
+            {
+                Debug.LogError("Failed to join Steam lobby.");
+                return;
+            }
+
+            currentLobby = lobbyResult.Value;
+            string hostIdString = currentLobby.GetData("HostId");
+
+            if (string.IsNullOrEmpty(hostIdString))
+            {
+                Debug.LogError("Lobby has no HostId.");
+                return;
+            }
+
+            if (!ulong.TryParse(hostIdString, out ulong hostIdValue))
+            {
+                Debug.LogError("Lobby HostId is invalid.");
+                return;
+            }
+
+            SteamId hostId = hostIdValue;
+            transport.targetSteamId = hostId;
+            Debug.Log($"Connecting to host SteamID: {hostId}");
+
+            if (!connectionManager.StartClient())
+            {
+                Debug.LogError("Failed to start client.");
+                return;
+            }
+
+            Debug.Log($"Client started for lobby {currentLobby.Id}");
+        }
+        finally
         {
-            Debug.LogException(exception);
-            return;
+            lobbyOperationInProgress = false;
         }
-
-        if (!lobbyResult.HasValue)
-        {
-            Debug.LogError("Failed to join Steam lobby.");
-            return;
-        }
-
-        currentLobby = lobbyResult.Value;
-        string hostIdString = currentLobby.GetData("HostId");
-
-        if (string.IsNullOrEmpty(hostIdString))
-        {
-            Debug.LogError("Lobby has no HostId.");
-            return;
-        }
-
-        if (!ulong.TryParse(hostIdString, out ulong hostIdValue))
-        {
-            Debug.LogError("Lobby HostId is invalid.");
-            return;
-        }
-
-        SteamId hostId = hostIdValue;
-        transport.targetSteamId = hostId;
-        Debug.Log($"Connecting to host SteamID: {hostId}");
-
-        if (!connectionManager.StartClient())
-        {
-            Debug.LogError("Failed to start client.");
-            return;
-        }
-
-        Debug.Log($"Client started for lobby {currentLobby.Id}");
     }
 
     public void LeaveLobby()

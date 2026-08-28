@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.community.netcode.transport.facepunch": "file:com.community.netcode.transport.facepunch",
+    "com.community.netcode.transport.facepunch": "file:C:/Users/brett/OneDrive/Documents/Transports/com.community.netcode.transport.facepunch",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.assistant": "2.18.0-pre.2",
     "com.unity.ai.inference": "2.6.1",

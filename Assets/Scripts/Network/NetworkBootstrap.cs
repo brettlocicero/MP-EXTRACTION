@@ -1,5 +1,4 @@
 using Netcode.Transports.Facepunch;
-using Steamworks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -17,23 +16,11 @@ public class NetworkBootstrap : MonoBehaviour
     [Header("Transports")]
     [SerializeField] UnityTransport unityTransport;
     [SerializeField] FacepunchTransport steamTransport;
-    bool ownsSteamClient;
-
     void Awake()
     {
         if (ConfigureTransport() && transportMode == TransportMode.Steam)
         {
-            InitializeSteam();
-        }
-    }
-
-    void Update()
-    {
-        // Lobby callbacks must run before a host/client exists. Once Netcode starts,
-        // FacepunchTransport takes over callback processing in OnEarlyUpdate.
-        if (transportMode == TransportMode.Steam && SteamClient.IsValid && (networkManager == null || !networkManager.IsListening))
-        {
-            SteamClient.RunCallbacks();
+            steamTransport.EnsureSteamReady();
         }
     }
 
@@ -85,31 +72,11 @@ public class NetworkBootstrap : MonoBehaviour
         return false;
     }
 
-    void InitializeSteam()
-    {
-        if (SteamClient.IsValid)
-        {
-            return;
-        }
-
-        try
-        {
-            SteamClient.Init(steamTransport.SteamAppId, false);
-            ownsSteamClient = SteamClient.IsValid;
-            Debug.Log($"[NetworkBootstrap] Steam initialized for App ID {steamTransport.SteamAppId}.");
-        }
-
-        catch (System.Exception exception)
-        {
-            Debug.LogException(exception);
-        }
-    }
-
     void OnApplicationQuit()
     {
-        if (ownsSteamClient && SteamClient.IsValid)
+        if (transportMode == TransportMode.Steam && steamTransport != null)
         {
-            SteamClient.Shutdown();
+            steamTransport.ShutdownSteamClient();
         }
     }
 }
