@@ -1,9 +1,9 @@
 {
   "dependencies": {
     "com.community.netcode.transport.facepunch": {
-      "version": "file:C:/Users/brett/OneDrive/Documents/Transports/com.community.netcode.transport.facepunch",
+      "version": "file:com.community.netcode.transport.facepunch",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {
         "com.unity.netcode.gameobjects": "1.0.0-pre.4"
       }
