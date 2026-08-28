@@ -5208,9 +5208,7 @@ GameObject:
   - component: {fileID: 6543520786065324158}
   - component: {fileID: 5226406177700735976}
   - component: {fileID: 5873757049421561923}
-  - component: {fileID: 5252650133978640806}
   - component: {fileID: 505368242172742}
-  - component: {fileID: 1651220494305806305}
   - component: {fileID: 5357664450842835531}
   - component: {fileID: 978899710269421703}
   m_Layer: 6
@@ -5281,7 +5279,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LootItem
   ShowTopMostFoldoutHeaderGroup: 1
   item: {fileID: 11400000, guid: 1d092cb8a3e595e49987526c3608def6, type: 2}
-  destroyOnPickup: 1
+  isFactory: 0
 --- !u!65 &5873757049421561923
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5303,33 +5301,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &5252650133978640806
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4496441737786162500}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 1
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!114 &505368242172742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5366,9 +5337,9 @@ MonoBehaviour:
   SyncScaleX: 1
   SyncScaleY: 1
   SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
+  PositionThreshold: 0.1
+  RotAngleThreshold: 1
+  ScaleThreshold: 0
   UseQuaternionSynchronization: 0
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
@@ -5376,23 +5347,6 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &1651220494305806305
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4496441737786162500}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkRigidbody
-  ShowTopMostFoldoutHeaderGroup: 1
-  NetworkRigidbodyBaseExpanded: 0
-  UseRigidBodyForMotion: 0
-  AutoUpdateKinematicState: 1
-  AutoSetKinematicOnDespawn: 1
 --- !u!108 &5357664450842835531
 Light:
   m_ObjectHideFlags: 0
