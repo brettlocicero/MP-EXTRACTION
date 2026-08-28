@@ -1,5 +1,6 @@
 public enum AttackDirection
 {
     Left,
-    Right
+    Right,
+    Middle
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6363289417959605413}
   - component: {fileID: 3933001536855648357}
+  - component: {fileID: 1427909562562750553}
   - component: {fileID: 9090971796984886498}
   - component: {fileID: 9098521999391323552}
   - component: {fileID: 6387734543243932331}
@@ -30,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 353612584972487161}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 17.27757, y: -16.7, z: 8.19}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -64,6 +65,19 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &1427909562562750553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 353612584972487161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d08a3fe11d1467540bbb685c9e77eb29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerProjectile
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &9090971796984886498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -169,7 +183,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3

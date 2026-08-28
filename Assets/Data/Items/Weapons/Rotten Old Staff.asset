@@ -24,13 +24,13 @@ MonoBehaviour:
   attacks:
   - attackName: Spellblast
     animationClip: {fileID: 7400000, guid: 047890c279c2ce54daffed1cccc76bfd, type: 2}
-    direction: 0
-    projectile: {fileID: 6387734543243932331, guid: 8c40ca4ff441f9f4bafe4598b4eae673, type: 3}
+    direction: 2
+    projectile: {fileID: 1427909562562750553, guid: 8c40ca4ff441f9f4bafe4598b4eae673, type: 3}
     projectileForce: 50
     useHitbox: 0
     attackDelay: 0
     damage: 7
-    stunTime: 0.25
+    stunTime: 0.2
     camShakeIntensity: 2
     camShakeDuration: 0.25
   range: 30
@@ -38,3 +38,4 @@ MonoBehaviour:
   attackSound: {fileID: 8300000, guid: 7a9b1e5f1e9066849af4f18f8a51c9dc, type: 3}
   contactSound: {fileID: 8300000, guid: 99f7a4a19ce0272418d4cdbad0bb6bca, type: 3}
   attackSoundPitchRange: {x: 0.9, y: 1.1}
+  maxSlots: 5

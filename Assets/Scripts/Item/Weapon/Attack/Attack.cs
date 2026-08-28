@@ -6,7 +6,7 @@ public class Attack
     public string attackName;
     public AnimationClip animationClip;
     public AttackDirection direction;
-    public Rigidbody projectile;
+    public PlayerProjectile projectile;
     public float projectileForce = 50f;
     public bool useHitbox = true;
 

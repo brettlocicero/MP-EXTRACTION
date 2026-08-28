@@ -327,8 +327,9 @@ public class PlayerController : NetworkBehaviour
         WeaponSO weapon = ItemDatabase.Instance.GetItem(weaponId) as WeaponSO;
         Attack attack = weapon.attacks[attackIndex];
 
-        Rigidbody projObj = Instantiate(attack.projectile, spawnPos, spawnRot);
+        PlayerProjectile projObj = Instantiate(attack.projectile, spawnPos, spawnRot);
         projObj.GetComponent<NetworkObject>().Spawn();
-        projObj.AddForce(forwardVec * attack.projectileForce, ForceMode.Impulse);
+        projObj.GetComponent<Rigidbody>().AddForce(forwardVec * attack.projectileForce, ForceMode.Impulse);
+        projObj.Init(weapon.attacks[attackIndex]);
     }
 }

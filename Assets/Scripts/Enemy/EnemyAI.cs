@@ -38,9 +38,10 @@ public class EnemyAI : NetworkBehaviour
 
     [Header("Loot")]
     [SerializeField] LootDrop[] lootDrops;
-    [SerializeField] GameObject soulsPickupPrefab;
+    [SerializeField] GameObject soulsFlyVFXPrefab;
     [SerializeField] int soulsDropAmount = 10;
 
+    ulong lastAttackerId;
     float nextTargetUpdateTime;
 
     bool isStunned = false;
@@ -207,7 +208,7 @@ public class EnemyAI : NetworkBehaviour
     {
         if (IsServer)
         {
-            ModifyHealth(damage, stunTime, attackDirection);
+            ModifyHealth(damage, stunTime, attackDirection, NetworkManager.Singleton.LocalClientId);
         }
 
         else
@@ -217,15 +218,16 @@ public class EnemyAI : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    void TakeDamageServerRpc(float damage, float stunTime, AttackDirection attackDirection)
+    void TakeDamageServerRpc(float damage, float stunTime, AttackDirection attackDirection, RpcParams rpcParams = default)
     {
-        ModifyHealth(damage, stunTime, attackDirection);
+        ModifyHealth(damage, stunTime, attackDirection, rpcParams.Receive.SenderClientId);
     }
 
-    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection)
+    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, ulong attackerId)
     {
         if (!IsServer || isDead) return;
 
+        lastAttackerId = attackerId;
         currentHealth.Value -= damage;
 
         if (currentHealth.Value <= 0)
@@ -275,7 +277,7 @@ public class EnemyAI : NetworkBehaviour
                 animator.SetTrigger("HitRight");
                 break;
             default:
-                animator.SetTrigger("HitLeft");
+                animator.SetTrigger("SmallHit");
                 break;
         }
     }
@@ -319,18 +321,30 @@ public class EnemyAI : NetworkBehaviour
     void Die()
     {
         OnEnemyKilled?.Invoke(this);
-        SpawnSoulsDrop();
+        AwardSouls();
         SpawnLootDrops();
         GetComponent<NetworkObject>().Despawn();
     }
 
-    void SpawnSoulsDrop()
+    void AwardSouls()
     {
-        if (!IsServer || soulsPickupPrefab == null) return;
+        if (!IsServer) return;
 
-        GameObject drop = Instantiate(soulsPickupPrefab, transform.position, Quaternion.identity);
-        drop.GetComponent<SoulsPickup>().Init(soulsDropAmount);
-        drop.GetComponent<NetworkObject>().Spawn();
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(lastAttackerId, out NetworkClient client)) return;
+
+        if (!client.PlayerObject.TryGetComponent<PlayerCurrency>(out PlayerCurrency currency)) return;
+
+        currency.AddSouls(soulsDropAmount);
+        SpawnSoulsFXRpc(lastAttackerId);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void SpawnSoulsFXRpc(ulong killerClientId)
+    {
+        if (soulsFlyVFXPrefab == null) return;
+
+        GameObject fx = Instantiate(soulsFlyVFXPrefab, transform.position, Quaternion.identity);
+        fx.GetComponent<SoulsFlyVFX>().SetTarget(killerClientId);
     }
 
     void SpawnLootDrops()
