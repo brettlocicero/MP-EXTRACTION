@@ -131,8 +131,13 @@ namespace Netcode.Transports.Facepunch
 
         public override unsafe ulong GetCurrentRtt(ulong clientId)
         {
-            if (clientId == ServerClientId && connectionManager != null)
-                return (ulong)connectionManager.Connection.QuickStatus().Ping;
+            if (clientId == ServerClientId)
+            {
+                if (connectionManager != null)
+                    return (ulong)connectionManager.Connection.QuickStatus().Ping;
+
+                return 0;
+            }
 
             if (connectedClients.TryGetValue(clientId, out Client client))
                 return (ulong)client.connection.QuickStatus().Ping;
