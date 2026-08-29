@@ -7,6 +7,7 @@ public class PlayerController : NetworkBehaviour
 {
     [Header("References")]
     [SerializeField] Transform cameraTransform;
+    [SerializeField] Transform inventoryCameraTransform;
     public Camera camera;
     [SerializeField] Transform clientObjects;
     [SerializeField] GameObject serverObjects;
@@ -81,6 +82,7 @@ public class PlayerController : NetworkBehaviour
         {
             controller.enabled = false;
             clientObjects.gameObject.SetActive(false);
+            inventoryCameraTransform.gameObject.SetActive(false);
             return;
         }
 
@@ -331,5 +333,10 @@ public class PlayerController : NetworkBehaviour
         projObj.GetComponent<NetworkObject>().Spawn();
         projObj.GetComponent<Rigidbody>().AddForce(forwardVec * attack.projectileForce, ForceMode.Impulse);
         projObj.Init(weapon.attacks[attackIndex]);
+    }
+
+    public void SetInventoryCameraActive(bool flag)
+    {
+        inventoryCameraTransform.gameObject.SetActive(flag);
     }
 }

@@ -777,6 +777,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   cameraTransform: {fileID: 6455289134873021228}
+  inventoryCameraTransform: {fileID: 2702077606120933827}
   camera: {fileID: 5506608243254013408}
   clientObjects: {fileID: 8779248325663616454}
   serverObjects: {fileID: 9188568095491335725}
@@ -785,6 +786,8 @@ MonoBehaviour:
   sprintSpeed: 14
   gravity: -20
   jumpHeight: 1.5
+  groundStickVelocity: 8
+  minAirborneTimeForLandSound: 0.15
   mouseSensitivity: 0.15
   bobFrequency: 15
   bobAmount: 0.1
@@ -818,6 +821,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: f26cf9ded47cf0140957490a16f85acc, type: 3}
   jumpSound: {fileID: 8300000, guid: 665f92bb69e46a94a8caf3717dbb0d5e, type: 3}
   landSound: {fileID: 8300000, guid: 942019cf9ecd5854ebeb343b12b7f779, type: 3}
+  landSoundVelocityThreshold: -4
   footstepInterval: 0.4
   sprintFootstepInterval: 0.32
 --- !u!114 &7819502825134977877
@@ -1125,7 +1129,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2702077606120933827
 Transform:
   m_ObjectHideFlags: 0

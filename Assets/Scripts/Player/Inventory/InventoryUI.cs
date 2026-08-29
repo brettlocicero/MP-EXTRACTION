@@ -204,7 +204,8 @@ public class InventoryUI : MonoBehaviour
     public void ToggleInventory() 
     {
         inventoryOpen = !inventoryOpen;
-        
+        GameManager.Instance.LocalPlayer.SetInventoryCameraActive(inventoryOpen);
+
         if (inventoryOpen)
         {
             inventoryCanvasGroup.alpha = 1f;
