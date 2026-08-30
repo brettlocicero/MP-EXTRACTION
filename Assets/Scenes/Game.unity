@@ -1879,7 +1879,7 @@ MonoBehaviour:
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
+  SynchronizeTransform: 0
   <InScenePlaced>k__BackingField: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
@@ -10853,7 +10853,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkBootstrap
   networkManager: {fileID: 1797928643}
-  transportMode: 1
+  transportMode: 0
   createLobbyButton: {fileID: 1047048191}
   joinLobbyButton: {fileID: 1522530239}
   unityTransport: {fileID: 1797928645}

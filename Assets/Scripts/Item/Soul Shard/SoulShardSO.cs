@@ -1,7 +1,23 @@
+using System;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SoulShardSO", menuName = "Scriptable Objects/Items/SoulShardSO")]
-public class SoulShardSO : ItemSO
+public abstract class SoulShardSO : ItemSO
 {
-    
+    [Header("Shard Settings")]
+    [SerializeField] WeaponEvent weaponEvent;
+
+    public void Trigger(WeaponEvent weaponEvent, WeaponContext weaponContext)
+    {
+        if (this.weaponEvent.Equals(weaponEvent))
+        {
+            ApplyEffect(weaponContext);
+
+            Debug.Log("Triggering effect");
+        }
+    }
+
+    protected virtual void ApplyEffect(WeaponContext weaponContext)
+    {
+        throw new NotImplementedException();
+    }
 }

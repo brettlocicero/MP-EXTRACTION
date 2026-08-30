@@ -1908,6 +1908,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 526d5f6ff0a83544280cad42f6604cb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerItems
+  testSoulShard: {fileID: 11400000, guid: 971af0c323f218d4c950d3ef5419f703, type: 2}
 --- !u!1 &7650064888166965320
 GameObject:
   m_ObjectHideFlags: 0

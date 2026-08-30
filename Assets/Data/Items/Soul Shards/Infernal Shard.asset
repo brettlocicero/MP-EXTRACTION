@@ -9,11 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b943ce64f44933d4690039ff9e638b42, type: 3}
+  m_Script: {fileID: 11500000, guid: 7c85a80986c5dae40b051962bcc72bde, type: 3}
   m_Name: Infernal Shard
-  m_EditorClassIdentifier: Assembly-CSharp::SoulShardSO
+  m_EditorClassIdentifier: Assembly-CSharp::InfernalShard
   itemName: Infernal Shard
   id: 2
-  description: I will ignite attacked enemies for 3 seconds.
+  description: Ignite hit enemies with Burn 3.
   itemSize: {x: 1, y: 1}
   icon: {fileID: 21300000, guid: c47f997ba404ef945a7802280fd2c0b0, type: 3}
+  weaponEvent: 2
+  burnDamage: 3
+  ticks: 3

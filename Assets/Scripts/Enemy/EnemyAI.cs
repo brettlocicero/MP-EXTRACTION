@@ -238,8 +238,11 @@ public class EnemyAI : NetworkBehaviour
             return;
         }
 
-        PlayHitAnimationRpc(attackDirection);
-        TriggerStun(stunTime);
+        if (stunTime > 0f)
+        {
+            PlayHitAnimationRpc(attackDirection);
+            TriggerStun(stunTime);            
+        }
     }
 
     void TriggerStun(float customStunDuration)
