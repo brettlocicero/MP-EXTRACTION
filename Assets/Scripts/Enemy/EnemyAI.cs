@@ -241,7 +241,7 @@ public class EnemyAI : NetworkBehaviour
         if (stunTime > 0f)
         {
             PlayHitAnimationRpc(attackDirection);
-            TriggerStun(stunTime);            
+            TriggerStun(stunTime);
         }
     }
 

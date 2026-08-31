@@ -49,6 +49,7 @@ public class ItemInfoPanel : MonoBehaviour
             foreach (SoulShardSO shard in item.Instance.soulShards)
             {
                 shards[i].gameObject.SetActive(true);
+                shards[i].sprite = shard.icon;
                 i++;
             }
         }

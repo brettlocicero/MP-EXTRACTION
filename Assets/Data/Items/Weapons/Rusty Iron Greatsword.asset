@@ -24,7 +24,10 @@ MonoBehaviour:
   attacks:
   - attackName: Left Swing
     animationClip: {fileID: 7400000, guid: 30a02ab8a68cd294695e64059bfde137, type: 2}
-    direction: 0
+    direction: 1
+    projectile: {fileID: 0}
+    projectileForce: 50
+    useHitbox: 1
     attackDelay: 0.39
     damage: 10
     stunTime: 1
@@ -32,7 +35,10 @@ MonoBehaviour:
     camShakeDuration: 0.25
   - attackName: Right Swing
     animationClip: {fileID: 7400000, guid: 7cf44fb0814eb09419a70557fa07f9fc, type: 2}
-    direction: 1
+    direction: 2
+    projectile: {fileID: 0}
+    projectileForce: 50
+    useHitbox: 1
     attackDelay: 0.39
     damage: 10
     stunTime: 1
@@ -43,3 +49,4 @@ MonoBehaviour:
   attackSound: {fileID: 8300000, guid: 37bd4299f0adae64fb439ef3915587fb, type: 3}
   contactSound: {fileID: 8300000, guid: 99f7a4a19ce0272418d4cdbad0bb6bca, type: 3}
   attackSoundPitchRange: {x: 0.7, y: 0.8}
+  maxSlots: 5
