@@ -129,8 +129,8 @@ public class WeaponObject : ItemObject
             {
                 if (enemyCollider.TryGetComponent(out EnemyAI enemy)) 
                 {
-                    enemy.TakeDamage(attack.damage, attack.stunTime, attack.direction);
-                    hitEnemies.Add(enemy);
+                    Vector3 hitPoint = enemyCollider.ClosestPoint(hitSpot.position);
+                    enemy.TakeDamage(attack.damage, attack.stunTime, attack.direction, hitPoint);
                 }
             }
 

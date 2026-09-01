@@ -12,6 +12,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI healthText;
     [SerializeField] TextMeshProUGUI soulsText;
     [SerializeField] GameObject crosshair;
+    
+    [Header("Damage Numbers")]
+    [SerializeField] DamageNumberUI damageNumberPrefab;
+    [SerializeField] float damageNumberJiggle = 20f;
 
     [Header("Objects")]
     [SerializeField] TextMeshProUGUI playerNametagPrefab;
@@ -118,5 +122,22 @@ public class UIManager : MonoBehaviour
         if (GameManager.Instance.LocalPlayer == null) return;
         
         crosshair.SetActive(!GameManager.Instance.LocalPlayer.IsSprinting());
+    }
+    
+    public void DisplayDamageNumber(Vector3 worldPosition, float damage)
+    {
+        if (!GameManager.Instance.LocalPlayer)
+            return;
+
+        Vector3 screenPos = GameManager.Instance.LocalPlayer.camera.WorldToScreenPoint(worldPosition);
+
+        if (screenPos.z < 0)
+            return;
+
+        screenPos += (Vector3)(Random.insideUnitCircle * damageNumberJiggle);
+
+        DamageNumberUI damageNumber = Instantiate(damageNumberPrefab, instancedUIRoot);
+        damageNumber.transform.position = screenPos;
+        damageNumber.Display(damage);
     }
 }

@@ -204,31 +204,33 @@ public class EnemyAI : NetworkBehaviour
         animator.SetTrigger("Attack");
     }
 
-    public void TakeDamage(float damage, float stunTime, AttackDirection attackDirection)
+    public void TakeDamage(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint = default)
     {
         if (IsServer)
         {
-            ModifyHealth(damage, stunTime, attackDirection, NetworkManager.Singleton.LocalClientId);
+            ModifyHealth(damage, stunTime, attackDirection, hitPoint, NetworkManager.Singleton.LocalClientId);
         }
 
         else
         {
-            TakeDamageServerRpc(damage, stunTime, attackDirection);
+            TakeDamageServerRpc(damage, stunTime, attackDirection, hitPoint);
         }
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    void TakeDamageServerRpc(float damage, float stunTime, AttackDirection attackDirection, RpcParams rpcParams = default)
+    void TakeDamageServerRpc(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint, RpcParams rpcParams = default)
     {
-        ModifyHealth(damage, stunTime, attackDirection, rpcParams.Receive.SenderClientId);
+        ModifyHealth(damage, stunTime, attackDirection, hitPoint, rpcParams.Receive.SenderClientId);
     }
 
-    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, ulong attackerId)
+    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint, ulong attackerId)
     {
         if (!IsServer || isDead) return;
 
         lastAttackerId = attackerId;
         currentHealth.Value -= damage;
+
+        ShowDamageNumberRpc(damage, hitPoint, RpcTarget.Single(attackerId, RpcTargetUse.Temp));
 
         if (currentHealth.Value <= 0)
         {
@@ -244,7 +246,13 @@ public class EnemyAI : NetworkBehaviour
             TriggerStun(stunTime);
         }
     }
-
+    
+    [Rpc(SendTo.SpecifiedInParams)]
+    void ShowDamageNumberRpc(float damage, Vector3 position, RpcParams rpcParams)
+    {
+        UIManager.Instance.DisplayDamageNumber(position, damage);
+    }
+    
     void TriggerStun(float customStunDuration)
     {
         if (!IsServer) return;

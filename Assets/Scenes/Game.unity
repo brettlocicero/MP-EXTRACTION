@@ -1825,7 +1825,6 @@ Transform:
   - {fileID: 1420185317}
   - {fileID: 431799054}
   - {fileID: 1466165046}
-  - {fileID: 1225167887}
   - {fileID: 45486270}
   - {fileID: 1490947789}
   - {fileID: 143647280}
@@ -7971,12 +7970,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1225167886}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 6.08186, y: 1, z: -1.4126}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 335457474}
+  m_Father: {fileID: 1490947789}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1225167888
 MonoBehaviour:
@@ -9351,6 +9350,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 202197580}
+  - {fileID: 1225167887}
   m_Father: {fileID: 335457474}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1490947790
@@ -9370,6 +9370,8 @@ MonoBehaviour:
   healthText: {fileID: 1616472855}
   soulsText: {fileID: 1814185688}
   crosshair: {fileID: 1207399072}
+  damageNumberPrefab: {fileID: 5538497247143937195, guid: 8255f51b1d7bc4ec897381c646299925, type: 3}
+  damageNumberJiggle: 20
   playerNametagPrefab: {fileID: 5287716156717895435, guid: 1b93d3a1cae301b499ffa146a639e8b9, type: 3}
 --- !u!1 &1522530237
 GameObject:

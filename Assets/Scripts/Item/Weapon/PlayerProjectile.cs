@@ -17,8 +17,9 @@ public class PlayerProjectile : NetworkBehaviour
         if (IsServer && !hasHit && other.CompareTag("Enemy") && other.TryGetComponent(out EnemyAI enemy))
         {
             hasHit = true;
-            enemy.TakeDamage(attack.damage, attack.stunTime, attack.direction);
+            Vector3 hitPoint = other.ClosestPoint(transform.position);
+            enemy.TakeDamage(attack.damage, attack.stunTime, attack.direction, hitPoint);
             NetworkObject.Despawn();
-        }
+        }    
     }
 }
