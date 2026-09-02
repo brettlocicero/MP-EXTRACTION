@@ -124,20 +124,18 @@ public class UIManager : MonoBehaviour
         crosshair.SetActive(!GameManager.Instance.LocalPlayer.IsSprinting());
     }
     
-    public void DisplayDamageNumber(Vector3 worldPosition, float damage)
+    public void DisplayDamageNumber(Transform target, Vector3 hitPoint, float damage)
     {
         if (!GameManager.Instance.LocalPlayer)
             return;
 
-        Vector3 screenPos = GameManager.Instance.LocalPlayer.camera.WorldToScreenPoint(worldPosition);
+        Camera cam = GameManager.Instance.LocalPlayer.camera;
+        Vector3 screenPos = cam.WorldToScreenPoint(hitPoint);
 
         if (screenPos.z < 0)
             return;
 
-        screenPos += (Vector3)(Random.insideUnitCircle * damageNumberJiggle);
-
         DamageNumberUI damageNumber = Instantiate(damageNumberPrefab, instancedUIRoot);
-        damageNumber.transform.position = screenPos;
-        damageNumber.Display(damage);
+        damageNumber.Display(damage, target, cam, hitPoint);
     }
 }

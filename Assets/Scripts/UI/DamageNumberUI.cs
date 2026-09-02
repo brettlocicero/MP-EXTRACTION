@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class DamageNumberUI : MonoBehaviour
 {
+    [SerializeField] CanvasGroup canvasGroup;
     [SerializeField] TextMeshProUGUI damageText;
     [SerializeField] float lifetime = 0.8f;
     [SerializeField] float riseDistance = 40f;
@@ -20,8 +21,21 @@ public class DamageNumberUI : MonoBehaviour
     [SerializeField] float bigHitMaxScale = 1.8f;
     [SerializeField] Color bigHitColor = Color.yellow;
 
-    public void Display(float damage)
+    Transform followTarget;
+    Camera followCamera;
+    Vector3 screenOffset;
+    Vector3 localHitOffset;
+    Vector3 lastKnownWorldPos;
+
+    public void Display(float damage, Transform target, Camera viewCamera, Vector3 hitPoint)
     {
+        followTarget = target;
+        followCamera = viewCamera;
+        lastKnownWorldPos = hitPoint;
+
+        if (followTarget != null)
+            localHitOffset = followTarget.InverseTransformPoint(hitPoint);
+
         damageText.text = Mathf.RoundToInt(damage).ToString();
 
         Color startColor = damageText.color;
@@ -31,21 +45,30 @@ public class DamageNumberUI : MonoBehaviour
         float scaleMultiplier = damage >= bigHitDamageThreshold ? bigHitMaxScale : punchScale;
 
         transform.localScale = Vector3.zero;
+        screenOffset = Vector3.zero;
 
-        Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + new Vector3(Random.Range(-horizontalDrift, horizontalDrift), riseDistance, 0f);
+        Vector3 driftTarget = new Vector3(Random.Range(-horizontalDrift, horizontalDrift), riseDistance, 0f);
 
         Sequence sequence = DOTween.Sequence();
 
-        // Punch in, then settle to a resting scale
         sequence.Append(transform.DOScale(scaleMultiplier, punchDuration).SetEase(Ease.OutBack));
         sequence.Append(transform.DOScale(settleScale, punchDuration * 0.6f).SetEase(Ease.InOutSine));
 
-        // Rise runs across the whole lifetime, independent of the scale punch
-        sequence.Join(transform.DOMove(endPosition, lifetime).SetEase(Ease.OutCubic));
+        sequence.Insert(0f, DOTween.To(() => screenOffset, x => screenOffset = x, driftTarget, lifetime).SetEase(Ease.OutCubic));
 
         sequence.Insert(fadeStartDelay, damageText.DOFade(0f, lifetime - fadeStartDelay));
 
         sequence.OnComplete(() => Destroy(gameObject));
+    }
+
+    void LateUpdate()
+    {
+        if (followTarget != null)
+            lastKnownWorldPos = followTarget.TransformPoint(localHitOffset);
+
+        Vector3 screenPos = followCamera.WorldToScreenPoint(lastKnownWorldPos);
+
+        canvasGroup.alpha = screenPos.z >= 0 ? 1f : 0f;
+        transform.position = screenPos + screenOffset;
     }
 }

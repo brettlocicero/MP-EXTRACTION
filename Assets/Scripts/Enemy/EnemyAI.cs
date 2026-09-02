@@ -248,9 +248,9 @@ public class EnemyAI : NetworkBehaviour
     }
     
     [Rpc(SendTo.SpecifiedInParams)]
-    void ShowDamageNumberRpc(float damage, Vector3 position, RpcParams rpcParams)
+    void ShowDamageNumberRpc(float damage, Vector3 hitPoint, RpcParams rpcParams)
     {
-        UIManager.Instance.DisplayDamageNumber(position, damage);
+        UIManager.Instance.DisplayDamageNumber(transform, hitPoint, damage);
     }
     
     void TriggerStun(float customStunDuration)

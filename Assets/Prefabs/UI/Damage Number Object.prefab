@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3533393920891763922}
   - component: {fileID: 5538497247143937195}
+  - component: {fileID: 2227430831520864034}
   m_Layer: 5
   m_Name: Damage Number Object
   m_TagString: Untagged
@@ -49,10 +50,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9b251270cab24a6da18ed450e79a5c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DamageNumberUI
+  canvasGroup: {fileID: 2227430831520864034}
   damageText: {fileID: 3056745156649622631}
   lifetime: 1
   riseDistance: 40
   fadeStartDelay: 0.3
+  punchScale: 1.4
+  punchDuration: 0.15
+  settleScale: 1
+  horizontalDrift: 15
+  bigHitDamageThreshold: 40
+  bigHitMaxScale: 1.8
+  bigHitColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+--- !u!225 &2227430831520864034
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1267732890305603513}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &1519695817327056023
 GameObject:
   m_ObjectHideFlags: 0
@@ -168,7 +189,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
-  m_ActiveFontFeatures: 6e72656b
+  m_ActiveFontFeatures: 6e72656bu
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
