@@ -206,6 +206,9 @@ public class EnemyAI : NetworkBehaviour
 
     public void TakeDamage(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint = default)
     {
+        if (hitPoint.Equals(Vector3.zero))
+            hitPoint = transform.position;
+
         if (IsServer)
         {
             ModifyHealth(damage, stunTime, attackDirection, hitPoint, NetworkManager.Singleton.LocalClientId);

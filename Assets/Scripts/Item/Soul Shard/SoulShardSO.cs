@@ -11,7 +11,6 @@ public abstract class SoulShardSO : ItemSO
         if (this.weaponEvent.Equals(weaponEvent))
         {
             ApplyEffect(weaponContext);
-
             Debug.Log("Triggering effect");
         }
     }

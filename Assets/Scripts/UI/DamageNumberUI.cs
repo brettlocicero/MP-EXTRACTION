@@ -26,9 +26,13 @@ public class DamageNumberUI : MonoBehaviour
     Vector3 screenOffset;
     Vector3 localHitOffset;
     Vector3 lastKnownWorldPos;
+    Vector3 jiggle = Vector3.zero;
 
     public void Display(float damage, Transform target, Camera viewCamera, Vector3 hitPoint)
     {
+        // 45 pixel jiggle
+        jiggle = new Vector3(Random.Range(-25, 25), Random.Range(-25, 25), 0f);
+
         followTarget = target;
         followCamera = viewCamera;
         lastKnownWorldPos = hitPoint;
@@ -69,6 +73,6 @@ public class DamageNumberUI : MonoBehaviour
         Vector3 screenPos = followCamera.WorldToScreenPoint(lastKnownWorldPos);
 
         canvasGroup.alpha = screenPos.z >= 0 ? 1f : 0f;
-        transform.position = screenPos + screenOffset;
+        transform.position = screenPos + screenOffset + jiggle;
     }
 }

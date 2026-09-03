@@ -131,6 +131,7 @@ public class WeaponObject : ItemObject
                 {
                     Vector3 hitPoint = enemyCollider.ClosestPoint(hitSpot.position);
                     enemy.TakeDamage(attack.damage, attack.stunTime, attack.direction, hitPoint);
+                    hitEnemies.Add(enemy);
                 }
             }
 
