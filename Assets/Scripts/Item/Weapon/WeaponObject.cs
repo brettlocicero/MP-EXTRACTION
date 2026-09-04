@@ -58,6 +58,7 @@ public class WeaponObject : ItemObject
     {
         WeaponContext weaponContext = new WeaponContext
         {
+            SourceClientId = NetworkManager.Singleton.LocalClientId,
             Damage = attack.damage,
             StunTime = attack.stunTime
         };

@@ -5,6 +5,7 @@ public abstract class SoulShardSO : ItemSO
 {
     [Header("Shard Settings")]
     [SerializeField] WeaponEvent weaponEvent;
+    [SerializeField] protected GameObject vfx;
 
     public void Trigger(WeaponEvent weaponEvent, WeaponContext weaponContext)
     {

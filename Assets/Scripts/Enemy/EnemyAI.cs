@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody))]
 public class EnemyAI : NetworkBehaviour
@@ -40,6 +41,9 @@ public class EnemyAI : NetworkBehaviour
     [SerializeField] LootDrop[] lootDrops;
     [SerializeField] GameObject soulsFlyVFXPrefab;
     [SerializeField] int soulsDropAmount = 10;
+
+    readonly List<Debuff> activeDebuffs = new();
+    readonly List<GameObject> debuffVFX = new();
 
     ulong lastAttackerId;
     float nextTargetUpdateTime;
@@ -81,14 +85,41 @@ public class EnemyAI : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         currentHealth.OnValueChanged -= OnHealthChanged;
+        activeDebuffs.Clear();
+    }
+
+    public void AddDebuff(Debuff debuff)
+    {
+        if (!IsServer || isDead || debuff == null) return;
+
+        activeDebuffs.Add(debuff);
+    }
+
+    void UpdateDebuffs(float deltaTime)
+    {
+        for (int i = activeDebuffs.Count - 1; i >= 0; i--)
+        {
+            Debuff debuff = activeDebuffs[i];
+            debuff.Tick(this, deltaTime);
+
+            if (isDead)
+                return;
+
+            if (debuff.Expired && i < activeDebuffs.Count && activeDebuffs[i] == debuff)
+            {
+                debuff.Destroy();
+                activeDebuffs.RemoveAt(i);
+            }
+        }
     }
 
     void Update()
     {
         if (!IsServer) return;
 
-        if (isStunned || isAttacking)
-            return;
+        UpdateDebuffs(Time.deltaTime);
+
+        if (isDead || isStunned || isAttacking) return;
 
         if (Time.time >= nextTargetUpdateTime)
         {
@@ -255,6 +286,11 @@ public class EnemyAI : NetworkBehaviour
     {
         UIManager.Instance.DisplayDamageNumber(transform, hitPoint, damage);
     }
+
+    public void ApplyDebuffDamage(float damage, ulong sourceClientId)
+    {
+        ModifyHealth(damage, 0f, AttackDirection.None, transform.position, sourceClientId);
+    }
     
     void TriggerStun(float customStunDuration)
     {
@@ -334,6 +370,7 @@ public class EnemyAI : NetworkBehaviour
 
     void Die()
     {
+        activeDebuffs.Clear();
         OnEnemyKilled?.Invoke(this);
         AwardSouls();
         SpawnLootDrops();
