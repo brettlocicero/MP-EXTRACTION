@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(RectTransform))]
-public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
+public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IDropHandler
 {
     [SerializeField] Image icon;
     
@@ -112,5 +112,23 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public void OnPointerExit(PointerEventData eventData)
     {
         inventoryUI.ItemInfoPanel.HideItemPanel();
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        if (!eventData.pointerDrag.TryGetComponent<InventoryItemUI>(out var droppedItem) ||
+            droppedItem.Item.Data is not SoulShardSO shard ||
+            Item.Data is not WeaponSO weapon)
+            return;
+
+        if (Item.Instance.soulShards.Count >= weapon.maxSlots)
+            return;
+
+        Item.Instance.AddSoulShard(shard);
+
+        if (InventoryManager.Instance.ContainsItem(droppedItem.Item))
+            InventoryManager.Instance.RemoveItem(droppedItem.Item);
+
+        droppedItem.Dropped = true;
     }
 }

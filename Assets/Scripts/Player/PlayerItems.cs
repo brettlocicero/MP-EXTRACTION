@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class PlayerItems : MonoBehaviour
 {
-    public SoulShardSO testSoulShard;
     ItemObject[] instancedItemObjects;
 
     public ItemInstance EquippedItem { get; private set; }
@@ -40,7 +39,6 @@ public class PlayerItems : MonoBehaviour
             {
                 EquipItem(item);
                 EquippedItem = item.Instance;
-                item.Instance.AddSoulShard(testSoulShard);
             }
         }
 
