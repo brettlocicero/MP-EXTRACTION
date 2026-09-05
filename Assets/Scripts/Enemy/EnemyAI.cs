@@ -42,8 +42,12 @@ public class EnemyAI : NetworkBehaviour
     [SerializeField] GameObject soulsFlyVFXPrefab;
     [SerializeField] int soulsDropAmount = 10;
 
+    [Header("Debuff VFX")]
+    [SerializeField] DebuffVFXEntry[] debuffVFXEntries;
+
     readonly List<Debuff> activeDebuffs = new();
-    readonly List<GameObject> debuffVFX = new();
+    readonly Dictionary<int, GameObject> debuffVFXInstances = new();
+    int nextDebuffInstanceId = 0;
 
     ulong lastAttackerId;
     float nextTargetUpdateTime;
@@ -86,13 +90,17 @@ public class EnemyAI : NetworkBehaviour
     {
         currentHealth.OnValueChanged -= OnHealthChanged;
         activeDebuffs.Clear();
+        debuffVFXInstances.Clear();
     }
 
     public void AddDebuff(Debuff debuff)
     {
         if (!IsServer || isDead || debuff == null) return;
 
+        debuff.InstanceId = nextDebuffInstanceId++;
         activeDebuffs.Add(debuff);
+
+        PlayDebuffVFXRpc(debuff.Id, debuff.InstanceId);
     }
 
     void UpdateDebuffs(float deltaTime)
@@ -107,10 +115,46 @@ public class EnemyAI : NetworkBehaviour
 
             if (debuff.Expired && i < activeDebuffs.Count && activeDebuffs[i] == debuff)
             {
+                StopDebuffVFXRpc(debuff.InstanceId);
                 debuff.Destroy();
                 activeDebuffs.RemoveAt(i);
             }
         }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void PlayDebuffVFXRpc(string debuffId, int instanceId)
+    {
+        GameObject prefab = GetDebuffVFXPrefab(debuffId);
+
+        if (prefab == null)
+            return;
+
+        GameObject vfxInstance = Instantiate(prefab, transform);
+        debuffVFXInstances[instanceId] = vfxInstance;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void StopDebuffVFXRpc(int instanceId)
+    {
+        if (!debuffVFXInstances.TryGetValue(instanceId, out GameObject vfxInstance))
+            return;
+
+        if (vfxInstance != null)
+            Destroy(vfxInstance);
+
+        debuffVFXInstances.Remove(instanceId);
+    }
+
+    GameObject GetDebuffVFXPrefab(string debuffId)
+    {
+        foreach (DebuffVFXEntry entry in debuffVFXEntries)
+        {
+            if (entry.debuffId == debuffId)
+                return entry.vfxPrefab;
+        }
+
+        return null;
     }
 
     void Update()

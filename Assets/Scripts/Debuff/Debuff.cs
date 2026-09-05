@@ -9,6 +9,7 @@ public abstract class Debuff
     float elapsedTime;
     float tickTimer;
 
+    public int InstanceId { get; set; }
     public abstract string Id { get; }
 
     public bool Expired => elapsedTime >= duration;
