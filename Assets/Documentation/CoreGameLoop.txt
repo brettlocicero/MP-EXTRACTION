@@ -1,0 +1,21 @@
+1. HUB ACTIVITIES
+    - Weapons are on rack
+        - Base weapons
+            - Greatsword
+            - Throwing Dagger
+            - Wood Staff
+    - Upgrade base weapons from Abysslands
+        - Shards
+    - Craft items
+    - Level up Characteristics
+        - 1 -> 10
+    - Set location for Expedition / Raid / Run?
+
+2. REGION ACTIVITIES
+    - Enter seeded generated region
+    - Enemies are passively spawning, and will get more abundant over time
+    - Final boss at the end (after 15 minutes?)
+    - Loot available
+        - Shards
+        - Relics 
+        - Simple materials/consumables to assist future runs (on ground and dropped?)
