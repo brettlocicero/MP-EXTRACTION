@@ -21,11 +21,13 @@ public class EnemyAI : NetworkBehaviour
     [SerializeField] float targetUpdateInterval = 0.5f;
 
     [Header("Attack Settings")]
+    [SerializeField] Transform attackHitSpot;
     [SerializeField] float attackRange = 2f;
     [SerializeField] int attackDamage = 10;
     [SerializeField] float attackHitTime = 0.35f;
     [SerializeField] float attackDuration = 0.8f;
     [SerializeField] float attackCooldown = 1f;
+    [SerializeField] LayerMask playerLayerMask;
 
     [Header("References")]
     [SerializeField] Animator animator;
@@ -254,33 +256,39 @@ public class EnemyAI : NetworkBehaviour
         isMoving = false;
         nextAttackTime = Time.time + attackCooldown;
 
-        // Face the player once
-        if (target != null)
-        {
-            Vector3 lookPos = target.transform.position - transform.position;
-            lookPos.y = 0f;
-
-            if (lookPos.sqrMagnitude > 0.001f)
-                rb.MoveRotation(Quaternion.LookRotation(lookPos));
-        }
-
+        FaceTarget(target);
         PlayAttackAnimationRpc();
 
         yield return new WaitForSeconds(attackHitTime);
 
-        if (target != null)
-        {
-            float distance = Vector3.Distance(transform.position, target.transform.position);
-
-            if (distance <= attackRange)
-            {
-                target.Damage(attackDamage);
-            }
-        }
+        TriggerAttackHitbox();
 
         yield return new WaitForSeconds(Mathf.Max(0f, attackDuration - attackHitTime));
 
         isAttacking = false;
+    }
+
+    void FaceTarget(PlayerState target)
+    {
+        if (target == null)
+            return;
+
+        Vector3 lookPos = target.transform.position - transform.position;
+        lookPos.y = 0f;
+
+        if (lookPos.sqrMagnitude > 0.001f)
+            rb.MoveRotation(Quaternion.LookRotation(lookPos));
+    }
+
+    void TriggerAttackHitbox()
+    {
+        Collider[] hits = Physics.OverlapSphere(attackHitSpot.position, attackRange, playerLayerMask);
+
+        foreach (Collider hit in hits)
+        {
+            if (hit.TryGetComponent(out PlayerState player))
+                player.Damage(attackDamage);
+        }
     }
 
     [Rpc(SendTo.Everyone)]
@@ -352,8 +360,13 @@ public class EnemyAI : NetworkBehaviour
         if (customStunDuration <= 0f) return;
 
         if (stunCoroutine != null)
-        {
             StopCoroutine(stunCoroutine);
+
+        if (attackCoroutine != null)
+        {
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
+            isAttacking = false;
         }
 
         stunCoroutine = StartCoroutine(StunRoutine(customStunDuration));
@@ -372,6 +385,8 @@ public class EnemyAI : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     void PlayHitAnimationRpc(AttackDirection attackDirection)
     {
+        animator.ResetTrigger("Attack");
+
         switch (attackDirection)
         {
             case AttackDirection.Left:
