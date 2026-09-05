@@ -24,4 +24,9 @@ public class DebuffDatabase : MonoBehaviour
         Debug.LogError($"Debuff ID {debuffId} not found in the database!");
         return null;
     }
+
+    public GameObject GetDebuffVFX(string debuffId)
+    {
+        return GetDebuffSO(debuffId).DebuffVFX;
+    }
 }

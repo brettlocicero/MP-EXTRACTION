@@ -9,6 +9,7 @@ public abstract class DebuffSO : ScriptableObject
 
     public float TickInterval => tickInterval;
     public float Duration => tickInterval * ticks;
+    public GameObject DebuffVFX => debuffVFX;
 
     public abstract void Effect(EnemyAI target, ulong sourceClientId);
 }

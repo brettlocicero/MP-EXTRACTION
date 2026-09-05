@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e81d7cf7eee32fe4ca28eaa5ac525439, type: 3}
   m_Name: Ignite Debuff
   m_EditorClassIdentifier: Assembly-CSharp::IgniteDebuffSO
-  debuffId: Ignite
+  debuffId: IgniteDebuff
   debuffVFX: {fileID: 6120233368031606595, guid: fdd0f037411864f26b6d439899dda274, type: 3}
   tickInterval: 1
   ticks: 3

@@ -42,9 +42,6 @@ public class EnemyAI : NetworkBehaviour
     [SerializeField] GameObject soulsFlyVFXPrefab;
     [SerializeField] int soulsDropAmount = 10;
 
-    [Header("Debuff VFX")]
-    [SerializeField] DebuffVFXEntry[] debuffVFXEntries;
-
     readonly Dictionary<int, GameObject> debuffVFXInstances = new();
     readonly List<ActiveDebuff> activeDebuffs = new();
 
@@ -149,7 +146,7 @@ public class EnemyAI : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     void PlayDebuffVFXRpc(string debuffId, int instanceId)
     {
-        GameObject prefab = GetDebuffVFXPrefab(debuffId);
+        GameObject prefab = DebuffDatabase.Instance.GetDebuffVFX(debuffId);
 
         if (prefab == null)
             return;
@@ -168,17 +165,6 @@ public class EnemyAI : NetworkBehaviour
             Destroy(vfxInstance);
 
         debuffVFXInstances.Remove(instanceId);
-    }
-
-    GameObject GetDebuffVFXPrefab(string debuffId)
-    {
-        foreach (DebuffVFXEntry entry in debuffVFXEntries)
-        {
-            if (entry.debuffId == debuffId)
-                return entry.vfxPrefab;
-        }
-
-        return null;
     }
 
     void Update()
