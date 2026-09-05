@@ -9119,8 +9119,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1420185317}
   - component: {fileID: 1420185318}
+  - component: {fileID: 1420185319}
   m_Layer: 0
-  m_Name: Item Database
+  m_Name: Databases
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9157,6 +9158,20 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d7f5e4a1644cee147962c4cc18b1c39d, type: 2}
   - {fileID: 11400000, guid: 1d092cb8a3e595e49987526c3608def6, type: 2}
   - {fileID: 11400000, guid: 971af0c323f218d4c950d3ef5419f703, type: 2}
+--- !u!114 &1420185319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1420185316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc2e950cab26d9a4fa0ace6b65a5a25d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DebuffDatabase
+  debuffs:
+  - {fileID: 11400000, guid: 72ac2e7dafc89f7438fc664c3ad528de, type: 2}
 --- !u!1001 &1428285515
 PrefabInstance:
   m_ObjectHideFlags: 0

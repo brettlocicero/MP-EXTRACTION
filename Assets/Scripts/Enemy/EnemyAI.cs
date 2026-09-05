@@ -45,8 +45,9 @@ public class EnemyAI : NetworkBehaviour
     [Header("Debuff VFX")]
     [SerializeField] DebuffVFXEntry[] debuffVFXEntries;
 
-    readonly List<Debuff> activeDebuffs = new();
     readonly Dictionary<int, GameObject> debuffVFXInstances = new();
+    readonly List<ActiveDebuff> activeDebuffs = new();
+
     int nextDebuffInstanceId = 0;
 
     ulong lastAttackerId;
@@ -93,21 +94,45 @@ public class EnemyAI : NetworkBehaviour
         debuffVFXInstances.Clear();
     }
 
-    public void AddDebuff(Debuff debuff)
+    public void AddDebuff(DebuffSO debuff)
     {
-        if (!IsServer || isDead || debuff == null) return;
+        if (isDead || debuff == null) return;
 
-        debuff.InstanceId = nextDebuffInstanceId++;
-        activeDebuffs.Add(debuff);
+        if (IsServer)
+        {
+            ApplyDebuff(debuff, NetworkManager.Singleton.LocalClientId);
+        }
 
-        PlayDebuffVFXRpc(debuff.Id, debuff.InstanceId);
+        else
+        {
+            AddDebuffServerRpc(debuff.debuffId);
+        }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    void AddDebuffServerRpc(string debuffId, RpcParams rpcParams = default)
+    {
+        DebuffSO debuff = DebuffDatabase.Instance.GetDebuffSO(debuffId);
+
+        if (debuff != null)
+            ApplyDebuff(debuff, rpcParams.Receive.SenderClientId);
+    }
+
+    void ApplyDebuff(DebuffSO debuff, ulong sourceClientId)
+    {
+        if (!IsServer || isDead) return;
+
+        ActiveDebuff activeDebuff = new(debuff, sourceClientId, nextDebuffInstanceId++);
+        activeDebuffs.Add(activeDebuff);
+
+        PlayDebuffVFXRpc(debuff.debuffId, activeDebuff.instanceId);
     }
 
     void UpdateDebuffs(float deltaTime)
     {
         for (int i = activeDebuffs.Count - 1; i >= 0; i--)
         {
-            Debuff debuff = activeDebuffs[i];
+            ActiveDebuff debuff = activeDebuffs[i];
             debuff.Tick(this, deltaTime);
 
             if (isDead)
@@ -115,8 +140,7 @@ public class EnemyAI : NetworkBehaviour
 
             if (debuff.Expired && i < activeDebuffs.Count && activeDebuffs[i] == debuff)
             {
-                StopDebuffVFXRpc(debuff.InstanceId);
-                debuff.Destroy();
+                StopDebuffVFXRpc(debuff.instanceId);
                 activeDebuffs.RemoveAt(i);
             }
         }

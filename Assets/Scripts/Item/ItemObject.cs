@@ -4,6 +4,9 @@ public class ItemObject : MonoBehaviour
 {
     [SerializeField] protected ItemSO item;
 
+    [Header("Runtime")]
+    [SerializeField] ItemInstance instance;
+
     [Header("Item References")]
     [SerializeField] Animator movementAnimator;
 
@@ -25,7 +28,7 @@ public class ItemObject : MonoBehaviour
     Quaternion currentSprintRotOffset = Quaternion.identity;
 
     public ItemSO ItemData => item;
-    public ItemInstance Instance { get; private set; }
+    public ItemInstance Instance => instance;
 
     protected virtual void Start()
     {
@@ -47,7 +50,7 @@ public class ItemObject : MonoBehaviour
 
     public void AssignInstance(ItemInstance instance)
     {
-        Instance = instance;
+        this.instance = instance;
     }
 
     void HandleMovementAnimation()
