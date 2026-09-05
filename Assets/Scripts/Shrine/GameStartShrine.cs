@@ -1,4 +1,3 @@
-using Unity.Netcode;
 using UnityEngine;
 
 public class GameStartShrine : MonoBehaviour, IInteractable
@@ -7,7 +6,7 @@ public class GameStartShrine : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        if (!used && NetworkManager.Singleton.IsHost)
+        if (!used)
         {
             GameManager.Instance.StartGameSession();
             used = true;

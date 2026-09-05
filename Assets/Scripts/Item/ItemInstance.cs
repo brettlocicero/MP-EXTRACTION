@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Unity.Netcode;
 
 [Serializable]
-public class ItemInstance : INetworkSerializable
+public class ItemInstance
 {
     static ulong nextInstanceId = 0;
 
@@ -19,13 +18,6 @@ public class ItemInstance : INetworkSerializable
     {
         this.baseItemId = baseItemId;
         instanceId = nextInstanceId++;
-    }
-
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    {
-        serializer.SerializeValue(ref instanceId);
-        serializer.SerializeValue(ref baseItemId);
-        serializer.SerializeValue(ref customName);
     }
 
     public void AddSoulShard(SoulShardSO soulShard)

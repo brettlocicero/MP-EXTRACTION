@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using Unity.Collections;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
@@ -66,49 +65,6 @@ public class UIManager : MonoBehaviour
         }
 
         HandleCrosshairVisibility();
-    }
-
-    public void SpawnPlayerNameplate(PlayerState playerState)
-    {
-        if (playerState.IsOwner)
-            return;
-
-        if (instancedUI.Any(x => x.worldTransform == playerState.transform))
-            return;
-
-        TextMeshProUGUI playerTextObj = Instantiate(playerNametagPrefab, instancedUIRoot);
-        playerTextObj.text = playerState.PlayerName.Value.ToString();
-
-        playerState.PlayerName.OnValueChanged += HandleNameChanged;
-
-        AttachUIElement(playerTextObj.rectTransform, playerState.GetNameplateTransform(), playerState);
-
-        void HandleNameChanged(FixedString64Bytes _, FixedString64Bytes newName)
-        {
-            if (playerTextObj != null)
-                playerTextObj.text = newName.ToString();
-        }
-    }
-
-    public void DeletePlayerNameplate(PlayerState playerState)
-    {
-        if (playerState.IsOwner)
-            return;
-
-        foreach (InstancedUIPair pair in instancedUI)
-        {
-            if (pair.player == playerState)
-            {
-                pair.Destroy();
-                instancedUI.Remove(pair);
-                break;
-            }
-        }
-    }
-
-    void AttachUIElement(RectTransform uiElement, Transform worldTransform, PlayerState player)
-    {
-        instancedUI.Add(new InstancedUIPair(uiElement, worldTransform, player));
     }
 
     public void UpdateHealthBar(int health, int maxHealth)

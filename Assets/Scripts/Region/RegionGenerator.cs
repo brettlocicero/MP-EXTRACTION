@@ -1,9 +1,8 @@
 using System.Collections;
 using DG.Tweening;
-using Unity.Netcode;
 using UnityEngine;
 
-public class RegionGenerator : NetworkBehaviour
+public class RegionGenerator : MonoBehaviour
 {
     public static RegionGenerator Instance;
 
@@ -17,25 +16,32 @@ public class RegionGenerator : NetworkBehaviour
     RegionSO currentRegion;
     GameObject spawnedRegionInstance;
 
-    readonly NetworkVariable<int> currentRegionIndex = new(
-        -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
-    );
+    int currentRegionIndexValue = -1;
+    int currentRegionIndex
+    {
+        get => currentRegionIndexValue;
+        set
+        {
+            if (currentRegionIndexValue == value) return;
+            int previous = currentRegionIndexValue;
+            currentRegionIndexValue = value;
+            OnRegionIndexChanged(previous, value);
+        }
+    }
 
     void Awake()
     {
         Instance = this;
     }
 
-    public override void OnNetworkSpawn()
+    void Start()
     {
-        currentRegionIndex.OnValueChanged += OnRegionIndexChanged;
-
-        ApplyAtmosphere(currentRegionIndex.Value);
+        ApplyAtmosphere(currentRegionIndex);
     }
 
-    public override void OnNetworkDespawn()
+    void OnDestroy()
     {
-        currentRegionIndex.OnValueChanged -= OnRegionIndexChanged;
+        if (Instance == this) Instance = null;
     }
 
     void OnRegionIndexChanged(int previous, int current)
@@ -47,9 +53,6 @@ public class RegionGenerator : NetworkBehaviour
 
     public void GenerateRegion(RegionSO region, int regionSeed)
     {
-        if (!IsServer)
-            return;
-
         StartCoroutine(GenerateRegionRoutine(region, regionSeed));
     }
 
@@ -59,21 +62,19 @@ public class RegionGenerator : NetworkBehaviour
 
         int regionIndex = System.Array.IndexOf(availableRegions, region);
 
-        PlayTransitionRpc();
+        PlayTransition();
         yield return new WaitForSeconds(transitionDuration);
 
         currentRegion = region;
-        currentRegionIndex.Value = regionIndex;
+        currentRegionIndex = regionIndex;
 
-        SpawnRegionBaseRpc(regionIndex, regionSeed);
-        PostGenerationRpc();
-        // MoveAllPlayers();
+        SpawnRegionBase(regionIndex, regionSeed);
+        PostGeneration();
     }
 
-    // --- Region base spawn/clear (local per-client, non-networked) ---
+    // --- Region base spawn/clear (local) ---
 
-    [Rpc(SendTo.Everyone)]
-    void SpawnRegionBaseRpc(int regionIndex, int seed)
+    void SpawnRegionBase(int regionIndex, int seed)
     {
         ClearInstancedRegion();
 
@@ -92,16 +93,14 @@ public class RegionGenerator : NetworkBehaviour
         spawnedRegionInstance = null;
     }
 
-    // --- RPCs ---
+    // --- Transition ---
 
-    [Rpc(SendTo.Everyone)]
-    void PlayTransitionRpc()
+    void PlayTransition()
     {
         Sequence seq = regionTransitionAnimator.PlayTransition();
     }
 
-    [Rpc(SendTo.Everyone)]
-    void PostGenerationRpc()
+    void PostGeneration()
     {
         hubObjects.SetActive(false);
     }
@@ -116,17 +115,4 @@ public class RegionGenerator : NetworkBehaviour
         availableRegions[regionIndex].ApplyRegionAtmosphere();
     }
 
-    void MoveAllPlayers()
-    {
-        foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
-        {
-            if (client.PlayerObject == null)
-                continue;
-
-            if (client.PlayerObject.TryGetComponent<PlayerController>(out var player))
-            {
-                player.Teleport(playerSpawnPos, Quaternion.identity);
-            }
-        }
-    }
 }

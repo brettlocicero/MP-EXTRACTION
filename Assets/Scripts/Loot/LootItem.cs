@@ -1,20 +1,15 @@
-using Unity.Netcode;
 using UnityEngine;
 
-public class LootItem : NetworkBehaviour, IInteractable
+public class LootItem : MonoBehaviour, IInteractable
 {
     [SerializeField] ItemSO item;
     [SerializeField] bool isFactory;
-
     ItemInstance instance;
     bool collected;
 
-    public override void OnNetworkSpawn()
+    void Awake()
     {
-        if (!IsServer) return;
-
-        if (!isFactory)
-            Init();
+        if (!isFactory) Init();
     }
 
     public void Init(ItemInstance existingInstance = null)
@@ -24,29 +19,13 @@ public class LootItem : NetworkBehaviour, IInteractable
 
     public void Interact()
     {
-        CollectRpc();
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    void CollectRpc(RpcParams rpcParams = default)
-    {
-        if (!isFactory && collected) return;
-
-        if (!isFactory)
-            collected = true;
-
+        if (collected) return;
         ItemInstance grantedInstance = isFactory ? item.CreateInstance() : instance;
-
-        ulong collectorId = rpcParams.Receive.SenderClientId;
-        GrantItemRpc(grantedInstance, RpcTarget.Single(collectorId, RpcTargetUse.Temp));
-
+        if (!InventoryManager.Instance.AddItem(grantedInstance)) return;
         if (!isFactory)
-            NetworkObject.Despawn();
-    }
-
-    [Rpc(SendTo.SpecifiedInParams)]
-    void GrantItemRpc(ItemInstance itemInstance, RpcParams rpcParams)
-    {
-        InventoryManager.Instance.AddItem(itemInstance);
+        {
+            collected = true;
+            Destroy(gameObject);
+        }
     }
 }

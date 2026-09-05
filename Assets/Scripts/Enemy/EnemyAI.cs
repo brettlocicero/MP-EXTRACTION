@@ -1,10 +1,9 @@
 using UnityEngine;
-using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody))]
-public class EnemyAI : NetworkBehaviour
+public class EnemyAI : MonoBehaviour
 {
     public System.Action<EnemyAI> OnEnemyKilled;
 
@@ -49,7 +48,6 @@ public class EnemyAI : NetworkBehaviour
 
     int nextDebuffInstanceId = 0;
 
-    ulong lastAttackerId;
     float nextTargetUpdateTime;
 
     bool isStunned = false;
@@ -62,33 +60,30 @@ public class EnemyAI : NetworkBehaviour
     bool isMoving = false;
     Vector3 moveTarget;
 
-    NetworkVariable<float> currentHealth = new(
-        100f,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server
-    );
+    float currentHealthValue = 100f;
+    float currentHealth
+    {
+        get => currentHealthValue;
+        set
+        {
+            if (currentHealthValue == value) return;
+            float previous = currentHealthValue;
+            currentHealthValue = value;
+            OnHealthChanged(previous, value);
+        }
+    }
 
     void Awake()
     {
+        currentHealthValue = maxHealth;
         rb = GetComponent<Rigidbody>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
 
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
-    public override void OnNetworkSpawn()
+    void OnDestroy()
     {
-        if (IsServer)
-        {
-            currentHealth.Value = maxHealth;
-        }
-
-        currentHealth.OnValueChanged += OnHealthChanged;
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        currentHealth.OnValueChanged -= OnHealthChanged;
         activeDebuffs.Clear();
         debuffVFXInstances.Clear();
     }
@@ -97,34 +92,17 @@ public class EnemyAI : NetworkBehaviour
     {
         if (isDead || debuff == null) return;
 
-        if (IsServer)
-        {
-            ApplyDebuff(debuff, NetworkManager.Singleton.LocalClientId);
-        }
-
-        else
-        {
-            AddDebuffServerRpc(debuff.debuffId);
-        }
+        ApplyDebuff(debuff);
     }
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    void AddDebuffServerRpc(string debuffId, RpcParams rpcParams = default)
+    void ApplyDebuff(DebuffSO debuff)
     {
-        DebuffSO debuff = DebuffDatabase.Instance.GetDebuffSO(debuffId);
+        if (isDead) return;
 
-        if (debuff != null)
-            ApplyDebuff(debuff, rpcParams.Receive.SenderClientId);
-    }
-
-    void ApplyDebuff(DebuffSO debuff, ulong sourceClientId)
-    {
-        if (!IsServer || isDead) return;
-
-        ActiveDebuff activeDebuff = new(debuff, sourceClientId, nextDebuffInstanceId++);
+        ActiveDebuff activeDebuff = new(debuff, nextDebuffInstanceId++);
         activeDebuffs.Add(activeDebuff);
 
-        PlayDebuffVFXRpc(debuff.debuffId, activeDebuff.instanceId);
+        PlayDebuffVFX(debuff.debuffId, activeDebuff.instanceId);
     }
 
     void UpdateDebuffs(float deltaTime)
@@ -139,14 +117,13 @@ public class EnemyAI : NetworkBehaviour
 
             if (debuff.Expired && i < activeDebuffs.Count && activeDebuffs[i] == debuff)
             {
-                StopDebuffVFXRpc(debuff.instanceId);
+                StopDebuffVFX(debuff.instanceId);
                 activeDebuffs.RemoveAt(i);
             }
         }
     }
 
-    [Rpc(SendTo.Everyone)]
-    void PlayDebuffVFXRpc(string debuffId, int instanceId)
+    void PlayDebuffVFX(string debuffId, int instanceId)
     {
         GameObject prefab = DebuffDatabase.Instance.GetDebuffVFX(debuffId);
 
@@ -157,8 +134,7 @@ public class EnemyAI : NetworkBehaviour
         debuffVFXInstances[instanceId] = vfxInstance;
     }
 
-    [Rpc(SendTo.Everyone)]
-    void StopDebuffVFXRpc(int instanceId)
+    void StopDebuffVFX(int instanceId)
     {
         if (!debuffVFXInstances.TryGetValue(instanceId, out GameObject vfxInstance))
             return;
@@ -171,8 +147,6 @@ public class EnemyAI : NetworkBehaviour
 
     void Update()
     {
-        if (!IsServer) return;
-
         UpdateDebuffs(Time.deltaTime);
 
         if (isDead || isStunned || isAttacking) return;
@@ -180,41 +154,24 @@ public class EnemyAI : NetworkBehaviour
         if (Time.time >= nextTargetUpdateTime)
         {
             nextTargetUpdateTime = Time.time + targetUpdateInterval;
-            TargetClosestPlayer();
+            TargetPlayer();
         }
     }
 
     void FixedUpdate()
     {
-        if (!IsServer) return;
         if (!isMoving) return;
 
         MoveTowards(moveTarget);
     }
 
-    void TargetClosestPlayer()
+    void TargetPlayer()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        if (players.Length == 0) return;
-
-        GameObject closestPlayer = null;
-        float shortestDistance = Mathf.Infinity;
-        Vector3 currentPosition = transform.position;
-
-        foreach (GameObject player in players)
-        {
-            float distanceToPlayer = Vector3.Distance(currentPosition, player.transform.position);
-            if (distanceToPlayer < shortestDistance)
-            {
-                shortestDistance = distanceToPlayer;
-                closestPlayer = player;
-            }
-        }
-
-        if (closestPlayer == null)
+        PlayerController player = GameManager.Instance.LocalPlayer;
+        if (player == null)
             return;
 
-        float distance = Vector3.Distance(transform.position, closestPlayer.transform.position);
+        float distance = Vector3.Distance(transform.position, player.transform.position);
 
         if (distance <= attackRange)
         {
@@ -222,13 +179,13 @@ public class EnemyAI : NetworkBehaviour
 
             if (Time.time >= nextAttackTime)
             {
-                attackCoroutine = StartCoroutine(AttackRoutine(closestPlayer.GetComponent<PlayerState>()));
+                attackCoroutine = StartCoroutine(AttackRoutine(player.GetComponent<PlayerState>()));
             }
         }
 
         else
         {
-            moveTarget = closestPlayer.transform.position;
+            moveTarget = player.transform.position;
             isMoving = true;
         }
     }
@@ -257,7 +214,7 @@ public class EnemyAI : NetworkBehaviour
         nextAttackTime = Time.time + attackCooldown;
 
         FaceTarget(target);
-        PlayAttackAnimationRpc();
+        PlayAttackAnimation();
 
         yield return new WaitForSeconds(attackHitTime);
 
@@ -291,8 +248,7 @@ public class EnemyAI : NetworkBehaviour
         }
     }
 
-    [Rpc(SendTo.Everyone)]
-    void PlayAttackAnimationRpc()
+    void PlayAttackAnimation()
     {
         animator.SetTrigger("Attack");
     }
@@ -302,61 +258,44 @@ public class EnemyAI : NetworkBehaviour
         if (hitPoint.Equals(Vector3.zero))
             hitPoint = transform.position;
 
-        if (IsServer)
-        {
-            ModifyHealth(damage, stunTime, attackDirection, hitPoint, NetworkManager.Singleton.LocalClientId);
-        }
-
-        else
-        {
-            TakeDamageServerRpc(damage, stunTime, attackDirection, hitPoint);
-        }
+        ModifyHealth(damage, stunTime, attackDirection, hitPoint);
     }
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    void TakeDamageServerRpc(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint, RpcParams rpcParams = default)
+    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint)
     {
-        ModifyHealth(damage, stunTime, attackDirection, hitPoint, rpcParams.Receive.SenderClientId);
-    }
+        if (isDead) return;
 
-    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint, ulong attackerId)
-    {
-        if (!IsServer || isDead) return;
+        currentHealth -= damage;
 
-        lastAttackerId = attackerId;
-        currentHealth.Value -= damage;
+        ShowDamageNumber(damage, hitPoint);
 
-        ShowDamageNumberRpc(damage, hitPoint, RpcTarget.Single(attackerId, RpcTargetUse.Temp));
-
-        if (currentHealth.Value <= 0)
+        if (currentHealth <= 0)
         {
             isDead = true;
-            PlayDeathFXRpc();
+            PlayDeathFX();
             Die();
             return;
         }
 
         if (stunTime > 0f)
         {
-            PlayHitAnimationRpc(attackDirection);
+            PlayHitAnimation(attackDirection);
             TriggerStun(stunTime);
         }
     }
     
-    [Rpc(SendTo.SpecifiedInParams)]
-    void ShowDamageNumberRpc(float damage, Vector3 hitPoint, RpcParams rpcParams)
+    void ShowDamageNumber(float damage, Vector3 hitPoint)
     {
         UIManager.Instance.DisplayDamageNumber(transform, hitPoint, damage);
     }
 
-    public void ApplyDebuffDamage(float damage, ulong sourceClientId)
+    public void ApplyDebuffDamage(float damage)
     {
-        ModifyHealth(damage, 0f, AttackDirection.None, transform.position, sourceClientId);
+        ModifyHealth(damage, 0f, AttackDirection.None, transform.position);
     }
     
     void TriggerStun(float customStunDuration)
     {
-        if (!IsServer) return;
         if (customStunDuration <= 0f) return;
 
         if (stunCoroutine != null)
@@ -382,8 +321,7 @@ public class EnemyAI : NetworkBehaviour
         isStunned = false;
     }
 
-    [Rpc(SendTo.Everyone)]
-    void PlayHitAnimationRpc(AttackDirection attackDirection)
+    void PlayHitAnimation(AttackDirection attackDirection)
     {
         animator.ResetTrigger("Attack");
 
@@ -417,8 +355,7 @@ public class EnemyAI : NetworkBehaviour
         }
     }
 
-    [Rpc(SendTo.Everyone)]
-    void PlayDeathFXRpc()
+    void PlayDeathFX()
     {
         if (deathSFX != null)
         {
@@ -443,40 +380,36 @@ public class EnemyAI : NetworkBehaviour
         OnEnemyKilled?.Invoke(this);
         AwardSouls();
         SpawnLootDrops();
-        GetComponent<NetworkObject>().Despawn();
+        Destroy(gameObject);
     }
 
     void AwardSouls()
     {
-        if (!IsServer) return;
+        PlayerController player = GameManager.Instance.LocalPlayer;
+        if (player == null) return;
 
-        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(lastAttackerId, out NetworkClient client)) return;
-
-        if (!client.PlayerObject.TryGetComponent<PlayerCurrency>(out PlayerCurrency currency)) return;
+        if (!player.TryGetComponent<PlayerCurrency>(out PlayerCurrency currency)) return;
 
         currency.AddSouls(soulsDropAmount);
-        SpawnSoulsFXRpc(lastAttackerId);
+        SpawnSoulsFX();
     }
 
-    [Rpc(SendTo.Everyone)]
-    void SpawnSoulsFXRpc(ulong killerClientId)
+    void SpawnSoulsFX()
     {
         if (soulsFlyVFXPrefab == null) return;
 
         GameObject fx = Instantiate(soulsFlyVFXPrefab, transform.position, Quaternion.identity);
-        fx.GetComponent<SoulsFlyVFX>().SetTarget(killerClientId);
+        fx.GetComponent<SoulsFlyVFX>().SetTarget(GameManager.Instance.LocalPlayer.transform);
     }
 
     void SpawnLootDrops()
     {
-        if (!IsServer) return;
-
         foreach (LootDrop lootDrop in lootDrops)
         {
             if (lootDrop.RollDrop)
             {
                 LootItem drop = Instantiate(lootDrop.LootItem, transform.position, Quaternion.identity);
-                drop.GetComponent<NetworkObject>().Spawn();
+
                 // drop.Init();
             }
         }

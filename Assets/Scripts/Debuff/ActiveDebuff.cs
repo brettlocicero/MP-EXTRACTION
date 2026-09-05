@@ -1,7 +1,6 @@
 public class ActiveDebuff
 {
     public DebuffSO source;
-    public ulong sourceClientId;
     public int instanceId;
 
     float elapsedTime;
@@ -9,10 +8,9 @@ public class ActiveDebuff
 
     public bool Expired => elapsedTime >= source.Duration;
 
-    public ActiveDebuff(DebuffSO source, ulong sourceClientId, int instanceId)
+    public ActiveDebuff(DebuffSO source, int instanceId)
     {
         this.source = source;
-        this.sourceClientId = sourceClientId;
         this.instanceId = instanceId;
     }
 
@@ -24,7 +22,7 @@ public class ActiveDebuff
         while (tickTimer >= source.TickInterval && elapsedTime - tickTimer + source.TickInterval <= source.Duration)
         {
             tickTimer -= source.TickInterval;
-            source.Effect(target, sourceClientId);
+            source.Effect(target);
         }
     }
 }

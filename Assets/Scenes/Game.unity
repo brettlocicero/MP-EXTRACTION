@@ -560,7 +560,7 @@ GameObject:
   - component: {fileID: 55914884}
   - component: {fileID: 55914885}
   m_Layer: 0
-  m_Name: Network Debug Stats
+  m_Name: Performance Stats
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -592,7 +592,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb33fe1663c4c48d5a7bcbbd7c9297f7, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NetworkDebugStats
+  m_EditorClassIdentifier: Assembly-CSharp::PerformanceStats
   debugText: {fileID: 2082462120}
   refreshRate: 1
 --- !u!1 &61524081
@@ -1799,7 +1799,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 335457474}
-  - component: {fileID: 335457477}
   - component: {fileID: 335457476}
   m_Layer: 0
   m_Name: Game Manager
@@ -1841,7 +1840,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b27d0424a6aeb2e448824df9d6d84884, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  ShowTopMostFoldoutHeaderGroup: 1
+  playerPrefab: {fileID: 3744818073237477762, guid: 0b9e50181fd70f440820d5a027232791, type: 3}
+  menuCamera: {fileID: 330585545}
+  playButton: {fileID: 1047048191}
   testRegion: {fileID: 11400000, guid: 8bc807014278cad4abbd9388a9b5aa42, type: 2}
   playerSpawnPoints:
   - {fileID: 0}
@@ -1850,43 +1851,6 @@ MonoBehaviour:
   enemySpawner: {fileID: 143647281}
   regions:
   - {fileID: 11400000, guid: 8bc807014278cad4abbd9388a9b5aa42, type: 2}
-  CurrentRegion:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: -1
-  RegionSeed:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
---- !u!114 &335457477
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 335457473}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 4227655999
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  m_InScenePlacedDisabledByDefault: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 0
-  m_InScenePlaced: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!4 &344189504 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3333869712235911895, guid: a16b6ee756b064e4c9f9387419bc91cd, type: 3}
@@ -3691,7 +3655,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 629687391}
-  - component: {fileID: 629687393}
   - component: {fileID: 629687392}
   m_Layer: 0
   m_Name: Region Generator
@@ -3728,7 +3691,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dc09b5c218b98148b429d19847ab429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RegionGenerator
-  ShowTopMostFoldoutHeaderGroup: 1
   hubObjects: {fileID: 598330342}
   regionRoot: {fileID: 648846254}
   availableRegions:
@@ -3736,33 +3698,6 @@ MonoBehaviour:
   playerSpawnPos: {x: 0, y: 2, z: 0}
   regionTransitionAnimator: {fileID: 1976826578}
   transitionDuration: 2
---- !u!114 &629687393
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 629687390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2141202139
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  m_InScenePlacedDisabledByDefault: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  m_InScenePlaced: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!1001 &640742529
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6028,7 +5963,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1014872656}
-  - component: {fileID: 1014872657}
   m_Layer: 0
   m_Name: Steam Lobby Manager
   m_TagString: Untagged
@@ -6051,19 +5985,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1804873275}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1014872657
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1014872655}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4069851f429f134daee9d2c06aa9cee, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SteamLobbyManager
-  connectionManager: {fileID: 1883309324}
 --- !u!1 &1019046900
 GameObject:
   m_ObjectHideFlags: 0
@@ -6196,7 +6117,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Create Lobby
+  m_text: Play
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -9448,7 +9369,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1522530238
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9512,19 +9433,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1522530240}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1715662692}
-        m_TargetAssemblyTypeName: UnityLobbyManager, Assembly-CSharp
-        m_MethodName: JoinLobby
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1522530240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10529,7 +10438,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1715662691}
-  - component: {fileID: 1715662692}
   m_Layer: 0
   m_Name: Unity Lobby Manager
   m_TagString: Untagged
@@ -10552,21 +10460,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1804873275}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1715662692
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1715662690}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d032479f762ee0942b7dcc7edadb3fd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UnityLobbyManager
-  connectionManager: {fileID: 1883309324}
-  hostAddress: 127.0.0.1
-  port: 7777
 --- !u!1 &1719012153
 GameObject:
   m_ObjectHideFlags: 0
@@ -10870,12 +10763,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1797928640}
-  - component: {fileID: 1797928642}
-  - component: {fileID: 1797928643}
-  - component: {fileID: 1797928645}
-  - component: {fileID: 1797928644}
   m_Layer: 0
-  m_Name: Network Manager
+  m_Name: Session
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10899,113 +10788,6 @@ Transform:
   - {fileID: 55914884}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1797928642
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1797928639}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ff23820fdca48c44886e5cc1f1e14291, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NetworkBootstrap
-  networkManager: {fileID: 1797928643}
-  transportMode: 0
-  createLobbyButton: {fileID: 1047048191}
-  joinLobbyButton: {fileID: 1522530239}
-  unityTransport: {fileID: 1797928645}
-  steamTransport: {fileID: 1797928644}
---- !u!114 &1797928643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1797928639}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 593a2fe42fa9d37498c96f9a383b6521, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkManager
-  NetworkManagerExpanded: 0
-  NetworkConfig:
-    ProtocolVersion: 0
-    NetworkTransport: {fileID: 1797928644}
-    PlayerPrefab: {fileID: 3744818073237477762, guid: 0b9e50181fd70f440820d5a027232791, type: 3}
-    Prefabs:
-      NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 4a7072f36b9744346b9f2cf552c1d557, type: 2}
-    TickRate: 20
-    ClientConnectionBufferTimeout: 10
-    ConnectionApproval: 0
-    ConnectionData: 
-    EnableTimeResync: 0
-    TimeResyncInterval: 30
-    EnsureNetworkVariableLengthSafety: 0
-    EnableSceneManagement: 1
-    ForceSamePrefabs: 1
-    RecycleNetworkIds: 1
-    NetworkIdRecycleDelay: 120
-    RpcHashSize: 0
-    LoadSceneTimeOut: 120
-    SpawnTimeout: 10
-    EnableNetworkLogs: 1
-    NetworkTopology: 0
-    UseCMBService: 0
-    AutoSpawnPlayerPrefabClientSide: 1
-    NetworkMessageMetrics: 1
-    NetworkProfilingMetrics: 1
-    OldPrefabList: []
-  RunInBackground: 1
-  LogLevel: 1
---- !u!114 &1797928644
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1797928639}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44dd247a00edbfa44b77868d755af6ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Facepunch Transport for Netcode for GameObjects::Netcode.Transports.Facepunch.FacepunchTransport
-  steamAppId: 480
-  targetSteamId: 0
-  userSteamId: 0
---- !u!114 &1797928645
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1797928639}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Transports.UTP.UnityTransport
-  m_ProtocolType: 0
-  m_UseWebSockets: 0
-  m_UseEncryption: 0
-  m_MaxPacketQueueSize: 128
-  m_MaxPayloadSize: 6144
-  m_HeartbeatTimeoutMS: 500
-  m_ConnectTimeoutMS: 1000
-  m_MaxConnectAttempts: 60
-  m_DisconnectTimeoutMS: 30000
-  ConnectionData:
-    Address: 127.0.0.1
-    Port: 7777
-    WebSocketPath: /
-    ServerListenAddress: 127.0.0.1
-    ClientBindPort: 0
-  DebugSimulator:
-    PacketDelayMS: 0
-    PacketJitterMS: 0
-    PacketDropRate: 0
 --- !u!1 &1803156443
 GameObject:
   m_ObjectHideFlags: 0
@@ -11562,7 +11344,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1883309323}
-  - component: {fileID: 1883309324}
   m_Layer: 0
   m_Name: Connection Manager
   m_TagString: Untagged
@@ -11585,19 +11366,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1797928640}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1883309324
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1883309322}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 728a7abbd7b569a49ac7371697ccceed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ConnectionManager
-  lobbyCamera: {fileID: 330585545}
 --- !u!1 &1929229789
 GameObject:
   m_ObjectHideFlags: 0
@@ -12329,7 +12097,7 @@ GameObject:
   - component: {fileID: 2082462121}
   - component: {fileID: 2082462120}
   m_Layer: 5
-  m_Name: Network Stats
+  m_Name: Performance Stats
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

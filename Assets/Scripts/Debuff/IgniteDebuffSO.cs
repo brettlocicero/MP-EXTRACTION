@@ -5,8 +5,8 @@ public class IgniteDebuffSO : DebuffSO
 {
     [SerializeField] int burnDamage;
 
-    public override void Effect(EnemyAI target, ulong sourceClientId)
+    public override void Effect(EnemyAI target)
     {
-        target.ApplyDebuffDamage(burnDamage, sourceClientId);
+        target.ApplyDebuffDamage(burnDamage);
     }
 }

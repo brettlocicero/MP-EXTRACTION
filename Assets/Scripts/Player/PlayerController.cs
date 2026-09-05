@@ -1,9 +1,8 @@
 using Unity.Cinemachine;
-using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : NetworkBehaviour
+public class PlayerController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] Transform cameraTransform;
@@ -76,16 +75,8 @@ public class PlayerController : NetworkBehaviour
             cameraDefaultPosition = cameraTransform.localPosition;
     }
 
-    public override void OnNetworkSpawn()
+    void Start()
     {
-        if (!IsOwner)
-        {
-            controller.enabled = false;
-            clientObjects.gameObject.SetActive(false);
-            inventoryCameraTransform.gameObject.SetActive(false);
-            return;
-        }
-
         clientObjects.gameObject.SetActive(true);
         SetLayerRecursively(serverObjects, LayerMask.NameToLayer("LocalHidden"));
 
@@ -95,9 +86,6 @@ public class PlayerController : NetworkBehaviour
 
     void Update()
     {
-        if (!IsOwner)
-            return;
-
         ReadInput();
         
         HandleHeadBob();
@@ -266,20 +254,6 @@ public class PlayerController : NetworkBehaviour
 
     public void Teleport(Vector3 position, Quaternion rotation)
     {
-        if (!IsServer)
-            return;
-
-        ClientRpcParams rpcParams = new()
-        {
-            Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
-        };
-
-        TeleportClientRpc(position, rotation, rpcParams);
-    }
-
-    [ClientRpc]
-    void TeleportClientRpc(Vector3 position, Quaternion rotation, ClientRpcParams rpcParams = default)
-    {
         controller.enabled = false;
         transform.position = position;
         transform.rotation = rotation;
@@ -323,14 +297,12 @@ public class PlayerController : NetworkBehaviour
         return isSprinting;
     }
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void LaunchProjectileRpc(int weaponId, int attackIndex, Vector3 spawnPos, Quaternion spawnRot, Vector3 forwardVec)
+    public void LaunchProjectile(int weaponId, int attackIndex, Vector3 spawnPos, Quaternion spawnRot, Vector3 forwardVec)
     {
         WeaponSO weapon = ItemDatabase.Instance.GetItem(weaponId) as WeaponSO;
         Attack attack = weapon.attacks[attackIndex];
 
         PlayerProjectile projObj = Instantiate(attack.projectile, spawnPos, spawnRot);
-        projObj.GetComponent<NetworkObject>().Spawn();
         projObj.GetComponent<Rigidbody>().AddForce(forwardVec * attack.projectileForce, ForceMode.Impulse);
         projObj.Init(weapon.attacks[attackIndex]);
     }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
@@ -18,15 +17,12 @@ public class EnemySpawner : MonoBehaviour
     public float raycastDistance = 200f;
     public LayerMask groundMask;
 
-    List<NetworkObject> aliveEnemies = new List<NetworkObject>();
+    List<GameObject> aliveEnemies = new List<GameObject>();
     float spawnTimer;
     bool spawning;
 
     void Update()
     {
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
-            return;
-
         if (!spawning)
             return;
 
@@ -54,7 +50,7 @@ public class EnemySpawner : MonoBehaviour
         if (enemyPrefabs == null || enemyPrefabs.Length == 0)
             return;
 
-        Transform playerTransform = GetRandomPlayerTransform();
+        Transform playerTransform = GetPlayerTransform();
 
         if (playerTransform == null)
             return;
@@ -65,33 +61,11 @@ public class EnemySpawner : MonoBehaviour
         GameObject enemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
         GameObject instance = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
 
-        if (instance.TryGetComponent(out NetworkObject networkObject))
-        {
-            networkObject.Spawn();
-            aliveEnemies.Add(networkObject);
-        }
-
-        else
-        {
-            Debug.LogWarning("EnemySpawner: enemyPrefab has no NetworkObject component.");
-        }
+        aliveEnemies.Add(instance);
     }
 
-    Transform GetRandomPlayerTransform()
-    {
-        List<Transform> players = new List<Transform>();
-
-        foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
-        {
-            if (client.PlayerObject != null)
-                players.Add(client.PlayerObject.transform);
-        }
-
-        if (players.Count == 0)
-            return null;
-
-        return players[Random.Range(0, players.Count)];
-    }
+    Transform GetPlayerTransform() => GameManager.Instance.LocalPlayer != null
+        ? GameManager.Instance.LocalPlayer.transform : null;
 
     bool TryGetGroundPoint(Vector3 playerPos, out Vector3 groundPoint)
     {

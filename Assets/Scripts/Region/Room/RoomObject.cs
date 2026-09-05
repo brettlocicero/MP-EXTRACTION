@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Netcode;
 
-public class RoomObject : NetworkBehaviour
+public class RoomObject : MonoBehaviour
 {
     [SerializeField] RoomEnemySpawner enemySpawner;
     [SerializeField] Transform connector;
@@ -13,55 +12,69 @@ public class RoomObject : NetworkBehaviour
     bool spawningComplete = false;
     int enemiesAlive = 0;
 
-    NetworkVariable<bool> barrierUp = new(
-        true, 
-        NetworkVariableReadPermission.Everyone, 
-        NetworkVariableWritePermission.Server
-    );
-
-    NetworkVariable<bool> combatActive = new(
-        false,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server
-    );
-
-    NetworkVariable<int> killCount = new(
-        0,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server
-    );
-
-    public Transform Connector => connector;
-
-    public override void OnNetworkSpawn()
+    bool barrierUpValue = true;
+    bool barrierUp
     {
-        if (barrierObject)
+        get => barrierUpValue;
+        set
         {
-            barrierUp.OnValueChanged += OnBarrierChanged;
-            barrierObject.SetActive(barrierUp.Value);
-        }
-
-        combatActive.OnValueChanged += OnCombatActiveChanged;
-        killCount.OnValueChanged += OnKillCountChanged;
-
-        if (combatActive.Value)
-        {
-            CombatUIManager.Instance.NotifyCombatStarted(enemySpawner.SpawnDuration);
-            CombatUIManager.Instance.UpdateKillCount(killCount.Value);
+            if (barrierUpValue == value) return;
+            bool previous = barrierUpValue;
+            barrierUpValue = value;
+            OnBarrierChanged(previous, value);
         }
     }
 
-    public override void OnNetworkDespawn()
+    bool combatActiveValue = false;
+    bool combatActive
+    {
+        get => combatActiveValue;
+        set
+        {
+            if (combatActiveValue == value) return;
+            bool previous = combatActiveValue;
+            combatActiveValue = value;
+            OnCombatActiveChanged(previous, value);
+        }
+    }
+
+    int killCountValue = 0;
+    int killCount
+    {
+        get => killCountValue;
+        set
+        {
+            if (killCountValue == value) return;
+            int previous = killCountValue;
+            killCountValue = value;
+            OnKillCountChanged(previous, value);
+        }
+    }
+
+    public Transform Connector => connector;
+
+    void Start()
     {
         if (barrierObject)
         {
-            barrierUp.OnValueChanged -= OnBarrierChanged;
+            barrierObject.SetActive(barrierUp);
         }
 
-        combatActive.OnValueChanged -= OnCombatActiveChanged;
-        killCount.OnValueChanged -= OnKillCountChanged;
+        if (combatActive)
+        {
+            CombatUIManager.Instance.NotifyCombatStarted(enemySpawner.SpawnDuration);
+            CombatUIManager.Instance.UpdateKillCount(killCount);
+        }
+    }
 
-        if (combatActive.Value)
+    void OnDestroy()
+    {
+        if (enemySpawner != null)
+        {
+            enemySpawner.OnEnemySpawned -= RegisterEnemy;
+            enemySpawner.OnSpawningComplete -= OnSpawningComplete;
+        }
+        if (combatActive && CombatUIManager.Instance != null)
         {
             CombatUIManager.Instance.NotifyCombatEnded();
         }
@@ -96,20 +109,17 @@ public class RoomObject : NetworkBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        NetworkObject playerNetworkObject = other.GetComponent<NetworkObject>();
-        if (playerNetworkObject == null) return;
-        if (!playerNetworkObject.IsOwner) return;
+        if (other.GetComponent<PlayerController>() == null) return;
 
-        TriggerRoomServerRpc();
+        TriggerRoom();
     }
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    void TriggerRoomServerRpc()
+    void TriggerRoom()
     {
         if (hasTriggered) return;
 
         hasTriggered = true;
-        combatActive.Value = true;
+        combatActive = true;
 
         enemySpawner.OnEnemySpawned += RegisterEnemy;
         enemySpawner.OnSpawningComplete += OnSpawningComplete;
@@ -140,7 +150,7 @@ public class RoomObject : NetworkBehaviour
         enemy.OnEnemyKilled -= OnEnemyKilled;
         enemiesAlive--;
         enemySpawner.NotifyEnemyDied();
-        killCount.Value++;
+        killCount++;
 
         if (spawningComplete && enemiesAlive <= 0)
         {
@@ -150,7 +160,7 @@ public class RoomObject : NetworkBehaviour
 
     void ClearRoom()
     {
-        barrierUp.Value = false;
-        combatActive.Value = false;
+        barrierUp = false;
+        combatActive = false;
     }
 }

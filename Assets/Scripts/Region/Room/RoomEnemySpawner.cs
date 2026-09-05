@@ -1,8 +1,7 @@
 using System.Collections;
 using UnityEngine;
-using Unity.Netcode;
 
-public class RoomEnemySpawner : NetworkBehaviour
+public class RoomEnemySpawner : MonoBehaviour
 {
     [SerializeField] GameObject[] enemyPrefabs;
     [SerializeField] float spawnDuration = 60f;
@@ -21,7 +20,6 @@ public class RoomEnemySpawner : NetworkBehaviour
 
     public void StartEnemySpawning()
     {
-        if (!IsServer) return;
         if (isSpawning) return;
 
         isSpawning = true;
@@ -60,7 +58,6 @@ public class RoomEnemySpawner : NetworkBehaviour
 
         GameObject prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
         GameObject enemy = Instantiate(prefab, spawnPosition, Quaternion.identity);
-        enemy.GetComponent<NetworkObject>().Spawn();
 
         aliveCount++;
         OnEnemySpawned?.Invoke(enemy);

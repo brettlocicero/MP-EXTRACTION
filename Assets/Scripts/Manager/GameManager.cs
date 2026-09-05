@@ -1,8 +1,7 @@
 using System.Collections;
-using Unity.Netcode;
 using UnityEngine;
 
-public class GameManager : NetworkBehaviour
+public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
@@ -16,22 +15,19 @@ public class GameManager : NetworkBehaviour
     [Header("Region Database")]
     [SerializeField] RegionSO[] regions;
 
+    [Header("Single Player")]
+    [SerializeField] GameObject playerPrefab;
+    [SerializeField] Camera menuCamera;
+    [SerializeField] UnityEngine.UI.Button playButton;
+
     PlayerController localPlayer;
     bool hasGeneratedRegion = false;
 
     public PlayerController LocalPlayer => localPlayer;
 
-    public NetworkVariable<int> CurrentRegion = new(
-        -1,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server
-    );
+    public int CurrentRegion { get; private set; } = -1;
 
-    public NetworkVariable<int> RegionSeed = new(
-        0,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server
-    );
+    public int RegionSeed { get; private set; } = 0;
 
     void Awake()
     {
@@ -44,31 +40,33 @@ public class GameManager : NetworkBehaviour
         Instance = this;
     }
 
-    public override void OnNetworkSpawn()
+    void Start()
     {
-        CurrentRegion.OnValueChanged += OnRegionChanged;
-
-        if (CurrentRegion.Value != -1)
-        {
-            OnRegionChanged(-1, CurrentRegion.Value);
-        }
-
-        if (NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-        }
+        playButton.onClick.AddListener(StartSinglePlayer);
     }
 
-    public override void OnNetworkDespawn()
+    void OnDestroy()
     {
-        CurrentRegion.OnValueChanged -= OnRegionChanged;
+        if (playButton != null) playButton.onClick.RemoveListener(StartSinglePlayer);
+        if (Instance == this) Instance = null;
+    }
 
-        if (NetworkManager.Singleton != null)
+    public void StartSinglePlayer()
+    {
+        if (localPlayer != null) return;
+        if (playerPrefab == null)
         {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            Debug.LogError("GameManager: assign the player prefab.");
+            return;
         }
+
+        Transform spawn = playerSpawnPoints.Length > 0 ? playerSpawnPoints[0] : null;
+        GameObject player = Instantiate(playerPrefab,
+            spawn != null ? spawn.position : Vector3.zero,
+            spawn != null ? spawn.rotation : Quaternion.identity);
+        RegisterPlayer(player.GetComponent<PlayerController>());
+        if (menuCamera != null) menuCamera.gameObject.SetActive(false);
+        SwapToGameUI();
     }
 
     public void RegisterPlayer(PlayerController localPlayer)
@@ -78,36 +76,20 @@ public class GameManager : NetworkBehaviour
 
     public void StartGameSession()
     {
-        if (!IsServer)
-            return;
+        if (hasGeneratedRegion || localPlayer == null) return;
 
         Debug.Log("[GameManager] Starting game session...");
 
         int seed = new System.Random().Next(int.MinValue, int.MaxValue);
         int regionIndex = GetRegionIndex(testRegion);
 
-        RegionSeed.Value = seed;
-        CurrentRegion.Value = regionIndex;
+        if (regionIndex < 0) return;
 
-        GenerateRegionClientRpc(regionIndex, seed);
-        enemySpawner.StartSpawning();
-    }
-
-    [ClientRpc]
-    void GenerateRegionClientRpc(int regionIndex, int seed)
-    {
-        if (regionIndex < 0 || regionIndex >= regions.Length)
-            return;
+        RegionSeed = seed;
+        CurrentRegion = regionIndex;
 
         GenerateRegion(regions[regionIndex], seed);
-    }
-
-    void OnRegionChanged(int previousRegion, int newRegion)
-    {
-        if (newRegion < 0 || newRegion >= regions.Length)
-            return;
-
-        GenerateRegion(regions[newRegion], RegionSeed.Value);
+        enemySpawner.StartSpawning();
     }
 
     void GenerateRegion(RegionSO region, int seed)
@@ -128,25 +110,6 @@ public class GameManager : NetworkBehaviour
 
         Debug.LogError($"Region '{region.name}' is not present in the GameManager region list.");
         return -1;
-    }
-
-    void OnClientConnected(ulong clientId)
-    {
-        if (clientId == NetworkManager.Singleton.LocalClientId)
-        {
-            SwapToGameUI();
-        }
-    }
-
-    void OnClientDisconnected(ulong clientId)
-    {
-        if (!IsServer) return;
-
-        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient client))
-        {
-            PlayerCurrency currency = client.PlayerObject.GetComponent<PlayerCurrency>();
-            currency.PersistCurrentSouls();
-        }
     }
 
     void SwapToGameUI()

@@ -494,7 +494,6 @@ GameObject:
   m_Component:
   - component: {fileID: 245158660330953214}
   - component: {fileID: 2890028008963004047}
-  - component: {fileID: 1339074622414334246}
   m_Layer: 0
   m_Name: Humanoid Animator
   m_TagString: Untagged
@@ -542,45 +541,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1339074622414334246
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 878299076775676678}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkAnimator
-  ShowTopMostFoldoutHeaderGroup: 1
-  NetworkAnimatorExpanded: 0
-  AuthorityMode: 1
-  m_Animator: {fileID: 2890028008963004047}
-  TransitionStateInfoList:
-  - IsCrossFadeExit: 0
-    Layer: 0
-    OriginatingState: 229373857
-    DestinationState: 1296914148
-    TransitionDuration: 0.25
-    TriggerNameHash: -1079195894
-    TransitionIndex: 0
-  AnimatorParameterEntries:
-    ParameterEntries:
-    - name: PlayerSlash
-      NameHash: -1079195894
-      Synchronize: 1
-      ParameterType: 9
-    - name: PlayerHit
-      NameHash: 533320429
-      Synchronize: 1
-      ParameterType: 9
-    - name: Movement
-      NameHash: 229373857
-      Synchronize: 1
-      ParameterType: 1
-  AnimatorParametersExpanded: 0
 --- !u!1 &930362446705649837
 GameObject:
   m_ObjectHideFlags: 0

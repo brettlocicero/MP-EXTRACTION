@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Netcode;
 using UnityEngine;
 
 public class WeaponObject : ItemObject
@@ -58,7 +57,6 @@ public class WeaponObject : ItemObject
     {
         WeaponContext weaponContext = new WeaponContext
         {
-            SourceClientId = NetworkManager.Singleton.LocalClientId,
             Damage = attack.damage,
             StunTime = attack.stunTime
         };
@@ -113,7 +111,7 @@ public class WeaponObject : ItemObject
     void LaunchProjectile(Attack attack, WeaponContext weaponContext)
     {
         Vector3 forwardVec = cameraTransform.forward;
-        playerController.LaunchProjectileRpc(weapon.id, comboIndex, hitSpot.position, hitSpot.rotation, forwardVec);
+        playerController.LaunchProjectile(weapon.id, comboIndex, hitSpot.position, hitSpot.rotation, forwardVec);
     }
 
     void TriggerAttackHitbox(Attack attack, WeaponContext weaponContext) 
