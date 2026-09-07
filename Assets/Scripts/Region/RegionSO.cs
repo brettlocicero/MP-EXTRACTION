@@ -12,8 +12,6 @@ public class RegionSO : ScriptableObject
     [SerializeField] GameObject regionBase;
 
     [Header("Landmarks")]
-    [SerializeField] int landmarkAmount = 15;
-    [SerializeField] int extractionPointCount = 2;
     [SerializeField] LandmarkSO[] landmarks;
     [SerializeField] float placementRadius = 400f;
     [SerializeField] float minDistanceFromOrigin = 60f;
@@ -49,7 +47,7 @@ public class RegionSO : ScriptableObject
         if (landmarks.Length == 0)
             return;
 
-        List<LandmarkSO> placementOrder = BuildPlacementOrder(rng);
+        List<LandmarkSO> placementOrder = BuildPlacementOrder();
         MinDistanceSampler sampler = new MinDistanceSampler(minLandmarkBuffer);
         Vector2 origin2D = new Vector2(regionRoot.position.x, regionRoot.position.z);
 
@@ -90,67 +88,20 @@ public class RegionSO : ScriptableObject
         return false;
     }
 
-    List<LandmarkSO> BuildPlacementOrder(System.Random rng)
+    List<LandmarkSO> BuildPlacementOrder()
     {
         List<LandmarkSO> order = new();
 
-        AddRandomOfRole(rng, order, LandmarkRole.BossArena, 1);
-        AddRandomOfRole(rng, order, LandmarkRole.Extraction, extractionPointCount);
-
-        LandmarkSO[] pool = FilterByRole(LandmarkRole.Powerup, LandmarkRole.Combat, LandmarkRole.KeyItem);
-        int poolAmount = Mathf.Max(0, landmarkAmount - order.Count);
-
-        for (int i = 0; i < poolAmount && pool.Length > 0; i++)
-            order.Add(pool[rng.Next(pool.Length)]);
+        foreach (LandmarkSO landmark in landmarks)
+        {
+            for (int i = 0; i < landmark.TargetCount; i++)
+                order.Add(landmark);
+        }
 
         // Largest footprints first, so small landmarks fill the gaps left around them.
         order.Sort((a, b) => b.FootprintRadius.CompareTo(a.FootprintRadius));
 
         return order;
-    }
-
-    void AddRandomOfRole(System.Random rng, List<LandmarkSO> order, LandmarkRole role, int count)
-    {
-        LandmarkSO[] candidates = FilterByRole(role);
-
-        if (candidates.Length == 0)
-            return;
-
-        for (int i = 0; i < count; i++)
-            order.Add(candidates[rng.Next(candidates.Length)]);
-    }
-
-    LandmarkSO[] FilterByRole(params LandmarkRole[] roles)
-    {
-        List<LandmarkSO> filtered = new();
-
-        foreach (LandmarkSO landmark in landmarks)
-        {
-            if (Array.IndexOf(roles, landmark.Role) >= 0)
-                filtered.Add(landmark);
-        }
-
-        return filtered.ToArray();
-    }
-
-    bool TryFindIndependentPosition(System.Random rng, Vector2 origin2D, float radius, Func<Vector2, bool> isValidCandidate, MinDistanceSampler sampler, out Vector2 result)
-    {
-        for (int attempt = 0; attempt < maxPlacementAttempts; attempt++)
-        {
-            float angle = (float)(rng.NextDouble() * Mathf.PI * 2.0);
-            float distance = minDistanceFromOrigin + (float)(rng.NextDouble() * (placementRadius - minDistanceFromOrigin));
-            Vector2 candidate = origin2D + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
-
-            if (sampler.IsSpaceAvailable(candidate, radius) && isValidCandidate(candidate))
-            {
-                sampler.AddAcceptedPoint(candidate, radius);
-                result = candidate;
-                return true;
-            }
-        }
-
-        result = Vector2.zero;
-        return false;
     }
 
     void PlaceLandmarkInstance(Transform regionRoot, System.Random rng, LandmarkSO landmark, Vector2 point2D)

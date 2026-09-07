@@ -12,10 +12,12 @@ public class LandmarkSO : ScriptableObject
 
     [Header("Placement")]
     [SerializeField] float footprintRadius = 5f;
+    [SerializeField] int targetCount = 1;
 
     public string LandmarkName => landmarkName;
     public LandmarkObject LandmarkObject => landmarkObject;
     public LandmarkSize Size => size;
     public LandmarkRole Role => role;
     public float FootprintRadius => footprintRadius;
+    public int TargetCount => targetCount;
 }

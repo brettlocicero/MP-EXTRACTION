@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a93d824f032f8434cbe4987a97e5ce8a, type: 3}
-  m_Name: Ruined Fort
+  m_Name: Testing Landmark
   m_EditorClassIdentifier: Assembly-CSharp::LandmarkSO
-  landmarkName: Ruined Fort
-  landmarkObject: {fileID: 8373816947166868097, guid: d65f8649c8f1b97499430a774756a963, type: 3}
-  size: 1
-  role: 1
-  footprintRadius: 50
-  targetCount: 5
+  landmarkName: Offering Statue
+  landmarkObject: {fileID: 3606900381113842512, guid: 02189b2ce9e875f4fb46403780884b48, type: 3}
+  size: 0
+  role: 0
+  footprintRadius: 8
+  targetCount: 15
