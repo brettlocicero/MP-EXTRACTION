@@ -14,6 +14,10 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] InventoryItemUI itemPrefab;
     [SerializeField] ItemInfoPanel itemInfoPanel;
 
+    [Header("Layout")]
+    [SerializeField] RectTransform layoutRoot;
+    [SerializeField] Vector2 layoutReferenceSize = new Vector2(1720f, 920f);
+
     readonly Dictionary<InventoryItem, InventoryItemUI> itemUIs = new();
 
     [HideInInspector] public bool inventoryOpen = false;
@@ -23,10 +27,23 @@ public class InventoryUI : MonoBehaviour
 
     void Start()
     {
+        FitLayout();
         BuildGrid();
 
         foreach (InventoryItem item in inventoryManager.Items)
             HandleItemAdded(item);
+    }
+
+    void OnRectTransformDimensionsChange() => FitLayout();
+
+    void FitLayout()
+    {
+        if (layoutRoot == null) return;
+
+        Rect available = ((RectTransform)transform).rect;
+        float scale = Mathf.Min(1f, available.width / Mathf.Max(1f, layoutReferenceSize.x),
+            available.height / Mathf.Max(1f, layoutReferenceSize.y));
+        layoutRoot.localScale = Vector3.one * Mathf.Max(0.01f, scale);
     }
 
     void Update() 
@@ -79,6 +96,8 @@ public class InventoryUI : MonoBehaviour
 
     void BuildGrid()
     {
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = inventoryManager.Width;
         foreach (Transform child in gridLayout.transform)
             Destroy(child.gameObject);
 
@@ -217,6 +236,7 @@ public class InventoryUI : MonoBehaviour
 
         else
         {
+            itemInfoPanel.HideItemPanel();
             inventoryCanvasGroup.alpha = 0f;
             inventoryCanvasGroup.interactable = false;
             inventoryCanvasGroup.blocksRaycasts = false;

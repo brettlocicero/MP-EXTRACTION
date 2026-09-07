@@ -68,6 +68,7 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        inventoryUI.ItemInfoPanel.HideItemPanel();
         transform.SetParent(inventoryUI.ItemParent);
         transform.SetAsLastSibling();
 
