@@ -1193,6 +1193,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01d80ac37ffdb2545b6094c6bad59c8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIPanelManager
+  interactionText: {fileID: 0}
+  interactionUiObject: {fileID: 0}
 --- !u!4 &265294192 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4008485167572645205, guid: 1d1dbd260c4488747a1e500cade28b63, type: 3}
@@ -3729,6 +3731,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RegionGenerator
   ShowTopMostFoldoutHeaderGroup: 1
+  m_NetworkManager: {fileID: 0}
+  <IsLocalPlayer>k__BackingField: 0
+  <IsOwner>k__BackingField: 0
+  <IsServer>k__BackingField: 0
+  <HasAuthority>k__BackingField: 0
+  <IsSessionOwner>k__BackingField: 0
+  <ServerIsHost>k__BackingField: 0
+  <IsClient>k__BackingField: 0
+  <IsHost>k__BackingField: 0
+  <IsOwnedByServer>k__BackingField: 0
+  <IsSpawned>k__BackingField: 0
+  m_NetworkObject: {fileID: 0}
+  <NetworkObjectId>k__BackingField: 0
+  <NetworkBehaviourId>k__BackingField: 0
+  <OwnerClientId>k__BackingField: 0
+  <IsDestroying>k__BackingField: 0
+  m_VarInit: 0
+  <m_TargetIdBeingSynchronized>k__BackingField: 0
   hubObjects: {fileID: 598330342}
   regionRoot: {fileID: 648846254}
   availableRegions:
@@ -3736,6 +3756,8 @@ MonoBehaviour:
   playerSpawnPos: {x: 0, y: 2, z: 0}
   regionTransitionAnimator: {fileID: 1976826578}
   transitionDuration: 2
+  currentRegion: {fileID: 0}
+  spawnedRegionInstance: {fileID: 0}
 --- !u!114 &629687393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4568,8 +4590,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3153c294e6a9c446b9fac45818940f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractionText
-  interactionText: {fileID: 699611162}
-  interactionUiObject: {fileID: 1600835713}
+  canvasGroup: {fileID: 0}
+  damageText: {fileID: 0}
+  lifetime: 0.8
+  riseDistance: 40
+  fadeStartDelay: 0.3
+  punchScale: 1.4
+  punchDuration: 0.15
+  settleScale: 1
+  horizontalDrift: 15
+  bigHitDamageThreshold: 40
+  bigHitMaxScale: 1.8
+  bigHitColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &751736299
 GameObject:
   m_ObjectHideFlags: 0
@@ -7966,6 +7998,10 @@ MonoBehaviour:
   timerBar: {fileID: 1096693790}
   timerText: {fileID: 716437370}
   killCountText: {fileID: 524456606}
+  activeCombatCount: 0
+  timeRemaining: 0
+  totalDuration: 0
+  timerRunning: 0
 --- !u!1 &1237893081
 GameObject:
   m_ObjectHideFlags: 0
@@ -11753,19 +11789,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36f1aa2f09a61a14dbed24686631f0db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RegionTransitionAnimator
-  ingameUI: {fileID: 1054252473}
-  regionEntrance: {fileID: 142901267}
-  screenCover: {fileID: 1019046902}
-  ingameUIFadeOutDuration: 1
-  ingameUIFadeInStart: 9
-  ingameUIFadeInDuration: 1
-  regionEntranceFadeInStart: 3
-  regionEntranceFadeInDuration: 1
-  regionEntranceFadeOutStart: 7
-  regionEntranceFadeOutDuration: 3
-  screenCoverFadeInDuration: 1
-  screenCoverFadeOutStart: 2.5
-  screenCoverFadeOutDuration: 1.5
+  ShowTopMostFoldoutHeaderGroup: 1
+  hubObjects: {fileID: 0}
+  regionRoot: {fileID: 0}
+  availableRegions: []
+  playerSpawnPos: {x: 0, y: 0, z: 0}
+  regionTransitionAnimator: {fileID: 0}
+  transitionDuration: 2
 --- !u!4 &1994771552 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4008485167572645205, guid: 1d1dbd260c4488747a1e500cade28b63, type: 3}
