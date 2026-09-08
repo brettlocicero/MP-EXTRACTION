@@ -117,13 +117,7 @@ public class ItemInfoPanel : MonoBehaviour
         if (item.Data is WeaponSO weapon)
         {
             StringBuilder sb = new StringBuilder();
-
-            if (!string.IsNullOrWhiteSpace(item.Data.description))
-            {
-                sb.AppendLine(item.Data.description);
-                sb.AppendLine();
-            }
-
+            
             var damageRange = weapon.GetDamageRange();
             if (damageRange.Item1.Equals(damageRange.Item2))
                 sb.AppendLine($"Damage <color=red>{damageRange.Item1}</color>");
