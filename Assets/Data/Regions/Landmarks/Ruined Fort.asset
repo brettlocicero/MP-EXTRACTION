@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Ruined Fort
   m_EditorClassIdentifier: Assembly-CSharp::LandmarkSO
   landmarkName: Ruined Fort
-  landmarkObject: {fileID: 8373816947166868097, guid: d65f8649c8f1b97499430a774756a963, type: 3}
+  landmarkObject: {fileID: -7687001680633503604, guid: bac7248a7a0f1094f8571f1a2925f208, type: 3}
   size: 1
   role: 1
-  footprintRadius: 50
-  targetCount: 5
+  footprintRadius: 25
+  targetCount: 10

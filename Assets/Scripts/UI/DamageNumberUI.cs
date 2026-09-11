@@ -69,6 +69,8 @@ public class DamageNumberUI : MonoBehaviour
     {
         if (followTarget != null)
             lastKnownWorldPos = followTarget.TransformPoint(localHitOffset);
+        if (followCamera == null) 
+            return;
 
         Vector3 screenPos = followCamera.WorldToScreenPoint(lastKnownWorldPos);
 
