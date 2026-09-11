@@ -43,8 +43,6 @@ public class RegionGenerator : NetworkBehaviour
         ApplyAtmosphere(current);
     }
 
-    // --- Generation flow ---
-
     public void GenerateRegion(RegionSO region, int regionSeed)
     {
         if (!IsServer)
@@ -65,23 +63,21 @@ public class RegionGenerator : NetworkBehaviour
         currentRegion = region;
         currentRegionIndex.Value = regionIndex;
 
-        SpawnRegionBaseRpc(regionIndex, regionSeed);
+        GenerateRegionRpc(regionIndex);
         PostGenerationRpc();
-        // MoveAllPlayers();
+        MoveAllPlayers();
     }
 
-    // --- Region base spawn/clear (local per-client, non-networked) ---
 
     [Rpc(SendTo.Everyone)]
-    void SpawnRegionBaseRpc(int regionIndex, int seed)
+    void GenerateRegionRpc(int regionIndex)
     {
         ClearInstancedRegion();
 
         Vector3 spawnPos = regionRoot != null ? regionRoot.position : Vector3.zero;
-        spawnedRegionInstance = Instantiate(availableRegions[regionIndex].RegionBase, spawnPos, Quaternion.identity, regionRoot);
+        // spawnedRegionInstance = Instantiate(availableRegions[regionIndex].RegionBase, spawnPos, Quaternion.identity, regionRoot);
 
-        System.Random localRng = new System.Random(seed);
-        availableRegions[regionIndex].SpawnLandmarks(localRng, regionRoot);
+        availableRegions[regionIndex].SpawnRooms(regionRoot);
     }
 
     void ClearInstancedRegion()
@@ -91,8 +87,6 @@ public class RegionGenerator : NetworkBehaviour
 
         spawnedRegionInstance = null;
     }
-
-    // --- RPCs ---
 
     [Rpc(SendTo.Everyone)]
     void PlayTransitionRpc()
@@ -105,8 +99,6 @@ public class RegionGenerator : NetworkBehaviour
     {
         hubObjects.SetActive(false);
     }
-
-    // --- Helpers ---
 
     void ApplyAtmosphere(int regionIndex)
     {

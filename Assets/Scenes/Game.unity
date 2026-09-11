@@ -3737,7 +3737,7 @@ MonoBehaviour:
   regionRoot: {fileID: 648846254}
   availableRegions:
   - {fileID: 11400000, guid: 8bc807014278cad4abbd9388a9b5aa42, type: 2}
-  playerSpawnPos: {x: 0, y: 2, z: 0}
+  playerSpawnPos: {x: 0, y: 2, z: 20}
   regionTransitionAnimator: {fileID: 1976826578}
   transitionDuration: 2
 --- !u!114 &629687393
