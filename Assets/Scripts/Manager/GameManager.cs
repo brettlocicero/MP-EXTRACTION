@@ -90,7 +90,7 @@ public class GameManager : NetworkBehaviour
         CurrentRegion.Value = regionIndex;
 
         GenerateRegionClientRpc(regionIndex, seed);
-        enemySpawner.StartSpawning();
+        // enemySpawner.StartSpawning();
     }
 
     [ClientRpc]

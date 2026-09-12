@@ -34,6 +34,7 @@ public class RegionSO : ScriptableObject
         {
             RoomObject roomObject = rooms[Random.Range(0, rooms.Length)];
             RoomObject roomInstance = Instantiate(roomObject, cursorPosition, cursorRotation, regionRoot);
+            roomInstance.Initialize();
 
             if (!roomInstance.TryGetComponent(out RoomObject room) || room.Connector == null)
             {
