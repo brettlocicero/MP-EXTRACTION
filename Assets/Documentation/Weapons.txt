@@ -1,0 +1,8 @@
+1. WEAPON DEFINITIONS
+    - Sword
+    - Throwing Knife
+    - Magic Staff
+
+2. WEAPON UPGRADES
+    - Shards (should add a visual to the weapon object)
+    - Enchant (modifier)

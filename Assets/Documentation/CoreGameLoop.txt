@@ -12,10 +12,8 @@
     - Set location for Expedition / Raid / Run?
 
 2. REGION ACTIVITIES
-    - Enter seeded generated region
-    - Enemies are passively spawning, and will get more abundant over time
-    - Final boss at the end (after 15 minutes?)
+    - Enter seeded generated (mostly linear) region
+    - Final boss at the end of region chunks
     - Loot available
         - Shards
-        - Relics 
         - Simple materials/consumables to assist future runs (on ground and dropped?)
