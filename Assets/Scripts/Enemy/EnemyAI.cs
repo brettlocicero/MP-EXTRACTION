@@ -3,31 +3,19 @@ using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(Rigidbody))]
 public class EnemyAI : NetworkBehaviour
 {
     public System.Action<EnemyAI> OnEnemyKilled;
 
-    Rigidbody rb;
+    [Header("Components")]
+    [SerializeField] EnemyMovement movement;
+    [SerializeField] EnemyAttack attack;
 
     [Header("Stats")]
     [SerializeField] float maxHealth = 100f;
 
-    [Header("Movement Settings")]
-    [SerializeField] float moveSpeed = 3.5f;
-    [SerializeField] float rotationSpeed = 10f;
-
     [Header("AI Settings")]
     [SerializeField] float targetUpdateInterval = 0.5f;
-
-    [Header("Attack Settings")]
-    [SerializeField] Transform attackHitSpot;
-    [SerializeField] float attackRange = 2f;
-    [SerializeField] int attackDamage = 10;
-    [SerializeField] float attackHitTime = 0.35f;
-    [SerializeField] float attackDuration = 0.8f;
-    [SerializeField] float attackCooldown = 1f;
-    [SerializeField] LayerMask playerLayerMask;
 
     [Header("References")]
     [SerializeField] Animator animator;
@@ -53,14 +41,8 @@ public class EnemyAI : NetworkBehaviour
     float nextTargetUpdateTime;
 
     bool isStunned = false;
-    float nextAttackTime;
-    bool isAttacking = false;
     bool isDead = false;
     Coroutine stunCoroutine;
-    Coroutine attackCoroutine;
-
-    bool isMoving = false;
-    Vector3 moveTarget;
 
     NetworkVariable<float> currentHealth = new(
         100f,
@@ -70,10 +52,8 @@ public class EnemyAI : NetworkBehaviour
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
-
-        if (audioSource == null) audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
     }
 
     public override void OnNetworkSpawn()
@@ -92,6 +72,75 @@ public class EnemyAI : NetworkBehaviour
         activeDebuffs.Clear();
         debuffVFXInstances.Clear();
     }
+
+    // --- Brain ---
+
+    void Update()
+    {
+        if (!IsServer) return;
+
+        UpdateDebuffs(Time.deltaTime);
+
+        bool canThink = !isDead && !isStunned && !attack.IsAttacking;
+
+        if (canThink && Time.time >= nextTargetUpdateTime)
+        {
+            nextTargetUpdateTime = Time.time + targetUpdateInterval;
+            Think();
+        }
+    }
+
+    void Think()
+    {
+        PlayerState target = FindClosestPlayer();
+
+        if (target == null)
+        {
+            movement.Stop();
+            return;
+        }
+
+        float distance = Vector3.Distance(transform.position, target.transform.position);
+
+        if (distance <= attack.Range)
+        {
+            movement.Stop();
+
+            if (attack.IsReady)
+            {
+                movement.Face(target.transform.position);
+                attack.Execute(target);
+            }
+        }
+
+        else
+        {
+            movement.MoveTo(target.transform.position);
+        }
+    }
+
+    PlayerState FindClosestPlayer()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+
+        PlayerState closest = null;
+        float shortestDistance = Mathf.Infinity;
+
+        foreach (GameObject player in players)
+        {
+            float distance = Vector3.Distance(transform.position, player.transform.position);
+
+            if (distance < shortestDistance && player.TryGetComponent(out PlayerState playerState))
+            {
+                shortestDistance = distance;
+                closest = playerState;
+            }
+        }
+
+        return closest;
+    }
+
+    // --- Debuffs ---
 
     public void AddDebuff(DebuffSO debuff)
     {
@@ -169,133 +218,7 @@ public class EnemyAI : NetworkBehaviour
         debuffVFXInstances.Remove(instanceId);
     }
 
-    void Update()
-    {
-        if (!IsServer) return;
-
-        UpdateDebuffs(Time.deltaTime);
-
-        if (isDead || isStunned || isAttacking) return;
-
-        if (Time.time >= nextTargetUpdateTime)
-        {
-            nextTargetUpdateTime = Time.time + targetUpdateInterval;
-            TargetClosestPlayer();
-        }
-    }
-
-    void FixedUpdate()
-    {
-        if (!IsServer) return;
-        if (!isMoving) return;
-
-        MoveTowards(moveTarget);
-    }
-
-    void TargetClosestPlayer()
-    {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        if (players.Length == 0) return;
-
-        GameObject closestPlayer = null;
-        float shortestDistance = Mathf.Infinity;
-        Vector3 currentPosition = transform.position;
-
-        foreach (GameObject player in players)
-        {
-            float distanceToPlayer = Vector3.Distance(currentPosition, player.transform.position);
-            if (distanceToPlayer < shortestDistance)
-            {
-                shortestDistance = distanceToPlayer;
-                closestPlayer = player;
-            }
-        }
-
-        if (closestPlayer == null)
-            return;
-
-        float distance = Vector3.Distance(transform.position, closestPlayer.transform.position);
-
-        if (distance <= attackRange)
-        {
-            isMoving = false;
-
-            if (Time.time >= nextAttackTime)
-            {
-                attackCoroutine = StartCoroutine(AttackRoutine(closestPlayer.GetComponent<PlayerState>()));
-            }
-        }
-
-        else
-        {
-            moveTarget = closestPlayer.transform.position;
-            isMoving = true;
-        }
-    }
-
-    void MoveTowards(Vector3 destination)
-    {
-        Vector3 direction = destination - rb.position;
-        direction.y = 0f;
-
-        if (direction.sqrMagnitude < 0.01f)
-            return;
-
-        direction.Normalize();
-
-        Vector3 newPosition = rb.position + direction * moveSpeed * Time.fixedDeltaTime;
-        rb.MovePosition(newPosition);
-
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-        rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
-    }
-
-    IEnumerator AttackRoutine(PlayerState target)
-    {
-        isAttacking = true;
-        isMoving = false;
-        nextAttackTime = Time.time + attackCooldown;
-
-        FaceTarget(target);
-        PlayAttackAnimationRpc();
-
-        yield return new WaitForSeconds(attackHitTime);
-
-        TriggerAttackHitbox();
-
-        yield return new WaitForSeconds(Mathf.Max(0f, attackDuration - attackHitTime));
-
-        isAttacking = false;
-    }
-
-    void FaceTarget(PlayerState target)
-    {
-        if (target == null)
-            return;
-
-        Vector3 lookPos = target.transform.position - transform.position;
-        lookPos.y = 0f;
-
-        if (lookPos.sqrMagnitude > 0.001f)
-            rb.MoveRotation(Quaternion.LookRotation(lookPos));
-    }
-
-    void TriggerAttackHitbox()
-    {
-        Collider[] hits = Physics.OverlapSphere(attackHitSpot.position, attackRange, playerLayerMask);
-
-        foreach (Collider hit in hits)
-        {
-            if (hit.TryGetComponent(out PlayerState player))
-                player.Damage(attackDamage);
-        }
-    }
-
-    [Rpc(SendTo.Everyone)]
-    void PlayAttackAnimationRpc()
-    {
-        animator.SetTrigger("Attack");
-    }
+    // --- Damage ---
 
     public void TakeDamage(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint = default)
     {
@@ -342,7 +265,7 @@ public class EnemyAI : NetworkBehaviour
             TriggerStun(stunTime);
         }
     }
-    
+
     [Rpc(SendTo.SpecifiedInParams)]
     void ShowDamageNumberRpc(float damage, Vector3 hitPoint, RpcParams rpcParams)
     {
@@ -353,33 +276,40 @@ public class EnemyAI : NetworkBehaviour
     {
         ModifyHealth(damage, 0f, AttackDirection.None, transform.position, sourceClientId);
     }
-    
-    void TriggerStun(float customStunDuration)
+
+    // --- Stun ---
+
+    void TriggerStun(float duration)
     {
-        if (!IsServer) return;
-        if (customStunDuration <= 0f) return;
+        attack.Cancel();
+        movement.Stop();
 
         if (stunCoroutine != null)
             StopCoroutine(stunCoroutine);
 
-        if (attackCoroutine != null)
-        {
-            StopCoroutine(attackCoroutine);
-            attackCoroutine = null;
-            isAttacking = false;
-        }
-
-        stunCoroutine = StartCoroutine(StunRoutine(customStunDuration));
+        stunCoroutine = StartCoroutine(StunRoutine(duration));
     }
 
     IEnumerator StunRoutine(float duration)
     {
         isStunned = true;
-        isMoving = false;
 
         yield return new WaitForSeconds(duration);
 
         isStunned = false;
+    }
+
+    // --- Animation ---
+
+    public void PlayAttackAnimation()
+    {
+        PlayAttackAnimationRpc();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void PlayAttackAnimationRpc()
+    {
+        animator.SetTrigger("Attack");
     }
 
     [Rpc(SendTo.Everyone)]
@@ -437,8 +367,13 @@ public class EnemyAI : NetworkBehaviour
         }
     }
 
+    // --- Death ---
+
     void Die()
     {
+        attack.Cancel();
+        movement.Stop();
+
         activeDebuffs.Clear();
         OnEnemyKilled?.Invoke(this);
         AwardSouls();

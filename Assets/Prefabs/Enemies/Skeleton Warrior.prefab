@@ -2907,6 +2907,8 @@ GameObject:
   - component: {fileID: 7648414632856468138}
   - component: {fileID: 9183907460718566150}
   - component: {fileID: 5031214266138607084}
+  - component: {fileID: 9133345235396723596}
+  - component: {fileID: 8115701359087169496}
   - component: {fileID: 8274500225571209933}
   - component: {fileID: 7679946380430543039}
   - component: {fileID: 7540113765672842631}
@@ -2951,7 +2953,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 3366770810
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 3366770810
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -2978,19 +2980,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   ShowTopMostFoldoutHeaderGroup: 1
+  movement: {fileID: 8115701359087169496}
+  attack: {fileID: 9133345235396723596}
   maxHealth: 30
-  moveSpeed: 8
-  rotationSpeed: 12
   targetUpdateInterval: 0.5
-  attackHitSpot: {fileID: 501913071095396086}
-  attackRange: 4
-  attackDamage: 10
-  attackHitTime: 0.6666667
-  attackDuration: 1.25
-  attackCooldown: 1
-  playerLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
   animator: {fileID: 8620166371696577679}
   hitVFXParticles:
   - {fileID: 5161991466970692268}
@@ -3004,6 +2997,48 @@ MonoBehaviour:
     lootItem: {fileID: 5226406177700735976, guid: 2e9a6c6f1e4eabe4fb0e22ebe13213e5, type: 3}
   soulsFlyVFXPrefab: {fileID: 5368100601339162271, guid: 57dca7348365f45409c2a3bf07a27ee6, type: 3}
   soulsDropAmount: 10
+--- !u!114 &9133345235396723596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2375243330899510526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b02343d9c7e0adc41a378dbac40fb4f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyAttack
+  range: 2.5
+  cooldown: 1
+  enemy: {fileID: 5031214266138607084}
+  hitSpot: {fileID: 501913071095396086}
+  playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
+  damage: 10
+  hitTime: 0.35
+  duration: 0.8
+--- !u!114 &8115701359087169496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2375243330899510526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17278230e9a7efb4fbbc1bd949bf40ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RigidbodyEnemyMovement
+  moveSpeed: 8
+  rotationSpeed: 10
+  stoppingDistance: 2
+  separationRadius: 1.5
+  separationWeight: 1
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!136 &8274500225571209933
 CapsuleCollider:
   m_ObjectHideFlags: 0
