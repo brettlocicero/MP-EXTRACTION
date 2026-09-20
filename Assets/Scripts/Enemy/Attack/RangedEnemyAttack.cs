@@ -5,11 +5,8 @@ using Unity.Netcode;
 public class RangedEnemyAttack : EnemyAttack
 {
     [Header("Projectile")]
-    [SerializeField] EnemyProjectile projectilePrefab;
-    [SerializeField] Transform firePoint;
-    [SerializeField] float projectileForce = 20f;
-    [SerializeField] float damage = 10f;
-    [SerializeField] float windupTime = 0.3f;
+    [SerializeField] float attackDuration = 1.5f;
+    [SerializeField] RangedAttack[] rangedAttacks;
 
     EnemyAI enemyAI;
     Coroutine attackCoroutine;
@@ -39,21 +36,39 @@ public class RangedEnemyAttack : EnemyAttack
 
         enemyAI.PlayAttackAnimation();
 
-        yield return new WaitForSeconds(windupTime);
+        foreach (RangedAttack rangedAttack in rangedAttacks)
+            StartCoroutine(FireAtTime(target, rangedAttack));
 
-        if (target != null)
-            FireProjectile(target);
+        yield return new WaitForSeconds(attackDuration);
 
         IsAttacking = false;
     }
 
-    void FireProjectile(PlayerState target)
+    IEnumerator FireAtTime(PlayerState target, RangedAttack rangedAttack)
     {
-        Vector3 direction = (target.transform.position - firePoint.position).normalized;
+        yield return new WaitForSeconds(rangedAttack.windupTime);
 
-        EnemyProjectile projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(direction));
+        if (target != null)
+            FireProjectile(target, rangedAttack);
+    }
+
+    void FireProjectile(PlayerState target, RangedAttack rangedAttack)
+    {
+        Vector3 direction = (target.transform.position - rangedAttack.firePoint.position).normalized;
+
+        EnemyProjectile projectile = Instantiate(rangedAttack.projectilePrefab, rangedAttack.firePoint.position, Quaternion.LookRotation(direction));
         projectile.GetComponent<NetworkObject>().Spawn();
-        projectile.GetComponent<Rigidbody>().AddForce(direction * projectileForce, ForceMode.Impulse);
-        projectile.Init(damage);
+        projectile.GetComponent<Rigidbody>().AddForce(direction * rangedAttack.projectileForce, ForceMode.Impulse);
+        projectile.Init(rangedAttack.damage);
+    }
+
+    [System.Serializable]
+    class RangedAttack
+    {
+        public EnemyProjectile projectilePrefab;
+        public float projectileForce = 20f;
+        public float damage = 10f;
+        public float windupTime = 0.3f;
+        public Transform firePoint;
     }
 }

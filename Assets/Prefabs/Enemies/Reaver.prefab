@@ -1437,7 +1437,7 @@ MonoBehaviour:
   animator: {fileID: 4998154998878591481}
   hitVFXParticles: []
   hitSFX: {fileID: 8300000, guid: 99f7a4a19ce0272418d4cdbad0bb6bca, type: 3}
-  deathVFXPrefab: {fileID: 0}
+  deathVFXPrefab: {fileID: 7975065315289970814, guid: 62bfed2336addfd41a4c139f63173b87, type: 3}
   deathSFX: {fileID: 0}
   audioSource: {fileID: 4004058281091155579}
   lootDrops: []
@@ -1459,11 +1459,18 @@ MonoBehaviour:
   minRange: 20
   cooldown: 1.5
   attacksWhileMoving: 1
-  projectilePrefab: {fileID: 951946022161807285, guid: 7c297dbc4d74abc449e195d655fc0120, type: 3}
-  firePoint: {fileID: 5351491958640160067}
-  projectileForce: 40
-  damage: 10
-  windupTime: 0.8333333
+  attackDuration: 1.5
+  rangedAttacks:
+  - projectilePrefab: {fileID: 2459272940042090912, guid: b37917be1b15e4246893f650fd5cb8e9, type: 3}
+    projectileForce: 60
+    damage: 10
+    windupTime: 0.8333333
+    firePoint: {fileID: 6439802504142767087}
+  - projectilePrefab: {fileID: 2459272940042090912, guid: b37917be1b15e4246893f650fd5cb8e9, type: 3}
+    projectileForce: 60
+    damage: 10
+    windupTime: 1
+    firePoint: {fileID: 6296827961065631667}
 --- !u!114 &3154258267611295032
 MonoBehaviour:
   m_ObjectHideFlags: 0
