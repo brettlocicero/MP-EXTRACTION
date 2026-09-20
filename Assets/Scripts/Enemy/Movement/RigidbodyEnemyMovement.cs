@@ -3,10 +3,13 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class RigidbodyEnemyMovement : EnemyMovement
 {
+    enum MoveMode { Idle, Seeking, Fleeing }
+
     [Header("Movement")]
     [SerializeField] float moveSpeed = 3.5f;
     [SerializeField] float rotationSpeed = 10f;
     [SerializeField] float stoppingDistance = 0.1f;
+    [SerializeField] bool ignoreMovementRotation = false;
 
     [Header("Separation")]
     [SerializeField] float separationRadius = 1.5f;
@@ -14,8 +17,8 @@ public class RigidbodyEnemyMovement : EnemyMovement
     [SerializeField] LayerMask enemyLayerMask;
 
     Rigidbody rb;
-    Vector3 destination;
-    bool isMoving;
+    Vector3 focusPoint;
+    MoveMode moveMode = MoveMode.Idle;
 
     void Awake()
     {
@@ -26,13 +29,19 @@ public class RigidbodyEnemyMovement : EnemyMovement
 
     public override void MoveTo(Vector3 destination)
     {
-        this.destination = destination;
-        isMoving = true;
+        focusPoint = destination;
+        moveMode = MoveMode.Seeking;
+    }
+
+    public override void MoveAwayFrom(Vector3 position)
+    {
+        focusPoint = position;
+        moveMode = MoveMode.Fleeing;
     }
 
     public override void Stop()
     {
-        isMoving = false;
+        moveMode = MoveMode.Idle;
         rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
         rb.angularVelocity = Vector3.zero;
     }
@@ -43,26 +52,29 @@ public class RigidbodyEnemyMovement : EnemyMovement
         direction.y = 0f;
 
         if (direction.sqrMagnitude > 0.001f)
-            rb.MoveRotation(Quaternion.LookRotation(direction));
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
+        }
     }
 
     void FixedUpdate()
     {
         rb.angularVelocity = Vector3.zero;
 
-        if (!isMoving)
+        if (moveMode == MoveMode.Idle)
             return;
 
-        Vector3 toDestination = destination - rb.position;
-        toDestination.y = 0f;
+        Vector3 toFocus = focusPoint - rb.position;
+        toFocus.y = 0f;
 
-        if (toDestination.magnitude <= stoppingDistance)
+        if (moveMode == MoveMode.Seeking && toFocus.magnitude <= stoppingDistance)
         {
             Stop();
             return;
         }
 
-        Vector3 seekDirection = toDestination.normalized;
+        Vector3 seekDirection = GetSeekDirection(toFocus);
         Vector3 separationDirection = GetSeparationDirection();
 
         Vector3 moveDirection = (seekDirection + separationDirection * separationWeight).normalized;
@@ -73,8 +85,22 @@ public class RigidbodyEnemyMovement : EnemyMovement
             moveDirection.z * moveSpeed
         );
 
-        Quaternion targetRotation = Quaternion.LookRotation(seekDirection);
-        rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
+        if (!ignoreMovementRotation)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(seekDirection);
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime));
+        }
+    }
+
+    Vector3 GetSeekDirection(Vector3 toFocus)
+    {
+        if (moveMode == MoveMode.Seeking)
+            return toFocus.normalized;
+
+        if (toFocus.sqrMagnitude > 0.001f)
+            return -toFocus.normalized;
+
+        return transform.right;
     }
 
     Vector3 GetSeparationDirection()

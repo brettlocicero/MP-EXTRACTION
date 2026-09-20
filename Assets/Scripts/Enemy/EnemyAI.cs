@@ -32,6 +32,8 @@ public class EnemyAI : NetworkBehaviour
     [SerializeField] GameObject soulsFlyVFXPrefab;
     [SerializeField] int soulsDropAmount = 10;
 
+    PlayerState currentTarget;
+
     readonly Dictionary<int, GameObject> debuffVFXInstances = new();
     readonly List<ActiveDebuff> activeDebuffs = new();
 
@@ -74,7 +76,6 @@ public class EnemyAI : NetworkBehaviour
     }
 
     // --- Brain ---
-
     void Update()
     {
         if (!IsServer) return;
@@ -88,35 +89,38 @@ public class EnemyAI : NetworkBehaviour
             nextTargetUpdateTime = Time.time + targetUpdateInterval;
             Think();
         }
+
+        if (!isDead && !isStunned && currentTarget != null)
+            movement.Face(currentTarget.transform.position);
     }
 
     void Think()
     {
-        PlayerState target = FindClosestPlayer();
+        currentTarget = FindClosestPlayer();
 
-        if (target == null)
+        if (currentTarget == null)
         {
             movement.Stop();
             return;
         }
 
-        float distance = Vector3.Distance(transform.position, target.transform.position);
+        float distance = Vector3.Distance(transform.position, currentTarget.transform.position);
+        bool tooClose = distance < attack.MinRange;
+        bool tooFar = distance > attack.Range;
 
-        if (distance <= attack.Range)
-        {
+        if (tooClose)
+            movement.MoveAwayFrom(currentTarget.transform.position);
+
+        else if (tooFar)
+            movement.MoveTo(currentTarget.transform.position);
+
+        else if (!attack.AttacksWhileMoving)
             movement.Stop();
 
-            if (attack.IsReady)
-            {
-                movement.Face(target.transform.position);
-                attack.Execute(target);
-            }
-        }
+        bool canAttackHere = !tooFar && (attack.AttacksWhileMoving || !tooClose);
 
-        else
-        {
-            movement.MoveTo(target.transform.position);
-        }
+        if (canAttackHere && attack.IsReady)
+            attack.Execute(currentTarget);
     }
 
     PlayerState FindClosestPlayer()
