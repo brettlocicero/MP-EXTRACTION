@@ -8,8 +8,8 @@ public class EnemySpawner : MonoBehaviour
     public GameObject[] enemyPrefabs;
 
     [Header("Spawn Settings")]
-    public float spawnInterval = 3f;
-    public int maxConcurrentEnemies = 10;
+    [Min(0.1f)] public float spawnInterval = 2f;
+    [Range(1, 25)] public int maxConcurrentEnemies = 25;
 
     [Header("Placement")]
     public float minSpawnDistance = 50f;
@@ -32,13 +32,13 @@ public class EnemySpawner : MonoBehaviour
 
         spawnTimer += Time.deltaTime;
 
-        if (spawnTimer < spawnInterval)
+        if (spawnTimer < Mathf.Max(0.1f, spawnInterval))
             return;
 
         spawnTimer = 0f;
-        aliveEnemies.RemoveAll(enemy => enemy == null);
+        aliveEnemies.RemoveAll(enemy => enemy == null || !enemy.IsSpawned);
 
-        if (aliveEnemies.Count >= maxConcurrentEnemies)
+        if (aliveEnemies.Count >= Mathf.Clamp(maxConcurrentEnemies, 1, 25))
             return;
 
         TrySpawnEnemy();
@@ -46,7 +46,32 @@ public class EnemySpawner : MonoBehaviour
 
     public void StartSpawning()
     {
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            return;
+
+        spawnTimer = 0f;
         spawning = true;
+    }
+
+    public void StopSpawning()
+    {
+        spawning = false;
+        spawnTimer = 0f;
+        foreach (NetworkObject enemy in aliveEnemies)
+        {
+            if (enemy != null && enemy.TryGetComponent(out EnemyAI ai))
+                ai.OnEnemyKilled -= OnEnemyKilled;
+        }
+        aliveEnemies.Clear();
+    }
+
+    void OnEnemyKilled(EnemyAI enemy)
+    {
+        if (!aliveEnemies.Remove(enemy.NetworkObject))
+            return;
+
+        enemy.OnEnemyKilled -= OnEnemyKilled;
+        GameManager.Instance.RegisterEnemyKill();
     }
 
     void TrySpawnEnemy()
@@ -63,18 +88,25 @@ public class EnemySpawner : MonoBehaviour
             return;
 
         GameObject enemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+        if (enemyPrefab == null || !enemyPrefab.TryGetComponent<NetworkObject>(out _) ||
+            !enemyPrefab.TryGetComponent<EnemyAI>(out _))
+        {
+            Debug.LogWarning("EnemySpawner: enemy prefab needs NetworkObject and EnemyAI components.");
+            return;
+        }
+
         GameObject instance = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
 
-        if (instance.TryGetComponent(out NetworkObject networkObject))
+        // Place the bottom of the enemy's collider on the arena floor.
+        if (instance.TryGetComponent(out Collider body))
         {
-            networkObject.Spawn();
-            aliveEnemies.Add(networkObject);
+            instance.transform.position += Vector3.up * (spawnPos.y - body.bounds.min.y + 0.05f);
         }
 
-        else
-        {
-            Debug.LogWarning("EnemySpawner: enemyPrefab has no NetworkObject component.");
-        }
+        NetworkObject networkObject = instance.GetComponent<NetworkObject>();
+        instance.GetComponent<EnemyAI>().OnEnemyKilled += OnEnemyKilled;
+        networkObject.Spawn();
+        aliveEnemies.Add(networkObject);
     }
 
     Transform GetRandomPlayerTransform()
@@ -102,7 +134,7 @@ public class EnemySpawner : MonoBehaviour
         Vector3 samplePos = playerPos + offset;
         Vector3 rayOrigin = new Vector3(samplePos.x, playerPos.y + raycastHeight, samplePos.z);
 
-        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastDistance, groundMask))
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastDistance, groundMask, QueryTriggerInteraction.Ignore))
         {
             groundPoint = hit.point;
             return true;

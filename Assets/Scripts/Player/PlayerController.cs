@@ -266,20 +266,9 @@ public class PlayerController : NetworkBehaviour
 
     public void Teleport(Vector3 position, Quaternion rotation)
     {
-        if (!IsServer)
+        // Movement and the NetworkTransform are owner-authoritative.
+        if (!IsOwner)
             return;
-
-        ClientRpcParams rpcParams = new()
-        {
-            Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
-        };
-
-        TeleportClientRpc(position, rotation, rpcParams);
-    }
-
-    [ClientRpc]
-    void TeleportClientRpc(Vector3 position, Quaternion rotation, ClientRpcParams rpcParams = default)
-    {
         controller.enabled = false;
         transform.position = position;
         transform.rotation = rotation;

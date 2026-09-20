@@ -8,7 +8,6 @@ public class GameManager : NetworkBehaviour
 
     [Header("References")]
     [SerializeField] RegionSO testRegion;
-    [SerializeField] Transform[] playerSpawnPoints;
     [SerializeField] CanvasGroup menuUI;
     [SerializeField] CanvasGroup ingameUI;
     [SerializeField] EnemySpawner enemySpawner;
@@ -16,8 +15,17 @@ public class GameManager : NetworkBehaviour
     [Header("Region Database")]
     [SerializeField] RegionSO[] regions;
 
+    [Header("Arena")]
+    [SerializeField] GameObject hubObjects;
+    [SerializeField] Transform regionRoot;
+    [SerializeField, Min(10f)] float arenaSize = 1000f;
+    [SerializeField] Material arenaMaterial;
+    [SerializeField] RegionTransitionAnimator regionTransitionAnimator;
+    [SerializeField] float transitionDuration = 2f;
+
     PlayerController localPlayer;
-    bool hasGeneratedRegion = false;
+    GameObject arena;
+    bool enteringRegion;
 
     public PlayerController LocalPlayer => localPlayer;
 
@@ -27,7 +35,7 @@ public class GameManager : NetworkBehaviour
         NetworkVariableWritePermission.Server
     );
 
-    public NetworkVariable<int> RegionSeed = new(
+    public NetworkVariable<int> RegionKills = new(
         0,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
@@ -46,7 +54,14 @@ public class GameManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        if (IsServer)
+        {
+            CurrentRegion.Value = -1;
+            RegionKills.Value = 0;
+        }
+
         CurrentRegion.OnValueChanged += OnRegionChanged;
+        RegionKills.OnValueChanged += OnKillsChanged;
 
         if (CurrentRegion.Value != -1)
         {
@@ -63,43 +78,61 @@ public class GameManager : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         CurrentRegion.OnValueChanged -= OnRegionChanged;
+        RegionKills.OnValueChanged -= OnKillsChanged;
+        StopAllCoroutines();
+        enteringRegion = false;
+        if (enemySpawner != null)
+            enemySpawner.StopSpawning();
+        if (CombatUIManager.Instance != null)
+            CombatUIManager.Instance.SetRegionActive(false);
+        if (arena != null)
+            Destroy(arena);
+        if (hubObjects != null)
+            hubObjects.SetActive(true);
+        localPlayer = null;
 
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
     }
 
     public void RegisterPlayer(PlayerController localPlayer)
     {
         this.localPlayer = localPlayer;
+        if (arena != null && CurrentRegion.Value >= 0)
+            localPlayer.Teleport(Vector3.zero, Quaternion.identity);
     }
 
     public void StartGameSession()
     {
-        if (!IsServer)
+        if (!IsServer || enteringRegion || CurrentRegion.Value >= 0)
             return;
 
-        Debug.Log("[GameManager] Starting game session...");
-
-        int seed = new System.Random().Next(int.MinValue, int.MaxValue);
         int regionIndex = GetRegionIndex(testRegion);
+        if (regionIndex < 0)
+            return;
 
-        RegionSeed.Value = seed;
-        CurrentRegion.Value = regionIndex;
-
-        GenerateRegionClientRpc(regionIndex, seed);
-        // enemySpawner.StartSpawning();
+        enteringRegion = true;
+        StartCoroutine(EnterRegionRoutine(regionIndex));
     }
 
-    [ClientRpc]
-    void GenerateRegionClientRpc(int regionIndex, int seed)
+    IEnumerator EnterRegionRoutine(int regionIndex)
     {
-        if (regionIndex < 0 || regionIndex >= regions.Length)
-            return;
+        PlayTransitionRpc();
+        yield return new WaitForSeconds(transitionDuration);
 
-        GenerateRegion(regions[regionIndex], seed);
+        RegionKills.Value = 0;
+        CurrentRegion.Value = regionIndex;
+        enemySpawner.StartSpawning();
+        enteringRegion = false;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void PlayTransitionRpc()
+    {
+        regionTransitionAnimator.PlayTransition();
     }
 
     void OnRegionChanged(int previousRegion, int newRegion)
@@ -107,26 +140,47 @@ public class GameManager : NetworkBehaviour
         if (newRegion < 0 || newRegion >= regions.Length)
             return;
 
-        GenerateRegion(regions[newRegion], RegionSeed.Value);
+        if (arena == null)
+        {
+            arena = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            arena.name = "Arena";
+            arena.layer = LayerMask.NameToLayer("Ground");
+            arena.transform.SetParent(regionRoot, false);
+            // The existing player capsule is two metres tall and centred on its origin.
+            arena.transform.position = Vector3.down;
+            arena.transform.localScale = new Vector3(arenaSize / 10f, 1f, arenaSize / 10f);
+            arena.GetComponent<Renderer>().sharedMaterial = arenaMaterial;
+        }
+
+        hubObjects.SetActive(false);
+        regions[newRegion].ApplyRegionAtmosphere();
+        Physics.SyncTransforms();
+        if (localPlayer != null)
+            localPlayer.Teleport(Vector3.zero, Quaternion.identity);
+        CombatUIManager.Instance.SetRegionActive(true);
+        CombatUIManager.Instance.UpdateKillCount(RegionKills.Value);
     }
 
-    void GenerateRegion(RegionSO region, int seed)
+    void OnKillsChanged(int previous, int current)
     {
-        if (hasGeneratedRegion) return;
+        CombatUIManager.Instance.UpdateKillCount(current);
+    }
 
-        RegionGenerator.Instance.GenerateRegion(region, seed);
-        hasGeneratedRegion = true;
+    public void RegisterEnemyKill()
+    {
+        if (IsServer && CurrentRegion.Value >= 0)
+            RegionKills.Value++;
     }
 
     int GetRegionIndex(RegionSO region)
     {
         for (int i = 0; i < regions.Length; i++)
         {
-            if (regions[i] == region)
+            if (region != null && regions[i] == region)
                 return i;
         }
 
-        Debug.LogError($"Region '{region.name}' is not present in the GameManager region list.");
+        Debug.LogError("The starting region is not present in the GameManager region list.");
         return -1;
     }
 
