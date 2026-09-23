@@ -156,6 +156,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   enemies:
   - {fileID: 5031214266138607084, guid: 3c788b994707bf84781e169574e778e1, type: 3}
+  - {fileID: 2792129290277821739, guid: 0dd1149388d1a674ba1e6de2caa2aa46, type: 3}
   count: 10
   spawnRadius: 35
   spawnInterval: 1
