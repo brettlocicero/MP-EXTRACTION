@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2459272940042090912}
   - component: {fileID: 5438401950835612574}
   - component: {fileID: 5476250995167681125}
+  - component: {fileID: 9176786836750985936}
   m_Layer: 0
   m_Name: Dagger Projectile
   m_TagString: Untagged
@@ -224,6 +225,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyProjectile
   ShowTopMostFoldoutHeaderGroup: 1
+  lifetime: 5
 --- !u!114 &5438401950835612574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -287,6 +289,27 @@ MonoBehaviour:
   UseRigidBodyForMotion: 0
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
+--- !u!65 &9176786836750985936
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3138570833549853326}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.35, y: 0.22, z: 1.1375055}
+  m_Center: {x: 0, y: 0, z: 0.068752766}
 --- !u!1 &6562414920216379796
 GameObject:
   m_ObjectHideFlags: 0

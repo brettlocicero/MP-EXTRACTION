@@ -1402,14 +1402,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2218126508
+  GlobalObjectIdHash: 1622957561
   InScenePlacedSourceGlobalObjectIdHash: 1622957561
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  m_InScenePlaced: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -1437,7 +1437,7 @@ MonoBehaviour:
   animator: {fileID: 4998154998878591481}
   hitVFXParticles: []
   hitSFX: {fileID: 8300000, guid: 99f7a4a19ce0272418d4cdbad0bb6bca, type: 3}
-  deathVFXPrefab: {fileID: 7975065315289970814, guid: 62bfed2336addfd41a4c139f63173b87, type: 3}
+  deathVFXPrefab: {fileID: 7975065315289970814, guid: 3be9623b2bbefd24d8d8e13bb0b4ac0b, type: 3}
   deathSFX: {fileID: 0}
   audioSource: {fileID: 4004058281091155579}
   lootDrops: []
