@@ -1068,15 +1068,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   enemyPrefabs:
   - {fileID: 2375243330899510526, guid: 3c788b994707bf84781e169574e778e1, type: 3}
-  spawnInterval: 3
+  startingEnemyCount: 10
+  enemiesAddedPerWave: 5
+  intermissionDuration: 30
+  spawnInterval: 1
   maxConcurrentEnemies: 10
-  minSpawnDistance: 50
-  maxSpawnDistance: 75
-  raycastHeight: 100
-  raycastDistance: 200
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 1024
+  spawnRadius: 35
 --- !u!1 &186929420
 GameObject:
   m_ObjectHideFlags: 0
@@ -1850,7 +1847,6 @@ MonoBehaviour:
   - {fileID: 0}
   menuUI: {fileID: 1007663514}
   ingameUI: {fileID: 1054252473}
-  enemySpawner: {fileID: 143647281}
   regions:
   - {fileID: 11400000, guid: 8bc807014278cad4abbd9388a9b5aa42, type: 2}
   CurrentRegion:
@@ -3737,9 +3733,13 @@ MonoBehaviour:
   regionRoot: {fileID: 648846254}
   availableRegions:
   - {fileID: 11400000, guid: 8bc807014278cad4abbd9388a9b5aa42, type: 2}
-  playerSpawnPos: {x: 0, y: 2, z: 5}
+  playerSpawnPos: {x: 0, y: 2, z: 0}
   regionTransitionAnimator: {fileID: 1976826578}
   transitionDuration: 2
+  enemySpawner: {fileID: 143647281}
+  groundMaterial: {fileID: 2100000, guid: 6455747afc9bf4b8795b1dd54ff5a762, type: 2}
+  arenaSize: 120
+  playerSpawnSpacing: 3
 --- !u!114 &629687393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8056,7 +8056,7 @@ GameObject:
   - component: {fileID: 1244284198}
   - component: {fileID: 1244284197}
   m_Layer: 5
-  m_Name: Region Title Text
+  m_Name: Wave Status Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8078,8 +8078,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -40}
-  m_SizeDelta: {x: 400, y: 50}
+  m_AnchoredPosition: {x: 0, y: -65}
+  m_SizeDelta: {x: 600, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1244284197
 MonoBehaviour:
@@ -8088,20 +8088,20 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1244284195}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Abysslands - 1
+  m_text: WAVE 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -9430,6 +9430,8 @@ MonoBehaviour:
   healthText: {fileID: 1616472855}
   soulsText: {fileID: 1814185688}
   crosshair: {fileID: 1207399072}
+  enemySpawner: {fileID: 143647281}
+  waveText: {fileID: 1244284197}
   damageNumberPrefab: {fileID: 5538497247143937195, guid: 8255f51b1d7bc4ec897381c646299925, type: 3}
   damageNumberJiggle: 20
   playerNametagPrefab: {fileID: 5287716156717895435, guid: 1b93d3a1cae301b499ffa146a639e8b9, type: 3}

@@ -2,113 +2,188 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class EnemySpawner : MonoBehaviour
+public class EnemySpawner : NetworkBehaviour
 {
     [Header("Enemies")]
     public GameObject[] enemyPrefabs;
 
+    [Header("Wave Settings")]
+    [SerializeField, Min(1)] int startingEnemyCount = 10;
+    [SerializeField, Min(1)] int enemiesAddedPerWave = 5;
+    [SerializeField, Min(0f)] float intermissionDuration = 30f;
+
     [Header("Spawn Settings")]
-    public float spawnInterval = 3f;
-    public int maxConcurrentEnemies = 10;
+    [Min(0.1f)] public float spawnInterval = 1f;
+    [Min(1)] public int maxConcurrentEnemies = 10;
 
     [Header("Placement")]
-    public float minSpawnDistance = 50f;
-    public float maxSpawnDistance = 75f;
-    public float raycastHeight = 100f;
-    public float raycastDistance = 200f;
-    public LayerMask groundMask;
+    [Min(5f)] public float spawnRadius = 35f;
 
-    List<NetworkObject> aliveEnemies = new List<NetworkObject>();
+    readonly List<EnemyAI> aliveEnemies = new();
+    readonly List<GameObject> validEnemyPrefabs = new();
+
+    readonly NetworkVariable<int> currentWave = new(
+        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
+    );
+
+    readonly NetworkVariable<int> enemiesRemaining = new(
+        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
+    );
+
+    readonly NetworkVariable<double> nextWaveTime = new(
+        0d, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
+    );
+
+    Vector3 arenaCenter;
     float spawnTimer;
+    float spawnAngle;
+    int enemiesToSpawn;
     bool spawning;
+
+    public int CurrentWave => currentWave.Value;
+    public int EnemiesRemaining => enemiesRemaining.Value;
+    public bool IsIntermission => nextWaveTime.Value > 0d;
+    public int IntermissionSeconds => IsSpawned && IsIntermission
+        ? Mathf.Max(0, Mathf.CeilToInt((float)(nextWaveTime.Value - NetworkManager.ServerTime.Time)))
+        : 0;
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsServer)
+            return;
+
+        currentWave.Value = 0;
+        enemiesRemaining.Value = 0;
+        nextWaveTime.Value = 0d;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        spawning = false;
+
+        foreach (EnemyAI enemy in aliveEnemies)
+        {
+            if (enemy != null)
+                enemy.OnEnemyKilled -= OnEnemyKilled;
+        }
+
+        aliveEnemies.Clear();
+        validEnemyPrefabs.Clear();
+    }
 
     void Update()
     {
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+        if (!IsSpawned || !IsServer || !spawning)
             return;
 
-        if (!spawning)
+        if (IsIntermission)
+        {
+            if (NetworkManager.ServerTime.Time >= nextWaveTime.Value)
+                StartNextWave();
+
+            return;
+        }
+
+        // Also account for enemies despawned without going through their death event.
+        for (int i = aliveEnemies.Count - 1; i >= 0; i--)
+        {
+            EnemyAI enemy = aliveEnemies[i];
+
+            if (enemy != null && enemy.IsSpawned)
+                continue;
+
+            if (enemy != null)
+                enemy.OnEnemyKilled -= OnEnemyKilled;
+
+            aliveEnemies.RemoveAt(i);
+            enemiesRemaining.Value--;
+        }
+
+        if (enemiesRemaining.Value == 0)
+        {
+            nextWaveTime.Value = NetworkManager.ServerTime.Time + intermissionDuration;
+            return;
+        }
+
+        if (enemiesToSpawn == 0 || aliveEnemies.Count >= Mathf.Max(1, maxConcurrentEnemies))
             return;
 
-        spawnTimer += Time.deltaTime;
+        spawnTimer -= Time.deltaTime;
 
-        if (spawnTimer < spawnInterval)
+        if (spawnTimer > 0f)
             return;
 
-        spawnTimer = 0f;
-        aliveEnemies.RemoveAll(enemy => enemy == null);
-
-        if (aliveEnemies.Count >= maxConcurrentEnemies)
-            return;
-
-        TrySpawnEnemy();
+        spawnTimer = Mathf.Max(0.1f, spawnInterval);
+        SpawnEnemy();
     }
 
-    public void StartSpawning()
+    public void StartSpawning(Vector3 center)
     {
+        if (!IsSpawned || !IsServer || spawning)
+            return;
+
+        validEnemyPrefabs.Clear();
+
+        if (enemyPrefabs != null)
+        {
+            foreach (GameObject prefab in enemyPrefabs)
+            {
+                if (prefab != null && prefab.TryGetComponent<NetworkObject>(out _) &&
+                    prefab.TryGetComponent<EnemyAI>(out _))
+                {
+                    validEnemyPrefabs.Add(prefab);
+                }
+            }
+        }
+
+        if (validEnemyPrefabs.Count == 0)
+        {
+            Debug.LogError("EnemySpawner: assign at least one enemy prefab with EnemyAI and NetworkObject.");
+            return;
+        }
+
+        arenaCenter = center;
+        currentWave.Value = 0;
         spawning = true;
+        StartNextWave();
     }
 
-    void TrySpawnEnemy()
+    void StartNextWave()
     {
-        if (enemyPrefabs == null || enemyPrefabs.Length == 0)
-            return;
-
-        Transform playerTransform = GetRandomPlayerTransform();
-
-        if (playerTransform == null)
-            return;
-
-        if (!TryGetGroundPoint(playerTransform.position, out Vector3 spawnPos))
-            return;
-
-        GameObject enemyPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-        GameObject instance = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-
-        if (instance.TryGetComponent(out NetworkObject networkObject))
-        {
-            networkObject.Spawn();
-            aliveEnemies.Add(networkObject);
-        }
-
-        else
-        {
-            Debug.LogWarning("EnemySpawner: enemyPrefab has no NetworkObject component.");
-        }
+        currentWave.Value++;
+        enemiesToSpawn = Mathf.Max(1, startingEnemyCount) +
+            (currentWave.Value - 1) * Mathf.Max(1, enemiesAddedPerWave);
+        enemiesRemaining.Value = enemiesToSpawn;
+        nextWaveTime.Value = 0d;
+        spawnTimer = 0f;
+        spawnAngle = Random.Range(0f, Mathf.PI * 2f);
     }
 
-    Transform GetRandomPlayerTransform()
+    void SpawnEnemy()
     {
-        List<Transform> players = new List<Transform>();
+        Vector3 offset = new Vector3(Mathf.Cos(spawnAngle), 0f, Mathf.Sin(spawnAngle)) * Mathf.Max(5f, spawnRadius);
+        Vector3 spawnPos = arenaCenter + offset + Vector3.up * 0.1f;
+        Quaternion rotation = Quaternion.LookRotation(-offset);
 
-        foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
-        {
-            if (client.PlayerObject != null)
-                players.Add(client.PlayerObject.transform);
-        }
+        GameObject prefab = validEnemyPrefabs[Random.Range(0, validEnemyPrefabs.Count)];
+        GameObject instance = Instantiate(prefab, spawnPos, rotation);
+        EnemyAI enemy = instance.GetComponent<EnemyAI>();
 
-        if (players.Count == 0)
-            return null;
+        instance.GetComponent<NetworkObject>().Spawn();
+        enemy.OnEnemyKilled += OnEnemyKilled;
+        aliveEnemies.Add(enemy);
+        enemiesToSpawn--;
 
-        return players[Random.Range(0, players.Count)];
+        // Spread successive spawns around the ring instead of clustering on one side.
+        spawnAngle += 137.5f * Mathf.Deg2Rad;
     }
 
-    bool TryGetGroundPoint(Vector3 playerPos, out Vector3 groundPoint)
+    void OnEnemyKilled(EnemyAI enemy)
     {
-        float angle = Random.Range(0f, Mathf.PI * 2f);
-        float distance = Random.Range(minSpawnDistance, maxSpawnDistance);
+        if (!IsServer || !aliveEnemies.Remove(enemy))
+            return;
 
-        Vector3 offset = new Vector3(Mathf.Cos(angle) * distance, 0f, Mathf.Sin(angle) * distance);
-        Vector3 samplePos = playerPos + offset;
-        Vector3 rayOrigin = new Vector3(samplePos.x, playerPos.y + raycastHeight, samplePos.z);
-
-        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastDistance, groundMask))
-        {
-            groundPoint = hit.point;
-            return true;
-        }
-
-        groundPoint = Vector3.zero;
-        return false;
+        enemy.OnEnemyKilled -= OnEnemyKilled;
+        enemiesRemaining.Value--;
     }
 }

@@ -11,7 +11,6 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Transform[] playerSpawnPoints;
     [SerializeField] CanvasGroup menuUI;
     [SerializeField] CanvasGroup ingameUI;
-    [SerializeField] EnemySpawner enemySpawner;
 
     [Header("Region Database")]
     [SerializeField] RegionSO[] regions;
@@ -46,6 +45,12 @@ public class GameManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        if (IsServer)
+        {
+            CurrentRegion.Value = -1;
+            RegionSeed.Value = 0;
+        }
+
         CurrentRegion.OnValueChanged += OnRegionChanged;
 
         if (CurrentRegion.Value != -1)
@@ -63,11 +68,12 @@ public class GameManager : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         CurrentRegion.OnValueChanged -= OnRegionChanged;
+        hasGeneratedRegion = false;
 
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
     }
 
@@ -78,7 +84,7 @@ public class GameManager : NetworkBehaviour
 
     public void StartGameSession()
     {
-        if (!IsServer)
+        if (!IsServer || hasGeneratedRegion)
             return;
 
         Debug.Log("[GameManager] Starting game session...");
@@ -86,20 +92,11 @@ public class GameManager : NetworkBehaviour
         int seed = new System.Random().Next(int.MinValue, int.MaxValue);
         int regionIndex = GetRegionIndex(testRegion);
 
-        RegionSeed.Value = seed;
-        CurrentRegion.Value = regionIndex;
-
-        GenerateRegionClientRpc(regionIndex, seed);
-        // enemySpawner.StartSpawning();
-    }
-
-    [ClientRpc]
-    void GenerateRegionClientRpc(int regionIndex, int seed)
-    {
-        if (regionIndex < 0 || regionIndex >= regions.Length)
+        if (regionIndex < 0)
             return;
 
-        GenerateRegion(regions[regionIndex], seed);
+        RegionSeed.Value = seed;
+        CurrentRegion.Value = regionIndex;
     }
 
     void OnRegionChanged(int previousRegion, int newRegion)
@@ -112,7 +109,7 @@ public class GameManager : NetworkBehaviour
 
     void GenerateRegion(RegionSO region, int seed)
     {
-        if (hasGeneratedRegion) return;
+        if (!IsServer || hasGeneratedRegion) return;
 
         RegionGenerator.Instance.GenerateRegion(region, seed);
         hasGeneratedRegion = true;

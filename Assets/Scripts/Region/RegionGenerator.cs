@@ -1,5 +1,5 @@
 using System.Collections;
-using DG.Tweening;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,16 +10,25 @@ public class RegionGenerator : NetworkBehaviour
     [SerializeField] GameObject hubObjects;
     [SerializeField] Transform regionRoot;
     [SerializeField] RegionSO[] availableRegions;
-    [SerializeField] Vector3 playerSpawnPos;
+    [SerializeField] Vector3 playerSpawnPos = new Vector3(0f, 2f, 0f);
     [SerializeField] RegionTransitionAnimator regionTransitionAnimator;
     [SerializeField] float transitionDuration = 2f;
 
-    RegionSO currentRegion;
+    [Header("Arena")]
+    [SerializeField] EnemySpawner enemySpawner;
+    [SerializeField] Material groundMaterial;
+    [SerializeField, Min(20f)] float arenaSize = 120f;
+    [SerializeField, Min(2f)] float playerSpawnSpacing = 3f;
+
+    readonly Dictionary<ulong, int> playerSpawnSlots = new();
     GameObject spawnedRegionInstance;
+    bool generating;
 
     readonly NetworkVariable<int> currentRegionIndex = new(
         -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
     );
+
+    Vector3 ArenaCenter => regionRoot != null ? regionRoot.position : Vector3.zero;
 
     void Awake()
     {
@@ -28,56 +37,153 @@ public class RegionGenerator : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        if (IsServer)
+            currentRegionIndex.Value = -1;
+
         currentRegionIndex.OnValueChanged += OnRegionIndexChanged;
 
-        ApplyAtmosphere(currentRegionIndex.Value);
+        if (IsServer)
+            NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+
+        ApplyRegion(currentRegionIndex.Value);
     }
 
     public override void OnNetworkDespawn()
     {
         currentRegionIndex.OnValueChanged -= OnRegionIndexChanged;
+        NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        StopAllCoroutines();
+        playerSpawnSlots.Clear();
+        generating = false;
+        ClearInstancedRegion();
+
+        if (hubObjects != null)
+            hubObjects.SetActive(true);
     }
 
     void OnRegionIndexChanged(int previous, int current)
     {
-        ApplyAtmosphere(current);
+        ApplyRegion(current);
     }
 
     public void GenerateRegion(RegionSO region, int regionSeed)
     {
-        if (!IsServer)
+        if (!IsServer || generating || currentRegionIndex.Value >= 0)
             return;
-
-        StartCoroutine(GenerateRegionRoutine(region, regionSeed));
-    }
-
-    IEnumerator GenerateRegionRoutine(RegionSO region, int regionSeed)
-    {
-        Debug.Log($"Generating region '{region.RegionName}' with seed {regionSeed}");
 
         int regionIndex = System.Array.IndexOf(availableRegions, region);
 
+        if (regionIndex < 0 || enemySpawner == null)
+        {
+            Debug.LogError("RegionGenerator: assign the region and arena enemy spawner.");
+            return;
+        }
+
+        generating = true;
+        StartCoroutine(GenerateRegionRoutine(regionIndex));
+    }
+
+    IEnumerator GenerateRegionRoutine(int regionIndex)
+    {
         PlayTransitionRpc();
         yield return new WaitForSeconds(transitionDuration);
 
-        currentRegion = region;
+        // Persistent state also builds the same arena for clients joining mid-wave.
         currentRegionIndex.Value = regionIndex;
 
-        GenerateRegionRpc(regionIndex);
-        PostGenerationRpc();
-        MoveAllPlayers();
+        float remainingTransition = regionTransitionAnimator != null
+            ? Mathf.Max(0f, regionTransitionAnimator.PlayDuration - transitionDuration)
+            : 0f;
+        yield return new WaitForSeconds(remainingTransition);
+
+        while (!AllPlayersPlaced() || !enemySpawner.IsSpawned)
+            yield return null;
+
+        enemySpawner.StartSpawning(ArenaCenter);
+        generating = false;
     }
 
-
-    [Rpc(SendTo.Everyone)]
-    void GenerateRegionRpc(int regionIndex)
+    void ApplyRegion(int regionIndex)
     {
-        ClearInstancedRegion();
+        if (regionIndex < 0 || regionIndex >= availableRegions.Length || spawnedRegionInstance != null)
+            return;
 
-        Vector3 spawnPos = regionRoot != null ? regionRoot.position : Vector3.zero;
-        // spawnedRegionInstance = Instantiate(availableRegions[regionIndex].RegionBase, spawnPos, Quaternion.identity, regionRoot);
+        availableRegions[regionIndex].ApplyRegionAtmosphere();
 
-        availableRegions[regionIndex].SpawnRooms(regionRoot);
+        spawnedRegionInstance = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        spawnedRegionInstance.name = "Wave Arena";
+        spawnedRegionInstance.layer = LayerMask.NameToLayer("Ground");
+        spawnedRegionInstance.transform.position = ArenaCenter;
+
+        float size = Mathf.Max(arenaSize, enemySpawner.spawnRadius * 2f + 20f);
+        spawnedRegionInstance.transform.localScale = new Vector3(size / 10f, 1f, size / 10f);
+        spawnedRegionInstance.transform.SetParent(regionRoot, true);
+
+        if (groundMaterial != null)
+            spawnedRegionInstance.GetComponent<Renderer>().sharedMaterial = groundMaterial;
+
+        if (hubObjects != null)
+            hubObjects.SetActive(false);
+
+        Physics.SyncTransforms();
+
+        if (IsClient)
+            StartCoroutine(PlaceLocalPlayerRoutine());
+    }
+
+    IEnumerator PlaceLocalPlayerRoutine()
+    {
+        // The owner's player object may spawn after the scene objects during a late join.
+        yield return null;
+
+        while (NetworkManager.LocalClient.PlayerObject == null || !NetworkManager.LocalClient.PlayerObject.IsSpawned)
+            yield return null;
+
+        ArenaReadyServerRpc();
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    void ArenaReadyServerRpc(RpcParams rpcParams = default)
+    {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+
+        if (currentRegionIndex.Value < 0 || playerSpawnSlots.ContainsKey(clientId))
+            return;
+
+        if (!NetworkManager.ConnectedClients.TryGetValue(clientId, out NetworkClient client) ||
+            client.PlayerObject == null || !client.PlayerObject.TryGetComponent<PlayerController>(out var player))
+            return;
+
+        int slot = 0;
+
+        while (playerSpawnSlots.ContainsValue(slot))
+            slot++;
+
+        playerSpawnSlots.Add(clientId, slot);
+
+        float angle = slot * 137.5f * Mathf.Deg2Rad;
+        float radius = Mathf.Sqrt(slot) * playerSpawnSpacing;
+        Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
+        player.Teleport(ArenaCenter + playerSpawnPos + offset, Quaternion.identity);
+    }
+
+    bool AllPlayersPlaced()
+    {
+        if (NetworkManager.ConnectedClientsList.Count == 0)
+            return false;
+
+        foreach (NetworkClient client in NetworkManager.ConnectedClientsList)
+        {
+            if (!playerSpawnSlots.ContainsKey(client.ClientId))
+                return false;
+        }
+
+        return true;
+    }
+
+    void OnClientDisconnected(ulong clientId)
+    {
+        playerSpawnSlots.Remove(clientId);
     }
 
     void ClearInstancedRegion()
@@ -91,34 +197,7 @@ public class RegionGenerator : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     void PlayTransitionRpc()
     {
-        Sequence seq = regionTransitionAnimator.PlayTransition();
-    }
-
-    [Rpc(SendTo.Everyone)]
-    void PostGenerationRpc()
-    {
-        hubObjects.SetActive(false);
-    }
-
-    void ApplyAtmosphere(int regionIndex)
-    {
-        if (regionIndex < 0)
-            return;
-
-        availableRegions[regionIndex].ApplyRegionAtmosphere();
-    }
-
-    void MoveAllPlayers()
-    {
-        foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
-        {
-            if (client.PlayerObject == null)
-                continue;
-
-            if (client.PlayerObject.TryGetComponent<PlayerController>(out var player))
-            {
-                player.Teleport(playerSpawnPos, Quaternion.identity);
-            }
-        }
+        if (regionTransitionAnimator != null)
+            regionTransitionAnimator.PlayTransition();
     }
 }
