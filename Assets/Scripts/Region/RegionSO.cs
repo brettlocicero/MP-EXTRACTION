@@ -6,6 +6,7 @@ public class RegionSO : ScriptableObject
     [SerializeField] string regionName;
 
     [Header("")]
+    [SerializeField] GameObject regionBase;
     [SerializeField] RoomObject[] rooms;
     [SerializeField] int roomCount = 5;
 
@@ -45,5 +46,10 @@ public class RegionSO : ScriptableObject
             cursorPosition = room.Connector.position;
             cursorRotation = room.Connector.rotation;
         }
+    }
+
+    public GameObject SpawnRegionBase(Vector3 position, Transform parent)
+    {
+        return Instantiate(regionBase, position, Quaternion.identity, parent);
     }
 }

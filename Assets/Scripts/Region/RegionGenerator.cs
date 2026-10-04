@@ -108,19 +108,9 @@ public class RegionGenerator : NetworkBehaviour
         if (regionIndex < 0 || regionIndex >= availableRegions.Length || spawnedRegionInstance != null)
             return;
 
-        availableRegions[regionIndex].ApplyRegionAtmosphere();
-
-        spawnedRegionInstance = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        spawnedRegionInstance.name = "Wave Arena";
-        spawnedRegionInstance.layer = LayerMask.NameToLayer("Ground");
-        spawnedRegionInstance.transform.position = ArenaCenter;
-
-        float size = Mathf.Max(arenaSize, enemySpawner.spawnRadius * 2f + 20f);
-        spawnedRegionInstance.transform.localScale = new Vector3(size / 10f, 1f, size / 10f);
-        spawnedRegionInstance.transform.SetParent(regionRoot, true);
-
-        if (groundMaterial != null)
-            spawnedRegionInstance.GetComponent<Renderer>().sharedMaterial = groundMaterial;
+        RegionSO region = availableRegions[regionIndex];
+        region.ApplyRegionAtmosphere();
+        spawnedRegionInstance = region.SpawnRegionBase(ArenaCenter, regionRoot);
 
         if (hubObjects != null)
             hubObjects.SetActive(false);

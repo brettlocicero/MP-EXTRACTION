@@ -5,7 +5,7 @@ using UnityEngine;
 public class EnemySpawner : NetworkBehaviour
 {
     [Header("Enemies")]
-    public GameObject[] enemyPrefabs;
+    [SerializeField] GameObject[] enemyPrefabs;
 
     [Header("Wave Settings")]
     [SerializeField, Min(1)] int startingEnemyCount = 10;
@@ -13,11 +13,14 @@ public class EnemySpawner : NetworkBehaviour
     [SerializeField, Min(0f)] float intermissionDuration = 30f;
 
     [Header("Spawn Settings")]
-    [Min(0.1f)] public float spawnInterval = 1f;
-    [Min(1)] public int maxConcurrentEnemies = 10;
+    [SerializeField, Min(0.1f)] float spawnInterval = 3f;
+    [SerializeField, Min(1)] int maxConcurrentEnemies = 10;
 
     [Header("Placement")]
-    [Min(5f)] public float spawnRadius = 35f;
+    [SerializeField, Min(5f)] float spawnRadius = 100f;
+    [SerializeField] float raycastHeight = 100f;
+    [SerializeField] float raycastDistance = 300f;
+    [SerializeField] LayerMask groundMask;
 
     readonly List<EnemyAI> aliveEnemies = new();
     readonly List<GameObject> validEnemyPrefabs = new();
@@ -73,18 +76,50 @@ public class EnemySpawner : NetworkBehaviour
 
     void Update()
     {
-        if (!IsSpawned || !IsServer || !spawning)
-            return;
+        if (IsSpawned && IsServer && spawning)
+            TickWave();
+    }
 
+    void TickWave()
+    {
         if (IsIntermission)
-        {
-            if (NetworkManager.ServerTime.Time >= nextWaveTime.Value)
-                StartNextWave();
+            TickIntermission();
+        else
+            TickCombat();
+    }
 
-            return;
+    void TickIntermission()
+    {
+        if (NetworkManager.ServerTime.Time >= nextWaveTime.Value)
+            StartNextWave();
+    }
+
+    void TickCombat()
+    {
+        RemoveDespawnedEnemies();
+
+        if (enemiesRemaining.Value == 0)
+        {
+            nextWaveTime.Value = NetworkManager.ServerTime.Time + intermissionDuration;
         }
 
-        // Also account for enemies despawned without going through their death event.
+        else if (CanSpawn())
+        {
+            spawnTimer -= Time.deltaTime;
+
+            if (spawnTimer <= 0f)
+                TrySpawnEnemy();
+        }
+    }
+
+    bool CanSpawn()
+    {
+        return enemiesToSpawn > 0 && aliveEnemies.Count < maxConcurrentEnemies;
+    }
+
+    // Accounts for enemies despawned without going through their death event.
+    void RemoveDespawnedEnemies()
+    {
         for (int i = aliveEnemies.Count - 1; i >= 0; i--)
         {
             EnemyAI enemy = aliveEnemies[i];
@@ -98,23 +133,6 @@ public class EnemySpawner : NetworkBehaviour
             aliveEnemies.RemoveAt(i);
             enemiesRemaining.Value--;
         }
-
-        if (enemiesRemaining.Value == 0)
-        {
-            nextWaveTime.Value = NetworkManager.ServerTime.Time + intermissionDuration;
-            return;
-        }
-
-        if (enemiesToSpawn == 0 || aliveEnemies.Count >= Mathf.Max(1, maxConcurrentEnemies))
-            return;
-
-        spawnTimer -= Time.deltaTime;
-
-        if (spawnTimer > 0f)
-            return;
-
-        spawnTimer = Mathf.Max(0.1f, spawnInterval);
-        SpawnEnemy();
     }
 
     public void StartSpawning(Vector3 center)
@@ -124,16 +142,10 @@ public class EnemySpawner : NetworkBehaviour
 
         validEnemyPrefabs.Clear();
 
-        if (enemyPrefabs != null)
+        foreach (GameObject prefab in enemyPrefabs)
         {
-            foreach (GameObject prefab in enemyPrefabs)
-            {
-                if (prefab != null && prefab.TryGetComponent<NetworkObject>(out _) &&
-                    prefab.TryGetComponent<EnemyAI>(out _))
-                {
-                    validEnemyPrefabs.Add(prefab);
-                }
-            }
+            if (prefab != null && prefab.TryGetComponent<NetworkObject>(out _) && prefab.TryGetComponent<EnemyAI>(out _))
+                validEnemyPrefabs.Add(prefab);
         }
 
         if (validEnemyPrefabs.Count == 0)
@@ -151,31 +163,49 @@ public class EnemySpawner : NetworkBehaviour
     void StartNextWave()
     {
         currentWave.Value++;
-        enemiesToSpawn = Mathf.Max(1, startingEnemyCount) +
-            (currentWave.Value - 1) * Mathf.Max(1, enemiesAddedPerWave);
+        enemiesToSpawn = startingEnemyCount + (currentWave.Value - 1) * enemiesAddedPerWave;
         enemiesRemaining.Value = enemiesToSpawn;
         nextWaveTime.Value = 0d;
         spawnTimer = 0f;
         spawnAngle = Random.Range(0f, Mathf.PI * 2f);
     }
 
-    void SpawnEnemy()
+    void TrySpawnEnemy()
     {
-        Vector3 offset = new Vector3(Mathf.Cos(spawnAngle), 0f, Mathf.Sin(spawnAngle)) * Mathf.Max(5f, spawnRadius);
-        Vector3 spawnPos = arenaCenter + offset + Vector3.up * 0.1f;
-        Quaternion rotation = Quaternion.LookRotation(-offset);
+        if (TryGetGroundPoint(out Vector3 spawnPos))
+            SpawnEnemy(spawnPos);
+    }
+
+    // Raycasts down from above the ring position so the enemy lands on the ground.
+    bool TryGetGroundPoint(out Vector3 groundPoint)
+    {
+        Vector3 offset = new Vector3(Mathf.Cos(spawnAngle), 0f, Mathf.Sin(spawnAngle)) * spawnRadius;
+        Vector3 rayOrigin = arenaCenter + offset + Vector3.up * raycastHeight;
+
+        // Spread successive spawns around the ring instead of clustering on one side.
+        spawnAngle += 137.5f * Mathf.Deg2Rad;
+
+        bool hitGround = Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastDistance, groundMask);
+        groundPoint = hit.point;
+
+        return hitGround;
+    }
+
+    void SpawnEnemy(Vector3 spawnPos)
+    {
+        Vector3 toCenter = arenaCenter - spawnPos;
+        toCenter.y = 0f;
 
         GameObject prefab = validEnemyPrefabs[Random.Range(0, validEnemyPrefabs.Count)];
-        GameObject instance = Instantiate(prefab, spawnPos, rotation);
+        GameObject instance = Instantiate(prefab, spawnPos + Vector3.up * 0.1f, Quaternion.LookRotation(toCenter));
         EnemyAI enemy = instance.GetComponent<EnemyAI>();
 
         instance.GetComponent<NetworkObject>().Spawn();
         enemy.OnEnemyKilled += OnEnemyKilled;
         aliveEnemies.Add(enemy);
-        enemiesToSpawn--;
 
-        // Spread successive spawns around the ring instead of clustering on one side.
-        spawnAngle += 137.5f * Mathf.Deg2Rad;
+        enemiesToSpawn--;
+        spawnTimer = spawnInterval;
     }
 
     void OnEnemyKilled(EnemyAI enemy)

@@ -1066,14 +1066,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5907e2c2b0a53b34382826d803d33fa6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
+  ShowTopMostFoldoutHeaderGroup: 1
   enemyPrefabs:
   - {fileID: 2375243330899510526, guid: 3c788b994707bf84781e169574e778e1, type: 3}
+  - {fileID: 3419855779133920224, guid: 0dd1149388d1a674ba1e6de2caa2aa46, type: 3}
   startingEnemyCount: 10
   enemiesAddedPerWave: 5
   intermissionDuration: 30
   spawnInterval: 1
   maxConcurrentEnemies: 10
   spawnRadius: 35
+  raycastHeight: 50
+  raycastDistance: 300
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1024
 --- !u!1 &186929420
 GameObject:
   m_ObjectHideFlags: 0
