@@ -1075,7 +1075,7 @@ MonoBehaviour:
   intermissionDuration: 30
   spawnInterval: 1
   maxConcurrentEnemies: 10
-  spawnRadius: 35
+  spawnRadius: 100
   raycastHeight: 50
   raycastDistance: 300
   groundMask:

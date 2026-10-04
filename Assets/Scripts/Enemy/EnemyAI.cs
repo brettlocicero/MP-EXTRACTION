@@ -13,6 +13,9 @@ public class EnemyAI : NetworkBehaviour
 
     [Header("Stats")]
     [SerializeField] float maxHealth = 100f;
+    [SerializeField, Min(1)] int threat = 1;
+
+    public int Threat => threat;
 
     [Header("AI Settings")]
     [SerializeField] float targetUpdateInterval = 0.5f;

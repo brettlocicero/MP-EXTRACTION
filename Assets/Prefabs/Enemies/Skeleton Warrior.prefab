@@ -2983,6 +2983,7 @@ MonoBehaviour:
   movement: {fileID: 8115701359087169496}
   attack: {fileID: 9133345235396723596}
   maxHealth: 30
+  threat: 1
   targetUpdateInterval: 0.5
   animator: {fileID: 8620166371696577679}
   hitVFXParticles:
@@ -3010,7 +3011,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyAttack
   range: 2.5
+  minRange: 0
   cooldown: 1
+  attacksWhileMoving: 0
   enemy: {fileID: 5031214266138607084}
   hitSpot: {fileID: 501913071095396086}
   playerLayerMask:
@@ -3034,6 +3037,7 @@ MonoBehaviour:
   moveSpeed: 8
   rotationSpeed: 10
   stoppingDistance: 2
+  ignoreMovementRotation: 0
   separationRadius: 1.5
   separationWeight: 1
   enemyLayerMask:

@@ -23,7 +23,7 @@ public class EnemySpawner : NetworkBehaviour
     [SerializeField] LayerMask groundMask;
 
     readonly List<EnemyAI> aliveEnemies = new();
-    readonly List<GameObject> validEnemyPrefabs = new();
+    readonly List<EnemyAI> validEnemies = new();
 
     readonly NetworkVariable<int> currentWave = new(
         0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server
@@ -71,7 +71,7 @@ public class EnemySpawner : NetworkBehaviour
         }
 
         aliveEnemies.Clear();
-        validEnemyPrefabs.Clear();
+        validEnemies.Clear();
     }
 
     void Update()
@@ -140,15 +140,15 @@ public class EnemySpawner : NetworkBehaviour
         if (!IsSpawned || !IsServer || spawning)
             return;
 
-        validEnemyPrefabs.Clear();
+        validEnemies.Clear();
 
         foreach (GameObject prefab in enemyPrefabs)
         {
-            if (prefab != null && prefab.TryGetComponent<NetworkObject>(out _) && prefab.TryGetComponent<EnemyAI>(out _))
-                validEnemyPrefabs.Add(prefab);
+            if (prefab != null && prefab.TryGetComponent(out EnemyAI enemy) && prefab.TryGetComponent<NetworkObject>(out _))
+                validEnemies.Add(enemy);
         }
 
-        if (validEnemyPrefabs.Count == 0)
+        if (validEnemies.Count == 0)
         {
             Debug.LogError("EnemySpawner: assign at least one enemy prefab with EnemyAI and NetworkObject.");
             return;
@@ -187,6 +187,7 @@ public class EnemySpawner : NetworkBehaviour
 
         bool hitGround = Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, raycastDistance, groundMask);
         groundPoint = hit.point;
+        groundPoint.y += 3f; // Add an offset in case the ground point is too low
 
         return hitGround;
     }
@@ -196,16 +197,35 @@ public class EnemySpawner : NetworkBehaviour
         Vector3 toCenter = arenaCenter - spawnPos;
         toCenter.y = 0f;
 
-        GameObject prefab = validEnemyPrefabs[Random.Range(0, validEnemyPrefabs.Count)];
-        GameObject instance = Instantiate(prefab, spawnPos + Vector3.up * 0.1f, Quaternion.LookRotation(toCenter));
-        EnemyAI enemy = instance.GetComponent<EnemyAI>();
+        EnemyAI enemy = Instantiate(PickEnemy(), spawnPos + Vector3.up * 0.1f, Quaternion.LookRotation(toCenter));
 
-        instance.GetComponent<NetworkObject>().Spawn();
+        enemy.NetworkObject.Spawn();
         enemy.OnEnemyKilled += OnEnemyKilled;
         aliveEnemies.Add(enemy);
 
         enemiesToSpawn--;
         spawnTimer = spawnInterval;
+    }
+
+    // Higher threat means a lower chance of being picked.
+    EnemyAI PickEnemy()
+    {
+        float totalWeight = 0f;
+
+        foreach (EnemyAI enemy in validEnemies)
+            totalWeight += 1f / (enemy.Threat * enemy.Threat);
+
+        float roll = Random.value * totalWeight;
+
+        foreach (EnemyAI enemy in validEnemies)
+        {
+            roll -= 1f / (enemy.Threat * enemy.Threat);
+
+            if (roll <= 0f)
+                return enemy;
+        }
+
+        return validEnemies[0];
     }
 
     void OnEnemyKilled(EnemyAI enemy)

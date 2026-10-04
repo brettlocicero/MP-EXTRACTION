@@ -9,7 +9,6 @@ public class RangedEnemyAttack : EnemyAttack
     [SerializeField] RangedAttack[] rangedAttacks;
 
     EnemyAI enemyAI;
-    Coroutine attackCoroutine;
 
     void Awake()
     {
@@ -19,15 +18,14 @@ public class RangedEnemyAttack : EnemyAttack
     public override void Execute(PlayerState target)
     {
         nextAttackTime = Time.time + cooldown;
-        attackCoroutine = StartCoroutine(AttackRoutine(target));
+        StartCoroutine(AttackRoutine(target));
     }
 
     public override void Cancel()
     {
-        if (attackCoroutine != null)
-            StopCoroutine(attackCoroutine);
-
+        StopAllCoroutines();
         IsAttacking = false;
+        nextAttackTime = Time.time + cooldown;
     }
 
     IEnumerator AttackRoutine(PlayerState target)
