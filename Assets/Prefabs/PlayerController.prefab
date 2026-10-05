@@ -3277,7 +3277,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerRelics
   ShowTopMostFoldoutHeaderGroup: 1
   offerSize: 3
-  testRelic: {fileID: 11400000, guid: f859b69a49810204caa495301895b4bb, type: 2}
+  testRelics:
+  - {fileID: 11400000, guid: f859b69a49810204caa495301895b4bb, type: 2}
+  - {fileID: 11400000, guid: 7206e37768c13df4bbd78e0d17b9f063, type: 2}
+  relicImagePrefab: {fileID: 8312614294464402231, guid: a16aadca0c728b940a9ce54b143f3ffb, type: 3}
 --- !u!1 &3823180109169294840
 GameObject:
   m_ObjectHideFlags: 0

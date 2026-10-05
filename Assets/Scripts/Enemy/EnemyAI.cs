@@ -181,7 +181,7 @@ public class EnemyAI : NetworkBehaviour
             ApplyDebuff(debuff, rpcParams.Receive.SenderClientId);
     }
 
-    void ApplyDebuff(DebuffSO debuff, ulong sourceClientId)
+    public void ApplyDebuff(DebuffSO debuff, ulong sourceClientId)
     {
         if (!IsServer || isDead) return;
 
@@ -235,6 +235,11 @@ public class EnemyAI : NetworkBehaviour
 
     // --- Damage ---
 
+    public void TakeEffectDamage(float damage, ulong sourceClientId)
+    {
+        ModifyHealth(damage, 0f, AttackDirection.None, transform.position, sourceClientId, false);
+    }
+
     public void TakeDamage(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint = default)
     {
         if (hitPoint.Equals(Vector3.zero))
@@ -257,7 +262,7 @@ public class EnemyAI : NetworkBehaviour
         ModifyHealth(damage, stunTime, attackDirection, hitPoint, rpcParams.Receive.SenderClientId);
     }
 
-    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint, ulong attackerId, bool isDirectHit = false)
+    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint, ulong attackerId, bool isDirectHit = true)
     {
         if (!IsServer || isDead) return;
 
@@ -279,6 +284,9 @@ public class EnemyAI : NetworkBehaviour
             PlayHitAnimationRpc(attackDirection);
             TriggerStun(stunTime);
         }
+
+        if (isDirectHit)
+            GetAttackerRelics()?.Trigger(WeaponEvent.OnHit, CreateContext(damage, stunTime));
     }
 
     [Rpc(SendTo.SpecifiedInParams)]
@@ -289,7 +297,7 @@ public class EnemyAI : NetworkBehaviour
 
     public void ApplyDebuffDamage(float damage, ulong sourceClientId)
     {
-        ModifyHealth(damage, 0f, AttackDirection.None, transform.position, sourceClientId);
+        ModifyHealth(damage, 0f, AttackDirection.None, transform.position, sourceClientId, false);
     }
 
     // --- Stun ---
@@ -382,12 +390,33 @@ public class EnemyAI : NetworkBehaviour
         }
     }
 
+    PlayerRelics GetAttackerRelics()
+    {
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(lastAttackerId, out NetworkClient client))
+            return client.PlayerObject.GetComponent<PlayerRelics>();
+
+        return null;
+    }
+
+    WeaponContext CreateContext(float damage, float stunTime)
+    {
+        return new WeaponContext
+        {
+            SourceClientId = lastAttackerId,
+            HitEnemies = new[] { this },
+            Damage = damage,
+            StunTime = stunTime
+        };
+    }
+
     // --- Death ---
 
     void Die()
     {
         attack.Cancel();
         movement.Stop();
+
+        GetAttackerRelics()?.Trigger(WeaponEvent.OnKill, CreateContext(0f, 0f));
 
         activeDebuffs.Clear();
         OnEnemyKilled?.Invoke(this);

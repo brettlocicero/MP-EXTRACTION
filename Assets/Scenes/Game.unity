@@ -6297,7 +6297,7 @@ GameObject:
   - component: {fileID: 1030394196}
   - component: {fileID: 1030394197}
   m_Layer: 5
-  m_Name: Relics
+  m_Name: Relic UI Root
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6314,8 +6314,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1778031334}
+  m_Children: []
   m_Father: {fileID: 1054252472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -6672,7 +6671,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1054252471}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
@@ -9247,6 +9246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DebuffDatabase
   debuffs:
   - {fileID: 11400000, guid: 72ac2e7dafc89f7438fc664c3ad528de, type: 2}
+  - {fileID: 11400000, guid: 4dc3fd4547fe48f42af990bb44202248, type: 2}
 --- !u!114 &1420185320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9261,6 +9261,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicDatabase
   relics:
   - {fileID: 11400000, guid: f859b69a49810204caa495301895b4bb, type: 2}
+  - {fileID: 11400000, guid: 7206e37768c13df4bbd78e0d17b9f063, type: 2}
 --- !u!1001 &1428285515
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10701,81 +10702,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4008485167572645205, guid: 1d1dbd260c4488747a1e500cade28b63, type: 3}
   m_PrefabInstance: {fileID: 1842991489}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1778031333
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1778031334}
-  - component: {fileID: 1778031336}
-  - component: {fileID: 1778031335}
-  m_Layer: 5
-  m_Name: Image
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1778031334
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1778031333}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1030394196}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 60, y: 60}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1778031335
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1778031333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1778031336
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1778031333}
-  m_CullTransparentMesh: 1
 --- !u!1001 &1785280177
 PrefabInstance:
   m_ObjectHideFlags: 0

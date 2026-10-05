@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "EmberbrandRelic", menuName = "Scriptable Objects/Relics/EmberbrandRelic")]
-public class EmberbrandRelic : RelicSO
+[CreateAssetMenu(fileName = "FrostbrandRelic", menuName = "Scriptable Objects/Relics/FrostbrandRelic")]
+public class FrostbrandRelic : RelicSO
 {
     [SerializeField] DebuffSO debuffToApply;
 

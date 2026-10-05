@@ -142,7 +142,7 @@ public class WeaponObject : ItemObject
 
             weaponContext.HitEnemies = hitEnemies.ToArray();
             TriggerSoulShards(WeaponEvent.OnHit, weaponContext);
-            relics.Trigger(WeaponEvent.OnHit, weaponContext);
+            // relics.Trigger(WeaponEvent.OnHit, weaponContext);
         }
     }
 
