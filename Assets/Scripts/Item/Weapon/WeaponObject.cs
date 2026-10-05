@@ -20,6 +20,7 @@ public class WeaponObject : ItemObject
     CinemachineShake cinemachineShake;
 
     InventoryManager inventoryManager;
+    PlayerRelics relics;
 
     protected override void Start()
     {
@@ -28,6 +29,7 @@ public class WeaponObject : ItemObject
         audioSource = GetComponent<AudioSource>();
         cinemachineShake = GetComponentInParent<CinemachineShake>();
         inventoryManager = InventoryManager.Instance;
+        relics = GetComponentInParent<PlayerRelics>();
     }
 
     void OnEnable()
@@ -97,6 +99,8 @@ public class WeaponObject : ItemObject
         // Trigger the delay of the actual attack from mouse-click, such as sword swing build up
         yield return new WaitForSeconds(attack.attackDelay);
 
+        relics.NotifyAttackServerRpc();
+
         TriggerSoulShards(WeaponEvent.OnAttack, weaponContext);
 
         // Trigger VFX
@@ -138,6 +142,7 @@ public class WeaponObject : ItemObject
 
             weaponContext.HitEnemies = hitEnemies.ToArray();
             TriggerSoulShards(WeaponEvent.OnHit, weaponContext);
+            relics.Trigger(WeaponEvent.OnHit, weaponContext);
         }
     }
 

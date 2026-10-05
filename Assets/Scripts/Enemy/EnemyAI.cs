@@ -164,6 +164,14 @@ public class EnemyAI : NetworkBehaviour
         }
     }
 
+    PlayerCombatEvents GetAttackerEvents()
+    {
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(lastAttackerId, out NetworkClient client))
+            return client.PlayerObject.GetComponent<PlayerCombatEvents>();
+
+        return null;
+    }
+
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     void AddDebuffServerRpc(string debuffId, RpcParams rpcParams = default)
     {
@@ -249,7 +257,7 @@ public class EnemyAI : NetworkBehaviour
         ModifyHealth(damage, stunTime, attackDirection, hitPoint, rpcParams.Receive.SenderClientId);
     }
 
-    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint, ulong attackerId)
+    void ModifyHealth(float damage, float stunTime, AttackDirection attackDirection, Vector3 hitPoint, ulong attackerId, bool isDirectHit = false)
     {
         if (!IsServer || isDead) return;
 

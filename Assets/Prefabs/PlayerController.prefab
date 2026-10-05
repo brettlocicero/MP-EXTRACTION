@@ -2850,6 +2850,8 @@ GameObject:
   - component: {fileID: 2107728952471779990}
   - component: {fileID: 7819502825134977877}
   - component: {fileID: 3196357381100976498}
+  - component: {fileID: 4934830092512637923}
+  - component: {fileID: -530140517200003282}
   m_Layer: 7
   m_Name: PlayerController
   m_TagString: Player
@@ -3249,6 +3251,33 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+--- !u!114 &4934830092512637923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3744818073237477762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31949cb93b1e8c74daed8a6008eb65a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCombatEvents
+--- !u!114 &-530140517200003282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3744818073237477762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d561faad204c3f4c8fb93b620b2714e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRelics
+  ShowTopMostFoldoutHeaderGroup: 1
+  offerSize: 3
+  testRelic: {fileID: 11400000, guid: f859b69a49810204caa495301895b4bb, type: 2}
 --- !u!1 &3823180109169294840
 GameObject:
   m_ObjectHideFlags: 0

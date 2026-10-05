@@ -1433,7 +1433,7 @@ MonoBehaviour:
   movement: {fileID: 3154258267611295032}
   attack: {fileID: 8379998565991473177}
   maxHealth: 60
-  threat: 3
+  threat: 5
   targetUpdateInterval: 0.5
   animator: {fileID: 4998154998878591481}
   hitVFXParticles: []

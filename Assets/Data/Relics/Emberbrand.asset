@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 250d29875ee4cb34d9e1d24181fa3dcd, type: 3}
+  m_Name: Emberbrand
+  m_EditorClassIdentifier: Assembly-CSharp::EmberbrandRelic
+  relicId: 0
+  relicName: Emberbrand
+  description: Ignites the enemy.
+  icon: {fileID: 21300000, guid: c47f997ba404ef945a7802280fd2c0b0, type: 3}
+  weaponEvent: 2
+  debuffToApply: {fileID: 11400000, guid: 72ac2e7dafc89f7438fc664c3ad528de, type: 2}
