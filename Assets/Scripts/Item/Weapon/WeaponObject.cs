@@ -101,8 +101,6 @@ public class WeaponObject : ItemObject
 
         relics.NotifyAttackServerRpc();
 
-        TriggerSoulShards(WeaponEvent.OnAttack, weaponContext);
-
         // Trigger VFX
         cinemachineShake.ShakeCamera(attack.camShakeIntensity, attack.camShakeDuration, 0.5f, 80f);
         PlayAttackAudio();
@@ -141,7 +139,6 @@ public class WeaponObject : ItemObject
             }
 
             weaponContext.HitEnemies = hitEnemies.ToArray();
-            TriggerSoulShards(WeaponEvent.OnHit, weaponContext);
             // relics.Trigger(WeaponEvent.OnHit, weaponContext);
         }
     }
@@ -160,13 +157,5 @@ public class WeaponObject : ItemObject
     {
         audioSource.pitch = Random.Range(weapon.attackSoundPitchRange.x, weapon.attackSoundPitchRange.y);
         audioSource.PlayOneShot(weapon.attackSound);
-    }
-
-    void TriggerSoulShards(WeaponEvent weaponEvent, WeaponContext weaponContext)
-    {
-        foreach (SoulShardSO soulShardSO in Instance.soulShards)
-        {
-            soulShardSO.Trigger(weaponEvent, weaponContext);
-        }
     }
 }

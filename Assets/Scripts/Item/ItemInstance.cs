@@ -11,8 +11,6 @@ public class ItemInstance : INetworkSerializable
     public int baseItemId;
     public string customName;
 
-    public List<SoulShardSO> soulShards = new();
-
     public ItemInstance() { }
 
     public ItemInstance(int baseItemId)
@@ -26,10 +24,5 @@ public class ItemInstance : INetworkSerializable
         serializer.SerializeValue(ref instanceId);
         serializer.SerializeValue(ref baseItemId);
         serializer.SerializeValue(ref customName);
-    }
-
-    public void AddSoulShard(SoulShardSO soulShard)
-    {
-        soulShards.Add(soulShard);
     }
 }

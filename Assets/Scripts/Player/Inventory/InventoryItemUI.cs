@@ -118,14 +118,8 @@ public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public void OnDrop(PointerEventData eventData)
     {
         if (!eventData.pointerDrag.TryGetComponent<InventoryItemUI>(out var droppedItem) ||
-            droppedItem.Item.Data is not SoulShardSO shard ||
             Item.Data is not WeaponSO weapon)
             return;
-
-        if (Item.Instance.soulShards.Count >= weapon.maxSlots)
-            return;
-
-        Item.Instance.AddSoulShard(shard);
 
         if (InventoryManager.Instance.ContainsItem(droppedItem.Item))
             InventoryManager.Instance.RemoveItem(droppedItem.Item);

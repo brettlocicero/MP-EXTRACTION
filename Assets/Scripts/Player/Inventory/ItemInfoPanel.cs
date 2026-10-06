@@ -10,8 +10,6 @@ public class ItemInfoPanel : MonoBehaviour
     [SerializeField] TextMeshProUGUI descriptionText;
     [SerializeField] Canvas canvas;
     [SerializeField] Vector2 offset = new Vector2(16f, -16f);
-    [SerializeField] GameObject shardsParent;
-    [SerializeField] Image[] shards;
 
     RectTransform rectTransform;
     CanvasGroup canvasGroup;
@@ -65,26 +63,8 @@ public class ItemInfoPanel : MonoBehaviour
 
     public void DisplayItemPanel(InventoryItem item)
     {
-        itemNameText.text = string.IsNullOrWhiteSpace(item.Instance.customName)
-            ? item.Data.itemName : item.Instance.customName;
+        itemNameText.text = string.IsNullOrWhiteSpace(item.Instance.customName) ? item.Data.itemName : item.Instance.customName;
         descriptionText.text = BuildDescriptionText(item);
-
-        foreach (Image shardImage in shards)
-            shardImage.gameObject.SetActive(false);
-
-        bool isWeapon = item.Data is WeaponSO;
-        shardsParent.SetActive(isWeapon && item.Instance.soulShards.Count > 0);
-        if (isWeapon)
-        {
-            int count = Mathf.Min(shards.Length, item.Instance.soulShards.Count);
-            for (int i = 0; i < count; i++)
-            {
-                SoulShardSO shard = item.Instance.soulShards[i];
-                if (shard == null) continue;
-                shards[i].gameObject.SetActive(true);
-                shards[i].sprite = shard.icon;
-            }
-        }
 
         ResizeToContent();
         rectTransform.SetAsLastSibling();
@@ -99,7 +79,7 @@ public class ItemInfoPanel : MonoBehaviour
         float contentWidth = width - 40f;
         float titleHeight = itemNameText.GetPreferredValues(itemNameText.text, contentWidth, 0f).y;
         float descriptionHeight = descriptionText.GetPreferredValues(descriptionText.text, contentWidth, 0f).y;
-        float footerHeight = shardsParent.activeSelf ? 76f : 24f;
+        float footerHeight = 24f;
         float bodyTop = 20f + titleHeight + 20f;
         float height = Mathf.Min(Mathf.Max(minimumHeight, bodyTop + descriptionHeight + footerHeight),
             Mathf.Max(80f, bounds.height - screenPadding * 2f));
@@ -126,7 +106,6 @@ public class ItemInfoPanel : MonoBehaviour
 
             sb.AppendLine($"Range <color=green>{weapon.range}</color>");
             sb.AppendLine($"Attack Rate <color=orange>{weapon.attackRate}</color>");
-            sb.AppendLine($"Soul shards  {item.Instance.soulShards.Count} / {weapon.maxSlots}");
             return sb.ToString();
         }
 
