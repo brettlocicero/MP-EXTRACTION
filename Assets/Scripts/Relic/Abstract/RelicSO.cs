@@ -2,14 +2,13 @@ using UnityEngine;
 
 public abstract class RelicSO : ScriptableObject
 {
+    [SerializeField] WeaponEvent weaponEvent;
     [SerializeField] int relicId;
     [SerializeField] string relicName = "Unnamed Relic";
     [SerializeField, TextArea] string description;
     [SerializeField] Sprite icon;
     [SerializeField] GameObject relicObject;
-
-    [Header("Relic Settings")]
-    [SerializeField] WeaponEvent weaponEvent;
+    [SerializeField] GameObject vfxPrefab;
 
     public int Id => relicId;
     public string RelicName => relicName;
@@ -24,4 +23,11 @@ public abstract class RelicSO : ScriptableObject
     }
 
     protected abstract void ApplyEffect(WeaponContext weaponContext);
+    
+    public void SpawnVFX(Vector3 position)
+    {
+        if (vfxPrefab == null) return;
+    
+        Instantiate(vfxPrefab, position, Quaternion.identity);
+    }
 }

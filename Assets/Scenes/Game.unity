@@ -988,7 +988,7 @@ MonoBehaviour:
   - {fileID: 2375243330899510526, guid: 3c788b994707bf84781e169574e778e1, type: 3}
   - {fileID: 3419855779133920224, guid: 0dd1149388d1a674ba1e6de2caa2aa46, type: 3}
   startingEnemyCount: 2
-  enemiesAddedPerWave: 5
+  enemiesAddedPerWave: 1
   intermissionDuration: 30
   spawnInterval: 1
   maxConcurrentEnemies: 10
@@ -1676,6 +1676,7 @@ Transform:
   - {fileID: 45486270}
   - {fileID: 1490947789}
   - {fileID: 143647280}
+  - {fileID: 1017947212}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &335457476
@@ -5593,6 +5594,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SteamLobbyManager
   connectionManager: {fileID: 1883309324}
+--- !u!1 &1017947211
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1017947212}
+  - component: {fileID: 1017947213}
+  m_Layer: 0
+  m_Name: Relic VFX Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1017947212
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1017947211}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 335457474}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1017947213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1017947211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7afe6b75d5e044ac685fb6fda3a28f20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RelicVFXManager
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &1019046900
 GameObject:
   m_ObjectHideFlags: 0
@@ -8712,6 +8758,7 @@ MonoBehaviour:
   relics:
   - {fileID: 11400000, guid: f859b69a49810204caa495301895b4bb, type: 2}
   - {fileID: 11400000, guid: 7206e37768c13df4bbd78e0d17b9f063, type: 2}
+  - {fileID: 11400000, guid: 19686d0fb55f142d6b89e47ae4238a2d, type: 2}
 --- !u!1001 &1463342742
 PrefabInstance:
   m_ObjectHideFlags: 0
