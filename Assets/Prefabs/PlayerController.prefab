@@ -3277,10 +3277,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerRelics
   ShowTopMostFoldoutHeaderGroup: 1
   offerSize: 3
+  pickupPrefab: {fileID: 468875650483383061, guid: 7f73b5835be0047b39d5eef0c6f263ec, type: 3}
+  pickupSpacing: 4
+  relicImagePrefab: {fileID: 8312614294464402231, guid: a16aadca0c728b940a9ce54b143f3ffb, type: 3}
   testRelics:
   - {fileID: 11400000, guid: f859b69a49810204caa495301895b4bb, type: 2}
   - {fileID: 11400000, guid: 7206e37768c13df4bbd78e0d17b9f063, type: 2}
-  relicImagePrefab: {fileID: 8312614294464402231, guid: a16aadca0c728b940a9ce54b143f3ffb, type: 3}
 --- !u!1 &3823180109169294840
 GameObject:
   m_ObjectHideFlags: 0
@@ -3633,7 +3635,6 @@ MonoBehaviour:
     instanceId: 0
     baseItemId: 0
     customName: 
-    soulShards: []
   movementAnimator: {fileID: 3699793755474465058}
   sprintPositionOffset: {x: 0, y: -0.1, z: 0.1}
   sprintRotationOffset: {x: 10, y: 0, z: 0}
@@ -4491,7 +4492,6 @@ MonoBehaviour:
     instanceId: 0
     baseItemId: 0
     customName: 
-    soulShards: []
   movementAnimator: {fileID: 2899571667365176779}
   sprintPositionOffset: {x: -0.05, y: -0.02, z: 0.1}
   sprintRotationOffset: {x: 10, y: 0, z: 10}

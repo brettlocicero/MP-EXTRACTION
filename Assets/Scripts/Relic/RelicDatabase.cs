@@ -27,7 +27,7 @@ public class RelicDatabase : MonoBehaviour
     {
         return relics
             .Select(relic => relic.Id)
-            .Except(ownedIds)
+            // .Except(ownedIds)
             .OrderBy(id => Random.value)
             .Take(count)
             .ToArray();

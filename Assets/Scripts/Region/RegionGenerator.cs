@@ -15,7 +15,7 @@ public class RegionGenerator : NetworkBehaviour
     [SerializeField] float transitionDuration = 2f;
 
     [Header("Arena")]
-    [SerializeField] EnemySpawner enemySpawner;
+    [SerializeField] EnemyWaveManager enemySpawner;
     [SerializeField] Material groundMaterial;
     [SerializeField, Min(20f)] float arenaSize = 120f;
     [SerializeField, Min(2f)] float playerSpawnSpacing = 3f;

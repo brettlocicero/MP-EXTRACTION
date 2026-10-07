@@ -14,7 +14,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject crosshair;
 
     [Header("Waves")]
-    [SerializeField] EnemySpawner enemySpawner;
+    [SerializeField] EnemyWaveManager enemySpawner;
     [SerializeField] TextMeshProUGUI waveText;
 
     int displayedWave = -1;

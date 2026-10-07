@@ -529,13 +529,6 @@ MonoBehaviour:
   descriptionText: {fileID: 2001878224}
   canvas: {fileID: 1790986715}
   offset: {x: 24, y: -24}
-  shardsParent: {fileID: 0}
-  shards:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   panelWidth: 280
   minimumHeight: 125
   screenPadding: 16
@@ -957,7 +950,7 @@ GameObject:
   - component: {fileID: 143647280}
   - component: {fileID: 143647281}
   m_Layer: 0
-  m_Name: Enemy Spawner
+  m_Name: Enemy Wave Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -994,7 +987,7 @@ MonoBehaviour:
   enemyPrefabs:
   - {fileID: 2375243330899510526, guid: 3c788b994707bf84781e169574e778e1, type: 3}
   - {fileID: 3419855779133920224, guid: 0dd1149388d1a674ba1e6de2caa2aa46, type: 3}
-  startingEnemyCount: 10
+  startingEnemyCount: 2
   enemiesAddedPerWave: 5
   intermissionDuration: 30
   spawnInterval: 1

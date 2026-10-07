@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class EnemySpawner : NetworkBehaviour
+public class EnemyWaveManager : NetworkBehaviour
 {
     [Header("Enemies")]
     [SerializeField] GameObject[] enemyPrefabs;
@@ -101,6 +101,7 @@ public class EnemySpawner : NetworkBehaviour
         if (enemiesRemaining.Value == 0)
         {
             nextWaveTime.Value = NetworkManager.ServerTime.Time + intermissionDuration;
+            OfferRelics();
         }
 
         else if (CanSpawn())
@@ -110,6 +111,12 @@ public class EnemySpawner : NetworkBehaviour
             if (spawnTimer <= 0f)
                 TrySpawnEnemy();
         }
+    }
+
+    void OfferRelics()
+    {
+        foreach (NetworkClient client in NetworkManager.ConnectedClientsList)
+            client.PlayerObject.GetComponent<PlayerRelics>().OfferRelics(arenaCenter + Vector3.up);
     }
 
     bool CanSpawn()

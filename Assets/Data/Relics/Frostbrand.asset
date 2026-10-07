@@ -16,5 +16,6 @@ MonoBehaviour:
   relicName: Frostbrand
   description: Frosts the enemy.
   icon: {fileID: 21300000, guid: e023087086268554da4403302421e1a5, type: 3}
+  relicObject: {fileID: 3698984278390149931, guid: c92c5068910fb4e41b4d3b65235bafee, type: 3}
   weaponEvent: 2
   debuffToApply: {fileID: 11400000, guid: 4dc3fd4547fe48f42af990bb44202248, type: 2}
