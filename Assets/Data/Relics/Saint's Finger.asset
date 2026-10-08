@@ -21,4 +21,4 @@ MonoBehaviour:
   vfxPrefab: {fileID: 3597476077093702381, guid: d39565bc2659c4b95af67fcdaedeab0d, type: 3}
   hitsRequired: 5
   strikeDamage: 40
-  strikeStunTime: 0.5
+  strikeStunTime: 0

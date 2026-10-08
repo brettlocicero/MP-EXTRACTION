@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7421697084454424703}
   - component: {fileID: 1598722591716974491}
   - component: {fileID: 1305888042966200021}
-  - component: {fileID: 9026449364808067499}
+  - component: {fileID: 3130600322833936836}
   m_Layer: 0
   m_Name: Tombstone4
   m_TagString: Untagged
@@ -91,8 +91,8 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &9026449364808067499
-MeshCollider:
+--- !u!65 &3130600322833936836
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -109,7 +109,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1246174660212311666, guid: b86845068bda00a4ebabfb3e8f7b5afd, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 4.17975, y: 1.1431808, z: 3.2147498}
+  m_Center: {x: -0.00000035762784, y: 0.28386927, z: -1.4412591}

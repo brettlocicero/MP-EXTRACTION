@@ -987,11 +987,11 @@ MonoBehaviour:
   enemyPrefabs:
   - {fileID: 2375243330899510526, guid: 3c788b994707bf84781e169574e778e1, type: 3}
   - {fileID: 3419855779133920224, guid: 0dd1149388d1a674ba1e6de2caa2aa46, type: 3}
-  startingEnemyCount: 2
-  enemiesAddedPerWave: 1
+  startingEnemyCount: 8
+  enemiesAddedPerWave: 5
   intermissionDuration: 30
-  spawnInterval: 1
-  maxConcurrentEnemies: 10
+  spawnInterval: 0.5
+  maxConcurrentEnemies: 25
   spawnRadius: 100
   raycastHeight: 50
   raycastDistance: 300

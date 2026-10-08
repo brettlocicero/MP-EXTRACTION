@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 34239576601254646}
   - component: {fileID: 2720380773960553658}
   - component: {fileID: 6352836002248911670}
-  - component: {fileID: 5648765795953025698}
+  - component: {fileID: 3565089339467425642}
   m_Layer: 0
   m_Name: Tombstone3
   m_TagString: Untagged
@@ -91,8 +91,8 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &5648765795953025698
-MeshCollider:
+--- !u!65 &3565089339467425642
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -109,7 +109,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 7447534520612549447, guid: b86845068bda00a4ebabfb3e8f7b5afd, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 2.4068978, y: 1.1431808, z: 3.1832306}
+  m_Center: {x: -0.00000065565104, y: 0.28386927, z: -1.4254993}
