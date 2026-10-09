@@ -1,56 +1,60 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class RoomObject : MonoBehaviour
+public class RoomObject : NetworkBehaviour
 {
-    [SerializeField] Transform connector;
-
-    [Header("Enemies")]
+    [SerializeField] EnemyAI[] enemyPool;
     [SerializeField] Transform[] enemySpawnLocations;
-    [SerializeField] RoomEnemySpawn[] enemySpawns;
-    [SerializeField, Range(0f, 1f)] float enemySpawnChance = 0.7f;
+    [SerializeField] int baseEnemyCount = 10;
 
-    [Header("Props")]
-    [SerializeField] Transform[] propLocation;
-    [SerializeField] PropObject[] props;
-    [SerializeField, Range(0f, 1f)] float propSpawnChance = 0.7f;
+    readonly List<EnemyAI> aliveEnemies = new();
 
-    public Transform Connector => connector;
-
-    public void Initialize()
+    public void InitRoom()
     {
-        if (!NetworkManager.Singleton.IsServer)
-            return;
-
-        SpawnEnemies();
-        SpawnProps();
+        for (int i = 0; i < baseEnemyCount; i++)
+            SpawnEnemy();
     }
 
-    void SpawnEnemies()
+    void SpawnEnemy()
     {
-        foreach (Transform location in enemySpawnLocations)
-        {
-            if (enemySpawns.Length == 0 || Random.value > enemySpawnChance)
-                continue;
+        EnemyAI prefab = enemyPool[Random.Range(0, enemyPool.Length)];
+        Transform location = enemySpawnLocations[Random.Range(0, enemySpawnLocations.Length)];
 
-            RoomEnemySpawn prefab = enemySpawns[Random.Range(0, enemySpawns.Length)];
-            RoomEnemySpawn spawn = Instantiate(prefab, location.position, location.rotation);
-
-            spawn.GetComponent<NetworkObject>().Spawn();
-        }
+        EnemyAI enemy = Instantiate(prefab, location.position, location.rotation);
+        enemy.NetworkObject.Spawn();
+        enemy.OnEnemyKilled += OnEnemyKilled;
+        aliveEnemies.Add(enemy);
     }
 
-    void SpawnProps()
+    void OnEnemyKilled(EnemyAI enemy)
     {
-        foreach (Transform location in propLocation)
+        enemy.OnEnemyKilled -= OnEnemyKilled;
+        aliveEnemies.Remove(enemy);
+
+        if (aliveEnemies.Count == 0)
+            ClearRoom();
+    }
+
+    void ClearRoom()
+    {
+        // Room finished: offer relics and/or call RegionGenerator.Instance.SpawnNextRoom() here.
+    }
+
+    // Cleans up leftover enemies when the room is swapped out mid-fight.
+    public override void OnNetworkDespawn()
+    {
+        foreach (EnemyAI enemy in aliveEnemies)
         {
-            if (props.Length == 0 || Random.value > propSpawnChance)
-                continue;
+            if (enemy != null)
+            {
+                enemy.OnEnemyKilled -= OnEnemyKilled;
 
-            PropObject prefab = props[Random.Range(0, props.Length)];
-            PropObject prop = Instantiate(prefab, location.position, location.rotation);
-
-            prop.GetComponent<NetworkObject>().Spawn();
+                if (enemy.IsSpawned)
+                    enemy.NetworkObject.Despawn();
+            }
         }
+
+        aliveEnemies.Clear();
     }
 }

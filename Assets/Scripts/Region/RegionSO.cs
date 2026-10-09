@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "RegionSO", menuName = "Scriptable Objects/RegionSO")]
@@ -6,7 +7,7 @@ public class RegionSO : ScriptableObject
     [SerializeField] string regionName;
 
     [Header("")]
-    [SerializeField] GameObject regionBase;
+    [SerializeField] RoomObject entranceRoom;
     [SerializeField] RoomObject[] rooms;
     [SerializeField] int roomCount = 5;
 
@@ -25,31 +26,15 @@ public class RegionSO : ScriptableObject
         RenderSettings.ambientSkyColor = ambientSkyColor;
         RenderSettings.fogColor = fogColor;
     }
-
-    public void SpawnRooms(Transform regionRoot)
+    
+    public RoomObject SpawnRoom(int roomIndex) 
     {
-        Vector3 cursorPosition = regionRoot.position;
-        Quaternion cursorRotation = regionRoot.rotation;
+        RoomObject roomPrefab = rooms[Random.Range(0, rooms.Length)];
+        if (roomIndex == 0) roomPrefab = entranceRoom;
 
-        for (int i = 0; i < roomCount; i++)
-        {
-            RoomObject roomObject = rooms[Random.Range(0, rooms.Length)];
-            RoomObject roomInstance = Instantiate(roomObject, cursorPosition, cursorRotation, regionRoot);
-            roomInstance.Initialize();
-
-            if (!roomInstance.TryGetComponent(out RoomObject room) || room.Connector == null)
-            {
-                Debug.LogWarning($"[RegionSO] Room prefab '{roomObject.name}' is missing a RoomObject/Connector, stopping room chain early.");
-                break;
-            }
-
-            cursorPosition = room.Connector.position;
-            cursorRotation = room.Connector.rotation;
-        }
-    }
-
-    public GameObject SpawnRegionBase(Vector3 position, Transform parent)
-    {
-        return Instantiate(regionBase, position, Quaternion.identity, parent);
+        RoomObject roomObject = Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
+        roomObject.NetworkObject.Spawn();
+        roomObject.InitRoom();
+        return roomObject;
     }
 }

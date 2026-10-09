@@ -13,12 +13,9 @@ MonoBehaviour:
   m_Name: Abysslands
   m_EditorClassIdentifier: Assembly-CSharp::RegionSO
   regionName: Abysslands
-  regionBase: {fileID: 4920668376728799186, guid: 813f05eba027f2b498eec3e6869006e4, type: 3}
+  entranceRoom: {fileID: 3588629757047237873, guid: faaa6553522044f7fae22243a9b02da8, type: 3}
   rooms:
-  - {fileID: 3875416856642295771, guid: 635274f3920af3b41a8f54a44ae345b2, type: 3}
-  - {fileID: 3875416856642295771, guid: d1497abec4d205b4b99e14233fad5429, type: 3}
-  - {fileID: 3875416856642295771, guid: 45c59085d70b34b04ab2f3e11b059b47, type: 3}
-  - {fileID: 3875416856642295771, guid: 56ceecbc259e90342943b7461ef9bb2b, type: 3}
+  - {fileID: 3588629757047237873, guid: faaa6553522044f7fae22243a9b02da8, type: 3}
   roomCount: 25
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
   sunColor: {r: 0.8207547, g: 0.7017774, b: 0.6852527, a: 1}

@@ -939,65 +939,6 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
---- !u!1 &143647279
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 143647280}
-  - component: {fileID: 143647281}
-  m_Layer: 0
-  m_Name: Enemy Wave Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &143647280
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 143647279}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 335457474}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &143647281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 143647279}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5907e2c2b0a53b34382826d803d33fa6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  ShowTopMostFoldoutHeaderGroup: 1
-  enemyPrefabs:
-  - {fileID: 2375243330899510526, guid: 3c788b994707bf84781e169574e778e1, type: 3}
-  - {fileID: 3419855779133920224, guid: 0dd1149388d1a674ba1e6de2caa2aa46, type: 3}
-  startingEnemyCount: 8
-  enemiesAddedPerWave: 5
-  intermissionDuration: 30
-  spawnInterval: 0.5
-  maxConcurrentEnemies: 25
-  spawnRadius: 100
-  raycastHeight: 50
-  raycastDistance: 300
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 1024
 --- !u!1 &202197579
 GameObject:
   m_ObjectHideFlags: 0
@@ -1675,7 +1616,6 @@ Transform:
   - {fileID: 1466165046}
   - {fileID: 45486270}
   - {fileID: 1490947789}
-  - {fileID: 143647280}
   - {fileID: 1017947212}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3335,10 +3275,10 @@ MonoBehaviour:
   regionRoot: {fileID: 648846254}
   availableRegions:
   - {fileID: 11400000, guid: 8bc807014278cad4abbd9388a9b5aa42, type: 2}
+  roomCountText: {fileID: 1244284197}
   playerSpawnPos: {x: 0, y: 2, z: 0}
   regionTransitionAnimator: {fileID: 1976826578}
   transitionDuration: 2
-  enemySpawner: {fileID: 143647281}
   groundMaterial: {fileID: 2100000, guid: 6455747afc9bf4b8795b1dd54ff5a762, type: 2}
   arenaSize: 120
   playerSpawnSpacing: 3
@@ -8945,8 +8885,6 @@ MonoBehaviour:
   healthText: {fileID: 1616472855}
   soulsText: {fileID: 1814185688}
   crosshair: {fileID: 1207399072}
-  enemySpawner: {fileID: 143647281}
-  waveText: {fileID: 1244284197}
   damageNumberPrefab: {fileID: 5538497247143937195, guid: 8255f51b1d7bc4ec897381c646299925, type: 3}
   damageNumberJiggle: 20
   playerNametagPrefab: {fileID: 5287716156717895435, guid: 1b93d3a1cae301b499ffa146a639e8b9, type: 3}

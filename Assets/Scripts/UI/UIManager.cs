@@ -13,10 +13,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI soulsText;
     [SerializeField] GameObject crosshair;
 
-    [Header("Waves")]
-    [SerializeField] EnemyWaveManager enemySpawner;
-    [SerializeField] TextMeshProUGUI waveText;
-
     int displayedWave = -1;
     int displayedEnemies = -1;
     int displayedIntermission = -1;
@@ -54,8 +50,6 @@ public class UIManager : MonoBehaviour
 
     void LateUpdate()
     {
-        UpdateWaveUI();
-
         if (!GameManager.Instance.LocalPlayer)
             return;
 
@@ -77,37 +71,7 @@ public class UIManager : MonoBehaviour
 
         HandleCrosshairVisibility();
     }
-
-    void UpdateWaveUI()
-    {
-        if (waveText == null)
-            return;
-
-        bool visible = enemySpawner != null && enemySpawner.IsSpawned && enemySpawner.CurrentWave > 0;
-        waveText.gameObject.SetActive(visible);
-
-        if (!visible)
-        {
-            displayedWave = -1;
-            return;
-        }
-
-        int wave = enemySpawner.CurrentWave;
-        int enemies = enemySpawner.EnemiesRemaining;
-        int seconds = enemySpawner.IsIntermission ? enemySpawner.IntermissionSeconds : -1;
-
-        if (wave == displayedWave && enemies == displayedEnemies && seconds == displayedIntermission)
-            return;
-
-        displayedWave = wave;
-        displayedEnemies = enemies;
-        displayedIntermission = seconds;
-
-        waveText.text = seconds >= 0
-            ? $"WAVE {wave} COMPLETE\n<size=65%>Wave {wave + 1} in {seconds}s</size>"
-            : $"WAVE {wave}\n<size=65%>{enemies} enemies remaining</size>";
-    }
-
+    
     public void SpawnPlayerNameplate(PlayerState playerState)
     {
         if (playerState.IsOwner)
