@@ -7,6 +7,7 @@ public class RoomObject : NetworkBehaviour
     [SerializeField] EnemyAI[] enemyPool;
     [SerializeField] Transform[] enemySpawnLocations;
     [SerializeField] int baseEnemyCount = 10;
+    [SerializeField] Transform relicSpawnPoint;
 
     readonly List<EnemyAI> aliveEnemies = new();
 
@@ -38,10 +39,10 @@ public class RoomObject : NetworkBehaviour
 
     void ClearRoom()
     {
-        // Room finished: offer relics and/or call RegionGenerator.Instance.SpawnNextRoom() here.
+        foreach (NetworkClient client in NetworkManager.ConnectedClientsList)
+            client.PlayerObject.GetComponent<PlayerRelics>().OfferRelics(relicSpawnPoint.position);
     }
 
-    // Cleans up leftover enemies when the room is swapped out mid-fight.
     public override void OnNetworkDespawn()
     {
         foreach (EnemyAI enemy in aliveEnemies)

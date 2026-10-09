@@ -129,7 +129,7 @@ public class PlayerRelics : NetworkBehaviour
         for (int i = 0; i < offeredIds.Length; i++)
         {
             float offset = (i - (offeredIds.Length - 1) / 2f) * pickupSpacing;
-            RelicPickup pickup = Instantiate(pickupPrefab, center + Vector3.right * offset + Vector3.up * -25f, Quaternion.identity);
+            RelicPickup pickup = Instantiate(pickupPrefab, center + Vector3.right * offset, Quaternion.identity);
 
             pickup.Init(offeredIds[i], this);
             spawnedPickups.Add(pickup);
