@@ -165,7 +165,7 @@ public class RegionGenerator : NetworkBehaviour
         roomCountText.gameObject.SetActive(inRoom);
 
         if (inRoom)
-            roomCountText.text = $"{availableRegions[currentRegionIndex.Value].RegionName} - Room {currentRoomIndex.Value + 1}";
+            roomCountText.text = $"{availableRegions[currentRegionIndex.Value].RegionName} - {currentRoomIndex.Value + 1}";
     }
 
     IEnumerator PlaceLocalPlayerRoutine()

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -5,28 +6,43 @@ using UnityEngine;
 public class RoomObject : NetworkBehaviour
 {
     [SerializeField] EnemyAI[] enemyPool;
-    [SerializeField] Transform[] enemySpawnLocations;
     [SerializeField] int baseEnemyCount = 10;
+    [SerializeField] float spawnInterval = 1f;
+    [SerializeField] float minSpawnDistance = 20f;
+    [SerializeField] float maxSpawnDistance = 40f;
     [SerializeField] Transform relicSpawnPoint;
     [SerializeField] RoomPortal portalPrefab;
     [SerializeField] Transform portalSpawnPoint;
 
     RoomPortal portal;
+    int enemiesKilled;
 
     readonly List<EnemyAI> aliveEnemies = new();
 
     public void InitRoom()
     {
+        StartCoroutine(SpawnEnemies());
+    }
+
+    IEnumerator SpawnEnemies()
+    {
+        WaitForSeconds delay = new(spawnInterval);
+
         for (int i = 0; i < baseEnemyCount; i++)
+        {
             SpawnEnemy();
+            yield return delay;
+        }
     }
 
     void SpawnEnemy()
     {
         EnemyAI prefab = enemyPool[Random.Range(0, enemyPool.Length)];
-        Transform location = enemySpawnLocations[Random.Range(0, enemySpawnLocations.Length)];
 
-        EnemyAI enemy = Instantiate(prefab, location.position, location.rotation);
+        Vector2 offset = Random.insideUnitCircle.normalized * Random.Range(minSpawnDistance, maxSpawnDistance);
+        Vector3 position = transform.position + new Vector3(offset.x, 0f, offset.y);
+
+        EnemyAI enemy = Instantiate(prefab, position, Quaternion.identity);
         enemy.NetworkObject.Spawn();
         enemy.OnEnemyKilled += OnEnemyKilled;
         aliveEnemies.Add(enemy);
@@ -37,7 +53,7 @@ public class RoomObject : NetworkBehaviour
         enemy.OnEnemyKilled -= OnEnemyKilled;
         aliveEnemies.Remove(enemy);
 
-        if (aliveEnemies.Count == 0)
+        if (++enemiesKilled == baseEnemyCount)
             ClearRoom();
     }
 
@@ -57,6 +73,8 @@ public class RoomObject : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
+        StopAllCoroutines();
+
         foreach (EnemyAI enemy in aliveEnemies)
         {
             if (enemy != null)
