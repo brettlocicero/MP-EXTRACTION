@@ -113,6 +113,8 @@ MonoBehaviour:
   - {fileID: 4083372899457164130}
   baseEnemyCount: 10
   relicSpawnPoint: {fileID: 2398396009117623220}
+  portalPrefab: {fileID: -6525988257975716682, guid: a2adc834b823aa64f87e82905a8c79d7, type: 3}
+  portalSpawnPoint: {fileID: 2398396009117623220}
 --- !u!1 &5636223877362373943
 GameObject:
   m_ObjectHideFlags: 0

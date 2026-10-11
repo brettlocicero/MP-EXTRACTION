@@ -8,6 +8,10 @@ public class RoomObject : NetworkBehaviour
     [SerializeField] Transform[] enemySpawnLocations;
     [SerializeField] int baseEnemyCount = 10;
     [SerializeField] Transform relicSpawnPoint;
+    [SerializeField] RoomPortal portalPrefab;
+    [SerializeField] Transform portalSpawnPoint;
+
+    RoomPortal portal;
 
     readonly List<EnemyAI> aliveEnemies = new();
 
@@ -39,8 +43,16 @@ public class RoomObject : NetworkBehaviour
 
     void ClearRoom()
     {
+        portal = Instantiate(portalPrefab, portalSpawnPoint.position, portalSpawnPoint.rotation);
+        portal.NetworkObject.Spawn();
+
         foreach (NetworkClient client in NetworkManager.ConnectedClientsList)
             client.PlayerObject.GetComponent<PlayerRelics>().OfferRelics(relicSpawnPoint.position);
+    }
+
+    public void RelicChosen(ulong clientId)
+    {
+        portal.RelicChosen(clientId);
     }
 
     public override void OnNetworkDespawn()
@@ -57,5 +69,8 @@ public class RoomObject : NetworkBehaviour
         }
 
         aliveEnemies.Clear();
+
+        if (portal != null && portal.IsSpawned)
+            portal.NetworkObject.Despawn();
     }
 }

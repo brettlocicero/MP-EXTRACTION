@@ -242,4 +242,9 @@ public class RegionGenerator : NetworkBehaviour
         if (regionTransitionAnimator != null)
             regionTransitionAnimator.PlayTransition();
     }
+
+    public RoomObject GetCurrentRoom()
+    {
+        return currentRoom;
+    }
 }
