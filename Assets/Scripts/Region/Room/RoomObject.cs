@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
 public class RoomObject : NetworkBehaviour
 {
     [SerializeField] EnemyAI[] enemyPool;
-    [SerializeField] int baseEnemyCount = 10;
+    [SerializeField] int threatBudget = 20;
     [SerializeField] float spawnInterval = 1f;
     [SerializeField] float minSpawnDistance = 20f;
     [SerializeField] float maxSpawnDistance = 40f;
@@ -15,7 +16,7 @@ public class RoomObject : NetworkBehaviour
     [SerializeField] Transform portalSpawnPoint;
 
     RoomPortal portal;
-    int enemiesKilled;
+    bool spawningComplete;
 
     readonly List<EnemyAI> aliveEnemies = new();
 
@@ -28,16 +29,36 @@ public class RoomObject : NetworkBehaviour
     {
         WaitForSeconds delay = new(spawnInterval);
 
-        for (int i = 0; i < baseEnemyCount; i++)
+        int spentThreat = 0;
+
+        while (spentThreat < threatBudget)
         {
-            SpawnEnemy();
+            spentThreat += SpawnEnemy().Threat;
             yield return delay;
         }
+
+        spawningComplete = true;
+        TryClearRoom();
     }
 
-    void SpawnEnemy()
+    EnemyAI PickEnemy()
     {
-        EnemyAI prefab = enemyPool[Random.Range(0, enemyPool.Length)];
+        float roll = Random.value * enemyPool.Sum(enemy => 1f / enemy.Threat);
+
+        foreach (EnemyAI enemy in enemyPool)
+        {
+            roll -= 1f / enemy.Threat;
+
+            if (roll <= 0f)
+                return enemy;
+        }
+
+        return enemyPool[^1];
+    }
+
+    EnemyAI SpawnEnemy()
+    {
+        EnemyAI prefab = PickEnemy();
 
         Vector2 offset = Random.insideUnitCircle.normalized * Random.Range(minSpawnDistance, maxSpawnDistance);
         Vector3 position = transform.position + new Vector3(offset.x, 0f, offset.y);
@@ -46,14 +67,20 @@ public class RoomObject : NetworkBehaviour
         enemy.NetworkObject.Spawn();
         enemy.OnEnemyKilled += OnEnemyKilled;
         aliveEnemies.Add(enemy);
+
+        return enemy;
     }
 
     void OnEnemyKilled(EnemyAI enemy)
     {
         enemy.OnEnemyKilled -= OnEnemyKilled;
         aliveEnemies.Remove(enemy);
+        TryClearRoom();
+    }
 
-        if (++enemiesKilled == baseEnemyCount)
+    void TryClearRoom()
+    {
+        if (spawningComplete && aliveEnemies.Count == 0)
             ClearRoom();
     }
 
