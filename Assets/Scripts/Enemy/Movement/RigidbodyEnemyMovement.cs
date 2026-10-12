@@ -60,11 +60,16 @@ public class RigidbodyEnemyMovement : EnemyMovement
 
     void FixedUpdate()
     {
+        if (rb.isKinematic) return;
+
         rb.angularVelocity = Vector3.zero;
 
-        if (moveMode == MoveMode.Idle)
-            return;
+        if (moveMode != MoveMode.Idle)
+            Move();
+    }
 
+    void Move()
+    {
         Vector3 toFocus = focusPoint - rb.position;
         toFocus.y = 0f;
 
@@ -76,7 +81,6 @@ public class RigidbodyEnemyMovement : EnemyMovement
 
         Vector3 seekDirection = GetSeekDirection(toFocus);
         Vector3 separationDirection = GetSeparationDirection();
-
         Vector3 moveDirection = (seekDirection + separationDirection * separationWeight).normalized;
 
         rb.linearVelocity = new Vector3(
