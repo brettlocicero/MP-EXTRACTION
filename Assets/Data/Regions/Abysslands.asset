@@ -19,5 +19,5 @@ MonoBehaviour:
   roomCount: 25
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
   sunColor: {r: 0.6698113, g: 0.6698113, b: 0.6698113, a: 1}
-  ambientSkyColor: {r: 0.7264151, g: 0.7264151, b: 0.7264151, a: 1}
+  ambientSkyColor: {r: 0.6320754, g: 0.6320754, b: 0.6320754, a: 1}
   fogColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}

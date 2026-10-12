@@ -19,6 +19,16 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] float gravity = -30f;
     [SerializeField] float jumpHeight = 1.5f;
 
+    [Header("Air")]
+    [SerializeField] float airControl = 4f;
+
+    [Header("Sliding")]
+    [SerializeField] float slideSpeed = 12f;
+    [SerializeField] float slideDeceleration = 15f;
+    [SerializeField] float slideHeight = 1f;
+    [SerializeField] float slideCameraDrop = 0.5f;
+    [SerializeField] LayerMask obstructionMask;
+
     [Header("Ground Stick")]
     [SerializeField] float groundStickVelocity = 8f;
     [SerializeField] float minAirborneTimeForLandSound = 0.15f;
@@ -53,6 +63,7 @@ public class PlayerController : NetworkBehaviour
 
     Vector2 moveInput;
     Vector2 lookInput;
+    Vector3 horizontalVelocity;
 
     float verticalVelocity;
     float cameraPitch;
@@ -70,6 +81,13 @@ public class PlayerController : NetworkBehaviour
     bool isSensLocked = false;
     bool isMovementLocked = false;
 
+    bool isSliding;
+    float slideTimer;
+    float currentSlideSpeed;
+    float originalControllerHeight;
+    Vector3 originalControllerCenter;
+    Vector3 slideDirection;
+
     public PlayerState LocalState => playerState;
 
     void Awake()
@@ -78,6 +96,9 @@ public class PlayerController : NetworkBehaviour
 
         if (cameraTransform != null)
             cameraDefaultPosition = cameraTransform.localPosition;
+
+        originalControllerHeight = controller.height;
+        originalControllerCenter = controller.center;
     }
 
     public override void OnNetworkSpawn()
@@ -118,15 +139,79 @@ public class PlayerController : NetworkBehaviour
         moveInput = InputManager.Actions.Player.Move.ReadValue<Vector2>();
         lookInput = InputManager.Actions.Player.Look.ReadValue<Vector2>();
 
-        isSprinting = InputManager.Actions.Player.Sprint.IsPressed() && !isMovementLocked && moveInput.y > 0.1f;
+        isSprinting = InputManager.Actions.Player.Sprint.IsPressed() && !isMovementLocked && !isSliding && moveInput.y > 0.1f;
 
         if (isMovementLocked) moveInput = Vector2.zero;
         if (isSensLocked) lookInput = Vector2.zero;
+
+        bool slidePressed = isSprinting && InputManager.Actions.Player.Crouch.WasPressedThisFrame();
+        if (slidePressed && controller.isGrounded)
+            StartSlide();
+    }
+
+    void StartSlide()
+    {
+        isSliding = true;
+        isSprinting = false;
+
+        currentSlideSpeed = slideSpeed;
+        slideDirection = transform.forward;
+
+        // Shrink from the top so the feet stay planted
+        float heightDifference = originalControllerHeight - slideHeight;
+        controller.height = slideHeight;
+        controller.center = originalControllerCenter - Vector3.up * heightDifference * 0.5f;
+    }
+
+    void HandleSlide()
+    {
+        bool jumpPressed = InputManager.Actions.Player.Jump.WasPressedThisFrame();
+        if (jumpPressed && !isMovementLocked && CanStand())
+        {
+            EndSlide();
+            Jump();
+
+            Vector3 jumpMove = horizontalVelocity + Vector3.up * verticalVelocity;
+            controller.Move(jumpMove * Time.deltaTime);
+            return;
+        }
+
+        currentSlideSpeed = Mathf.MoveTowards(currentSlideSpeed, moveSpeed, slideDeceleration * Time.deltaTime);
+        verticalVelocity = -groundStickVelocity;
+
+        Vector3 slideMove = slideDirection * currentSlideSpeed + Vector3.up * verticalVelocity;
+        controller.Move(slideMove * Time.deltaTime);
+
+        bool finished = currentSlideSpeed <= moveSpeed || !controller.isGrounded;
+        if (finished && CanStand())
+            EndSlide();
+    }
+
+    void EndSlide()
+    {
+        isSliding = false;
+        horizontalVelocity = slideDirection * currentSlideSpeed;
+
+        controller.height = originalControllerHeight;
+        controller.center = originalControllerCenter;
+    }
+
+    bool CanStand()
+    {
+        float feetY = originalControllerCenter.y - originalControllerHeight * 0.5f;
+        Vector3 origin = transform.position + Vector3.up * (feetY + slideHeight);
+
+        return !Physics.Raycast(origin, Vector3.up, originalControllerHeight - slideHeight, obstructionMask, QueryTriggerInteraction.Ignore);
     }
 
     void HandleHeadBob()
     {
-        bool moving = moveInput.magnitude > 0.1f && controller.isGrounded;
+        bool moving = !isSliding && moveInput.magnitude > 0.1f && controller.isGrounded;
+
+        Vector3 targetPosition = cameraDefaultPosition;
+
+        if (isSliding)
+            targetPosition += Vector3.down * slideCameraDrop;
 
         if (moving)
         {
@@ -135,16 +220,15 @@ public class PlayerController : NetworkBehaviour
             float bobY = Mathf.Sin(bobTimer) * bobAmount;
             float bobX = Mathf.Cos(bobTimer * 0.5f) * bobSideAmount;
 
-            Vector3 targetPosition = cameraDefaultPosition + new Vector3(bobX, bobY, 0);
-
-            cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, targetPosition, Time.deltaTime * bobSmoothSpeed);
+            targetPosition += new Vector3(bobX, bobY, 0f);
         }
 
         else
         {
-            bobTimer = 0;
-            cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, cameraDefaultPosition, Time.deltaTime * bobSmoothSpeed);
+            bobTimer = 0f;
         }
+
+        cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, targetPosition, Time.deltaTime * bobSmoothSpeed);
     }
 
     void HandleHeadTilt()
@@ -160,6 +244,12 @@ public class PlayerController : NetworkBehaviour
 
     void Move()
     {
+        if (isSliding)
+        {
+            HandleSlide();
+            return;
+        }
+
         bool grounded = controller.isGrounded;
         float fallVelocity = verticalVelocity;
 
@@ -167,13 +257,18 @@ public class PlayerController : NetworkBehaviour
             verticalVelocity = -groundStickVelocity;
 
         float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
-        Vector3 horizontalMove = transform.right * moveInput.x + transform.forward * moveInput.y;
+        Vector3 inputVelocity = (transform.right * moveInput.x + transform.forward * moveInput.y) * currentSpeed;
+
+        // Grounded follows input directly, airborne keeps momentum and only drifts toward input
+        horizontalVelocity = grounded
+            ? inputVelocity
+            : Vector3.MoveTowards(horizontalVelocity, inputVelocity, airControl * Time.deltaTime);
 
         HandleJump(grounded);
 
         verticalVelocity += gravity * Time.deltaTime;
 
-        Vector3 fullMove = horizontalMove * currentSpeed + Vector3.up * verticalVelocity;
+        Vector3 fullMove = horizontalVelocity + Vector3.up * verticalVelocity;
         controller.Move(fullMove * Time.deltaTime);
 
         HandleGroundSounds(grounded, fallVelocity);
@@ -185,18 +280,19 @@ public class PlayerController : NetworkBehaviour
 
     void HandleJump(bool grounded)
     {
-        if (!grounded || isMovementLocked)
-            return;
+        bool jumpPressed = InputManager.Actions.Player.Jump.WasPressedThisFrame();
 
-        if (InputManager.Actions.Player.Jump.WasPressedThisFrame())
-        {
-            verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        if (grounded && !isMovementLocked && jumpPressed)
+            Jump();
+    }
 
-            isJumping = true;
+    void Jump()
+    {
+        verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        isJumping = true;
 
-            if (jumpSound)
-                audioSource.PlayOneShot(jumpSound);
-        }
+        if (jumpSound)
+            audioSource.PlayOneShot(jumpSound);
     }
 
     void HandleGroundSounds(bool grounded, float fallVelocity)

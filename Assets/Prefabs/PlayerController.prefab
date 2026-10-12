@@ -3308,6 +3308,14 @@ MonoBehaviour:
   sprintSpeed: 14
   gravity: -20
   jumpHeight: 1.5
+  airControl: 30
+  slideSpeed: 40
+  slideDeceleration: 25
+  slideHeight: 1
+  slideCameraDrop: 0.5
+  obstructionMask:
+    serializedVersion: 2
+    m_Bits: 0
   groundStickVelocity: 8
   minAirborneTimeForLandSound: 0.15
   mouseSensitivity: 0.15
