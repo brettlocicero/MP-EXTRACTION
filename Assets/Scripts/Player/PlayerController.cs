@@ -105,7 +105,6 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner)
         {
-            controller.enabled = false;
             clientObjects.gameObject.SetActive(false);
             inventoryCameraTransform.gameObject.SetActive(false);
             return;
