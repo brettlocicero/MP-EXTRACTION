@@ -3010,18 +3010,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b02343d9c7e0adc41a378dbac40fb4f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemyAttack
-  range: 2.5
+  range: 3
   minRange: 0
-  cooldown: 1
+  cooldown: 1.25
   attacksWhileMoving: 0
+  audioSource: {fileID: 7679946380430543039}
+  attackSound: {fileID: 8300000, guid: 36e95703de4904c448dc2b561d507ee3, type: 3}
   enemy: {fileID: 5031214266138607084}
   hitSpot: {fileID: 501913071095396086}
   playerLayerMask:
     serializedVersion: 2
     m_Bits: 128
   damage: 10
-  hitTime: 0.35
-  duration: 0.8
+  hitTime: 0.6333333
+  duration: 1.25
 --- !u!114 &8115701359087169496
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3078,8 +3080,8 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
-  m_Volume: 0.1
+  m_PlayOnAwake: 0
+  m_Volume: 0.3
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -3138,7 +3140,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 0

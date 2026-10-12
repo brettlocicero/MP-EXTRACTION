@@ -669,8 +669,8 @@ MonoBehaviour:
   enemyPool:
   - {fileID: 5031214266138607084, guid: 3c788b994707bf84781e169574e778e1, type: 3}
   - {fileID: 2792129290277821739, guid: 0dd1149388d1a674ba1e6de2caa2aa46, type: 3}
-  baseEnemyCount: 10
-  spawnInterval: 1
+  threatBudget: 50
+  spawnInterval: 3
   minSpawnDistance: 80
   maxSpawnDistance: 90
   relicSpawnPoint: {fileID: 2398396009117623220}

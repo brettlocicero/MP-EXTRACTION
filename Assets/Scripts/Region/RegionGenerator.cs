@@ -241,6 +241,8 @@ public class RegionGenerator : NetworkBehaviour
     {
         if (regionTransitionAnimator != null)
             regionTransitionAnimator.PlayTransition();
+
+        GameManager.Instance.LocalPlayer.LocalState.PlayPortalTransition();
     }
 
     public RoomObject GetCurrentRoom()

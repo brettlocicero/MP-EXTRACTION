@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 14032251}
   - component: {fileID: 14032252}
+  - component: {fileID: 14032253}
   m_Layer: 0
   m_Name: Environmental Audio
   m_TagString: Untagged
@@ -248,6 +249,29 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!164 &14032253
+AudioReverbFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 14032250}
+  m_Enabled: 1
+  m_DryLevel: 0
+  m_Room: -1000
+  m_RoomHF: 0
+  m_DecayTime: 2.91
+  m_DecayHFRatio: 1.3
+  m_ReflectionsLevel: -602
+  m_ReverbLevel: -302
+  m_ReverbDelay: 0.022
+  m_Diffusion: 100
+  m_Density: 100
+  m_HFReference: 5000
+  m_RoomLF: 0
+  m_LFReference: 250
+  m_ReflectionsDelay: 0
+  m_ReverbPreset: 9
 --- !u!1001 &17910445
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3278,7 +3302,7 @@ MonoBehaviour:
   roomCountText: {fileID: 1244284197}
   playerSpawnPos: {x: 0, y: 2, z: 0}
   regionTransitionAnimator: {fileID: 1976826578}
-  transitionDuration: 2
+  transitionDuration: 1
   groundMaterial: {fileID: 2100000, guid: 6455747afc9bf4b8795b1dd54ff5a762, type: 2}
   arenaSize: 120
   playerSpawnSpacing: 3
@@ -11221,9 +11245,9 @@ MonoBehaviour:
   regionEntranceFadeInDuration: 1
   regionEntranceFadeOutStart: 7.016667
   regionEntranceFadeOutDuration: 3
-  screenCoverFadeInDuration: 1
-  screenCoverFadeOutStart: 2.5
-  screenCoverFadeOutDuration: 1.5
+  screenCoverFadeInDuration: 0.8
+  screenCoverFadeOutStart: 1.2
+  screenCoverFadeOutDuration: 0.5
 --- !u!4 &1994771552 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4008485167572645205, guid: 1d1dbd260c4488747a1e500cade28b63, type: 3}

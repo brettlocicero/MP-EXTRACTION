@@ -39,6 +39,7 @@ public class MeleeEnemyAttack : EnemyAttack
         yield return new WaitForSeconds(hitTime);
 
         TriggerHitbox();
+        PlayAttackSound();
 
         yield return new WaitForSeconds(Mathf.Max(0f, duration - hitTime));
 

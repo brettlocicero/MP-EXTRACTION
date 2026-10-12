@@ -8,6 +8,7 @@ public class PlayerState : NetworkBehaviour
     [SerializeField] PlayerController playerController;
     [SerializeField] Transform nameplateTransform;
     [SerializeField] string playerName = "Player";
+    [SerializeField] Animator portalTransition;
 
     [Header("Health")]
     [SerializeField] int startingMaxHealth = 100;
@@ -29,6 +30,12 @@ public class PlayerState : NetworkBehaviour
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
+
+    public void PlayPortalTransition()
+    {
+        portalTransition.SetTrigger("TriggerPortal");
+        portalTransition.GetComponent<AudioSource>().Play();
+    }
 
     public override void OnNetworkSpawn()
     {

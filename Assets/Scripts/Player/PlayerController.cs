@@ -47,6 +47,8 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] float footstepInterval = 0.45f;
     [SerializeField] float sprintFootstepInterval = 0.3f;
 
+    PlayerState playerState;
+
     CharacterController controller;
 
     Vector2 moveInput;
@@ -67,6 +69,8 @@ public class PlayerController : NetworkBehaviour
     float currentTilt;
     bool isSensLocked = false;
     bool isMovementLocked = false;
+
+    public PlayerState LocalState => playerState;
 
     void Awake()
     {
@@ -91,6 +95,8 @@ public class PlayerController : NetworkBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        playerState = GetComponent<PlayerState>();
     }
 
     void Update()
