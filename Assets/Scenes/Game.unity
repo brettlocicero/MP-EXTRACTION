@@ -3299,13 +3299,9 @@ MonoBehaviour:
   regionRoot: {fileID: 648846254}
   availableRegions:
   - {fileID: 11400000, guid: 8bc807014278cad4abbd9388a9b5aa42, type: 2}
-  roomCountText: {fileID: 1244284197}
-  playerSpawnPos: {x: 0, y: 2, z: 0}
+  playerSpawnPos: {x: 0, y: 2, z: 5}
   regionTransitionAnimator: {fileID: 1976826578}
   transitionDuration: 1
-  groundMaterial: {fileID: 2100000, guid: 6455747afc9bf4b8795b1dd54ff5a762, type: 2}
-  arenaSize: 120
-  playerSpawnSpacing: 3
 --- !u!114 &629687393
 MonoBehaviour:
   m_ObjectHideFlags: 0

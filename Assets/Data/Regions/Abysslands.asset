@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: Abysslands
   m_EditorClassIdentifier: Assembly-CSharp::RegionSO
   regionName: Abysslands
-  entranceRoom: {fileID: 3588629757047237873, guid: faaa6553522044f7fae22243a9b02da8, type: 3}
   rooms:
-  - {fileID: 3588629757047237873, guid: faaa6553522044f7fae22243a9b02da8, type: 3}
+  - {fileID: 3875416856642295771, guid: 635274f3920af3b41a8f54a44ae345b2, type: 3}
+  - {fileID: 3875416856642295771, guid: d1497abec4d205b4b99e14233fad5429, type: 3}
+  - {fileID: 3875416856642295771, guid: 45c59085d70b34b04ab2f3e11b059b47, type: 3}
   roomCount: 25
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
-  sunColor: {r: 0.6698113, g: 0.6698113, b: 0.6698113, a: 1}
-  ambientSkyColor: {r: 0.6320754, g: 0.6320754, b: 0.6320754, a: 1}
+  sunColor: {r: 0.39269945, g: 0.39215687, b: 0.4627451, a: 1}
+  ambientSkyColor: {r: 0.47792813, g: 0.48867318, b: 0.5660378, a: 1}
   fogColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}

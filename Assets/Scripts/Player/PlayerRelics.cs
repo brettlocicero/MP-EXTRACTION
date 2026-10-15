@@ -148,7 +148,6 @@ public class PlayerRelics : NetworkBehaviour
         if (pendingOffer.Contains(relicId))
         {
             GrantRelic(relicId);
-            RegionGenerator.Instance.GetCurrentRoom().RelicChosen(OwnerClientId);
             pendingOffer = Array.Empty<int>();
         }
     }
