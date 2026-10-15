@@ -99,6 +99,7 @@ public class WeaponObject : ItemObject
         // Trigger the delay of the actual attack from mouse-click, such as sword swing build up
         yield return new WaitForSeconds(attack.attackDelay);
 
+        TriggerSoulShards(WeaponEvent.OnAttack, weaponContext);
         relics.NotifyAttackServerRpc();
 
         // Trigger VFX
@@ -139,7 +140,7 @@ public class WeaponObject : ItemObject
             }
 
             weaponContext.HitEnemies = hitEnemies.ToArray();
-            // relics.Trigger(WeaponEvent.OnHit, weaponContext);
+            TriggerSoulShards(WeaponEvent.OnHit, weaponContext);
         }
     }
 
@@ -157,5 +158,13 @@ public class WeaponObject : ItemObject
     {
         audioSource.pitch = Random.Range(weapon.attackSoundPitchRange.x, weapon.attackSoundPitchRange.y);
         audioSource.PlayOneShot(weapon.attackSound);
+    }
+
+    void TriggerSoulShards(WeaponEvent weaponEvent, WeaponContext weaponContext)
+    {
+        foreach (SoulShardSO soulShardSO in Instance.soulShards)
+        {
+            soulShardSO.Trigger(weaponEvent, weaponContext);
+        }
     }
 }

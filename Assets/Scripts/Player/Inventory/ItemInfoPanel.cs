@@ -106,6 +106,9 @@ public class ItemInfoPanel : MonoBehaviour
 
             sb.AppendLine($"Range <color=green>{weapon.range}</color>");
             sb.AppendLine($"Attack Rate <color=orange>{weapon.attackRate}</color>");
+            sb.AppendLine($"Soul shards  {item.Instance.soulShards.Count} / {weapon.maxSlots}");
+            foreach (SoulShardSO shard in item.Instance.soulShards)
+                sb.AppendLine($"  {shard.itemName}");
             return sb.ToString();
         }
 
