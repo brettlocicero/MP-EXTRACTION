@@ -29,6 +29,12 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] float slideCameraDrop = 0.5f;
     [SerializeField] LayerMask obstructionMask;
 
+    [Header("Dash")]
+    [SerializeField] float dashSpeed = 28f;
+    [SerializeField] float dashDuration = 0.2f;
+    [SerializeField] float dashCooldown = 0.6f;
+    [SerializeField] AudioClip dashSound;
+
     [Header("Ground Stick")]
     [SerializeField] float groundStickVelocity = 8f;
     [SerializeField] float minAirborneTimeForLandSound = 0.15f;
@@ -88,6 +94,11 @@ public class PlayerController : NetworkBehaviour
     Vector3 originalControllerCenter;
     Vector3 slideDirection;
 
+    bool isDashing;
+    float dashTimer;
+    float dashCooldownTimer;
+    Vector3 dashDirection;
+
     public PlayerState LocalState => playerState;
 
     void Awake()
@@ -124,6 +135,8 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner)
             return;
 
+        dashCooldownTimer -= Time.deltaTime;
+
         ReadInput();
         
         HandleHeadBob();
@@ -138,7 +151,11 @@ public class PlayerController : NetworkBehaviour
         moveInput = InputManager.Actions.Player.Move.ReadValue<Vector2>();
         lookInput = InputManager.Actions.Player.Look.ReadValue<Vector2>();
 
-        isSprinting = InputManager.Actions.Player.Sprint.IsPressed() && !isMovementLocked && !isSliding && moveInput.y > 0.1f;
+        isSprinting = InputManager.Actions.Player.Sprint.IsPressed() 
+            && !isMovementLocked 
+            && !isSliding 
+            && !isDashing 
+            && moveInput.y > 0.1f;
 
         if (isMovementLocked) moveInput = Vector2.zero;
         if (isSensLocked) lookInput = Vector2.zero;
@@ -146,6 +163,47 @@ public class PlayerController : NetworkBehaviour
         bool slidePressed = isSprinting && InputManager.Actions.Player.Crouch.WasPressedThisFrame();
         if (slidePressed && controller.isGrounded)
             StartSlide();
+
+        bool dashPressed = InputManager.Actions.Player.Dash.WasPressedThisFrame();
+        bool canDash = dashPressed && !isSprinting && !isSliding && !isDashing && !isMovementLocked && dashCooldownTimer <= 0f;
+        if (canDash)
+            StartDash();
+    }
+
+    void StartDash()
+    {
+        Vector3 input = transform.right * moveInput.x + transform.forward * moveInput.y;
+        dashDirection = input.sqrMagnitude > 0.01f ? input.normalized : transform.forward;
+
+        isDashing = true;
+        dashTimer = 0f;
+        verticalVelocity = 0f;
+
+        if (dashSound)
+            audioSource.PlayOneShot(dashSound);
+    }
+
+    void HandleDash()
+    {
+        dashTimer += Time.deltaTime;
+
+        // Stays fast for most of the dash, then eases out
+        float progress = dashTimer / dashDuration;
+        float speed = Mathf.Lerp(dashSpeed, moveSpeed, progress * progress);
+
+        controller.Move(dashDirection * speed * Time.deltaTime);
+
+        if (progress >= 1f)
+            EndDash();
+    }
+
+    void EndDash()
+    {
+        isDashing = false;
+        dashCooldownTimer = dashCooldown;
+
+        // Carry a little momentum if the dash ends in the air
+        horizontalVelocity = dashDirection * moveSpeed;
     }
 
     void StartSlide()
@@ -243,6 +301,12 @@ public class PlayerController : NetworkBehaviour
 
     void Move()
     {
+        if (isDashing)
+        {
+            HandleDash();
+            return;
+        }
+
         if (isSliding)
         {
             HandleSlide();

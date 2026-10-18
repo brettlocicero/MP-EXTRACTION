@@ -3316,6 +3316,10 @@ MonoBehaviour:
   obstructionMask:
     serializedVersion: 2
     m_Bits: 0
+  dashSpeed: 40
+  dashDuration: 0.2
+  dashCooldown: 0.6
+  dashSound: {fileID: 8300000, guid: 4cc24354390fafa4ab6f255f9889b4de, type: 3}
   groundStickVelocity: 8
   minAirborneTimeForLandSound: 0.15
   mouseSensitivity: 0.15
@@ -3856,6 +3860,7 @@ MonoBehaviour:
     instanceId: 0
     baseItemId: 0
     customName: 
+    soulShards: []
   movementAnimator: {fileID: 3699793755474465058}
   sprintPositionOffset: {x: 0, y: -0.1, z: 0.1}
   sprintRotationOffset: {x: 10, y: 0, z: 0}
@@ -4713,6 +4718,7 @@ MonoBehaviour:
     instanceId: 0
     baseItemId: 0
     customName: 
+    soulShards: []
   movementAnimator: {fileID: 2899571667365176779}
   sprintPositionOffset: {x: -0.05, y: -0.02, z: 0.1}
   sprintRotationOffset: {x: 10, y: 0, z: 10}
