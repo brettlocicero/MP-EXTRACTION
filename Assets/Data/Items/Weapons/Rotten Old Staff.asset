@@ -33,9 +33,13 @@ MonoBehaviour:
     stunTime: 0.2
     camShakeIntensity: 2
     camShakeDuration: 0.25
+    maxChargeTime: 0
+    chargeSpeed: 0.2
+    chargeDamageMultiplier: 2
   range: 30
   attackRate: 0.8
   attackSound: {fileID: 8300000, guid: 7a9b1e5f1e9066849af4f18f8a51c9dc, type: 3}
   contactSound: {fileID: 8300000, guid: 99f7a4a19ce0272418d4cdbad0bb6bca, type: 3}
   attackSoundPitchRange: {x: 0.9, y: 1.1}
   maxSlots: 5
+  blockProtectionPercent: 20

@@ -31,6 +31,12 @@ public class PlayerState : NetworkBehaviour
         NetworkVariableWritePermission.Server
     );
 
+    public NetworkVariable<float> BlockProtectionPercent = new(
+        0f,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Owner
+    );
+
     public void PlayPortalTransition()
     {
         portalTransition.SetTrigger("TriggerPortal");
@@ -111,10 +117,13 @@ public class PlayerState : NetworkBehaviour
 
     public void Damage(int amount)
     {
-        if (!IsServer)
-            return;
+        if (IsServer)
+        {
+            float multiplier = 1f - BlockProtectionPercent.Value / 100f;
+            int finalAmount = Mathf.RoundToInt(amount * multiplier);
 
-        CurrentHealth.Value = Mathf.Max(0, CurrentHealth.Value - amount);
+            CurrentHealth.Value = Mathf.Max(0, CurrentHealth.Value - finalAmount);
+        }
     }
 
     public void Heal(int amount)

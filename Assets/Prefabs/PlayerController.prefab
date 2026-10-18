@@ -3458,6 +3458,11 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 100
+  BlockProtectionPercent:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!114 &3196357381100976498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3867,6 +3872,9 @@ MonoBehaviour:
   sprintTransitionSpeed: 8
   attackAnimation: {fileID: 1146343760126823960}
   hitSpot: {fileID: 8606611077761092320}
+  blockPositionOffset: {x: 0.16, y: -0.66, z: 0.09}
+  blockRotationOffset: {x: 0, y: 0, z: 120.8}
+  blockTransitionSpeed: 10
 --- !u!82 &4676709611465785386
 AudioSource:
   m_ObjectHideFlags: 0
@@ -4725,6 +4733,9 @@ MonoBehaviour:
   sprintTransitionSpeed: 8
   attackAnimation: {fileID: 492109622604074809}
   hitSpot: {fileID: 8704846432185709355}
+  blockPositionOffset: {x: 0, y: 0, z: 0}
+  blockRotationOffset: {x: 0, y: 0, z: 0}
+  blockTransitionSpeed: 10
 --- !u!82 &6359583926408882254
 AudioSource:
   m_ObjectHideFlags: 0

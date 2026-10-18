@@ -56,3 +56,4 @@ MonoBehaviour:
   contactSound: {fileID: 8300000, guid: 99f7a4a19ce0272418d4cdbad0bb6bca, type: 3}
   attackSoundPitchRange: {x: 0.7, y: 0.8}
   maxSlots: 5
+  blockProtectionPercent: 50

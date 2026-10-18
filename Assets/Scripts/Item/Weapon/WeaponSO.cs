@@ -18,6 +18,9 @@ public class WeaponSO : ItemSO
     [Header("Soul Shards")]
     public int maxSlots = 5;
 
+    [Header("Block")]
+    [Range(0f, 100f)] public float blockProtectionPercent = 50f;
+
     public (float, float) GetDamageRange()
     {
         float minDmg = Mathf.Infinity;

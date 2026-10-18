@@ -27,6 +27,7 @@ public class WeaponObject : ItemObject
 
     InventoryManager inventoryManager;
     PlayerRelics relics;
+    PlayerState playerState;
 
     float chargeTime = 0f;
 
@@ -40,6 +41,7 @@ public class WeaponObject : ItemObject
         cinemachineShake = GetComponentInParent<CinemachineShake>();
         inventoryManager = InventoryManager.Instance;
         relics = GetComponentInParent<PlayerRelics>();
+        playerState = GetComponentInParent<PlayerState>();
     }
 
     void OnEnable()
@@ -49,6 +51,12 @@ public class WeaponObject : ItemObject
         isBlocking = false;
         extraPosOffset = Vector3.zero;
         extraRotOffset = Quaternion.identity;
+    }
+
+    void OnDisable()
+    {
+        if (playerState && playerState.IsSpawned)
+            playerState.BlockProtectionPercent.Value = 0f;
     }
 
     protected override void Update()
@@ -79,6 +87,8 @@ public class WeaponObject : ItemObject
 
         extraPosOffset = Vector3.Lerp(extraPosOffset, targetPos, Time.deltaTime * blockTransitionSpeed);
         extraRotOffset = Quaternion.Slerp(extraRotOffset, targetRot, Time.deltaTime * blockTransitionSpeed);
+
+        playerState.BlockProtectionPercent.Value = isBlocking ? weapon.blockProtectionPercent : 0f;
     }
 
     WeaponContext CreateWeaponContext(Attack attack)
