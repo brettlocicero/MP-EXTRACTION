@@ -155,7 +155,7 @@ MonoBehaviour:
     m_Value: 0
   contrast:
     m_OverrideState: 0
-    m_Value: 67.2
+    m_Value: 93.4
   colorFilter:
     m_OverrideState: 0
     m_Value: {r: 1, g: 1, b: 1, a: 1}
@@ -209,7 +209,7 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0.2
   lightIntensity:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 1
   densityInLight:
     m_OverrideState: 0
@@ -230,7 +230,7 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 50
   litColor:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: {r: 1, g: 1, b: 1, a: 1}
   shadowedColor:
     m_OverrideState: 0
