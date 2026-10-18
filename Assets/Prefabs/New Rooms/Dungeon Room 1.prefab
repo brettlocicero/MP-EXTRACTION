@@ -1705,7 +1705,7 @@ MonoBehaviour:
   - {fileID: 3008611382603955467}
   enemySpawns:
   - {fileID: 4079689492535377701, guid: 6efd588924487c3468517708c6094baa, type: 3}
-  enemySpawnChance: 0.7
+  enemySpawnChance: 0.5
   propLocation: []
   props: []
   propSpawnChance: 0.7

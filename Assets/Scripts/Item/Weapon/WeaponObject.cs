@@ -22,6 +22,9 @@ public class WeaponObject : ItemObject
     InventoryManager inventoryManager;
     PlayerRelics relics;
 
+    float chargeTime = 0f;
+
+
     protected override void Start()
     {
         base.Start();
@@ -93,24 +96,52 @@ public class WeaponObject : ItemObject
         attackAnimation.Play(attack.animationClip.name);
         playerController.PlayAttackAnimation();
 
-        // Increment the combo index incase of multiple attacks
         comboIndex = ++comboIndex % weapon.attacks.Length;
 
-        // Trigger the delay of the actual attack from mouse-click, such as sword swing build up
-        yield return new WaitForSeconds(attack.attackDelay);
+        // Wind-up, slowed or held while the attack button is down
+        yield return WindupWorker(attack);
+
+        float chargePercent = attack.maxChargeTime > 0f ? chargeTime / attack.maxChargeTime : 0f;
+        weaponContext.Damage = attack.damage * Mathf.Lerp(1f, attack.chargeDamageMultiplier, chargePercent);
 
         TriggerSoulShards(WeaponEvent.OnAttack, weaponContext);
         relics.NotifyAttackServerRpc();
 
-        // Trigger VFX
         cinemachineShake.ShakeCamera(attack.camShakeIntensity, attack.camShakeDuration, 0.5f, 80f);
         PlayAttackAudio();
-        
-        // Build out the damaging parts modularly
+
         if (attack.projectile) LaunchProjectile(attack, weaponContext);
         if (attack.useHitbox) TriggerAttackHitbox(attack, weaponContext);
 
         inAttack = false;
+    }
+
+    IEnumerator WindupWorker(Attack attack)
+    {
+        AnimationState state = attackAnimation[attack.animationClip.name];
+        bool charging = attack.maxChargeTime > 0f;
+        chargeTime = 0f;
+
+        while (charging || state.time < attack.attackDelay)
+        {
+            charging = charging && chargeTime < attack.maxChargeTime && InputManager.Actions.Player.Attack.IsPressed();
+
+            if (charging)
+            {
+                bool atApex = state.time >= attack.attackDelay;
+                state.speed = atApex ? 0f : attack.chargeSpeed;
+                chargeTime += Time.deltaTime;
+            }
+
+            else
+            {
+                state.speed = 1f;
+            }
+
+            yield return null;
+        }
+
+        state.speed = 1f;
     }
 
     void LaunchProjectile(Attack attack, WeaponContext weaponContext)
@@ -134,7 +165,7 @@ public class WeaponObject : ItemObject
                 if (enemyCollider.TryGetComponent(out EnemyAI enemy)) 
                 {
                     Vector3 hitPoint = enemyCollider.ClosestPoint(hitSpot.position);
-                    enemy.TakeDamage(attack.damage, attack.stunTime, attack.direction, hitPoint);
+                    enemy.TakeDamage(weaponContext.Damage, weaponContext.StunTime, attack.direction, hitPoint);
                     hitEnemies.Add(enemy);
                 }
             }

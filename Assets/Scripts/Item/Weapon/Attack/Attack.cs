@@ -16,4 +16,9 @@ public class Attack
     public float stunTime = 1f;
     public float camShakeIntensity = 3f;
     public float camShakeDuration = 0.2f;
+
+    [Header("Charge")]
+    public float maxChargeTime = 0f;
+    public float chargeSpeed = 0.2f;
+    public float chargeDamageMultiplier = 2f;
 }

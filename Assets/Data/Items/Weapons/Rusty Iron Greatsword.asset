@@ -33,6 +33,9 @@ MonoBehaviour:
     stunTime: 1
     camShakeIntensity: 3
     camShakeDuration: 0.25
+    maxChargeTime: 1
+    chargeSpeed: 0.2
+    chargeDamageMultiplier: 2
   - attackName: Right Swing
     animationClip: {fileID: 7400000, guid: 7cf44fb0814eb09419a70557fa07f9fc, type: 2}
     direction: 2
@@ -44,6 +47,9 @@ MonoBehaviour:
     stunTime: 1
     camShakeIntensity: 3
     camShakeDuration: 0.25
+    maxChargeTime: 1
+    chargeSpeed: 0.5
+    chargeDamageMultiplier: 2
   range: 2
   attackRate: 1
   attackSound: {fileID: 8300000, guid: 37bd4299f0adae64fb439ef3915587fb, type: 3}
