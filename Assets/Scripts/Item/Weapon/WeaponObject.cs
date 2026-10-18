@@ -10,7 +10,13 @@ public class WeaponObject : ItemObject
     [SerializeField] Animation attackAnimation;
     [SerializeField] Transform hitSpot;
 
+    [Header("Block")]
+    [SerializeField] Vector3 blockPositionOffset;
+    [SerializeField] Vector3 blockRotationOffset;
+    [SerializeField] float blockTransitionSpeed = 10f;
+
     bool inAttack = false;
+    bool isBlocking = false;
 
     WeaponSO weapon;
     float attackTimer = 0f;
@@ -24,6 +30,7 @@ public class WeaponObject : ItemObject
 
     float chargeTime = 0f;
 
+    public bool IsBlocking => isBlocking;
 
     protected override void Start()
     {
@@ -39,24 +46,39 @@ public class WeaponObject : ItemObject
     {
         attackAnimation.Rewind();
         inAttack = false;
+        isBlocking = false;
+        extraPosOffset = Vector3.zero;
+        extraRotOffset = Quaternion.identity;
     }
 
     protected override void Update()
     {
         base.Update();
+        HandleBlock();
         HandleAttack();
     }
 
-    // List reasons why we cannot attack, and then invert the result.
-    // No reason to do it this way, other than it makes the most sense to me.
+    bool IsBusy()
+    {
+        return inventoryManager.IsInventoryOpen() ||
+            playerController.IsSensitivityLocked() ||
+            playerController.IsSprinting();
+    }
+
     bool CanAttack()
     {
-        return !(
-            inAttack || 
-            inventoryManager.IsInventoryOpen() || 
-            playerController.IsSensitivityLocked() || 
-            playerController.IsSprinting()
-        );
+        return !(inAttack || isBlocking || IsBusy());
+    }
+
+    void HandleBlock()
+    {
+        isBlocking = !inAttack && !IsBusy() && InputManager.Actions.Player.Block.IsPressed();
+
+        Vector3 targetPos = isBlocking ? blockPositionOffset : Vector3.zero;
+        Quaternion targetRot = isBlocking ? Quaternion.Euler(blockRotationOffset) : Quaternion.identity;
+
+        extraPosOffset = Vector3.Lerp(extraPosOffset, targetPos, Time.deltaTime * blockTransitionSpeed);
+        extraRotOffset = Quaternion.Slerp(extraRotOffset, targetRot, Time.deltaTime * blockTransitionSpeed);
     }
 
     WeaponContext CreateWeaponContext(Attack attack)

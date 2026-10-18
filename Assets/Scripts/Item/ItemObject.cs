@@ -27,6 +27,9 @@ public class ItemObject : MonoBehaviour
     Vector3 currentSprintPosOffset;
     Quaternion currentSprintRotOffset = Quaternion.identity;
 
+    protected Vector3 extraPosOffset;
+    protected Quaternion extraRotOffset = Quaternion.identity;
+
     public ItemSO ItemData => item;
     public ItemInstance Instance => instance;
 
@@ -74,7 +77,7 @@ public class ItemObject : MonoBehaviour
         currentSprintPosOffset = Vector3.Lerp(currentSprintPosOffset, targetPosOffset, Time.deltaTime * sprintTransitionSpeed);
         currentSprintRotOffset = Quaternion.Slerp(currentSprintRotOffset, targetRotOffset, Time.deltaTime * sprintTransitionSpeed);
 
-        transform.localPosition = baseLocalPosition + currentSprintPosOffset;
-        transform.localRotation = baseLocalRotation * currentSprintRotOffset;
+        transform.localPosition = baseLocalPosition + currentSprintPosOffset + extraPosOffset;
+        transform.localRotation = baseLocalRotation * currentSprintRotOffset * extraRotOffset;
     }
 }
