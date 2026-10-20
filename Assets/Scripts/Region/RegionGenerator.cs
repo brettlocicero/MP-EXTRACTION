@@ -1,5 +1,6 @@
 using System.Collections;
 using DG.Tweening;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ public class RegionGenerator : NetworkBehaviour
     [SerializeField] Vector3 playerSpawnPos;
     [SerializeField] RegionTransitionAnimator regionTransitionAnimator;
     [SerializeField] float transitionDuration = 2f;
+    [SerializeField] TextMeshProUGUI regionText;
 
     RegionSO currentRegion;
     GameObject spawnedRegionInstance;
@@ -57,7 +59,7 @@ public class RegionGenerator : NetworkBehaviour
 
         int regionIndex = System.Array.IndexOf(availableRegions, region);
 
-        PlayTransitionRpc();
+        PlayTransitionRpc(regionIndex);
         yield return new WaitForSeconds(transitionDuration);
 
         currentRegion = region;
@@ -89,8 +91,9 @@ public class RegionGenerator : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    void PlayTransitionRpc()
+    void PlayTransitionRpc(int regionIndex)
     {
+        regionText.text = availableRegions[regionIndex].RegionName;
         Sequence seq = regionTransitionAnimator.PlayTransition();
         GameManager.Instance.LocalPlayer.LocalState.PlayPortalTransition();
     }

@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f9480ce99263e24ca81a9eaa6245055, type: 3}
-  m_Name: Abysslands
+  m_Name: The Bastion
   m_EditorClassIdentifier: Assembly-CSharp::RegionSO
-  regionName: Abysslands
+  regionName: The Bastion
   rooms:
   - {fileID: 1930321973798873953, guid: 40db5f3ff3a5ec14faa9d0b0860250dd, type: 3}
   - {fileID: 4029650349847250548, guid: 6f3e2c115b68c834b9505c8ce8dde3ea, type: 3}
   - {fileID: 7315273745108225666, guid: 6c9cc32320e91894f8e3711752b328af, type: 3}
   roomCount: 25
   skybox: {fileID: 2100000, guid: c8de1c706a29f4335a9210fa922562df, type: 2}
-  sunColor: {r: 0.39269945, g: 0.39215687, b: 0.4627451, a: 1}
-  ambientSkyColor: {r: 0.47792813, g: 0.48867318, b: 0.5660378, a: 1}
+  sunColor: {r: 0.8509804, g: 0.57254905, b: 0.54901963, a: 1}
+  ambientSkyColor: {r: 0.54901963, g: 0.39607844, b: 0.39607844, a: 1}
   fogColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}
