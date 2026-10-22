@@ -65,21 +65,21 @@ public class RegionGenerator : NetworkBehaviour
         currentRegion = region;
         currentRegionIndex.Value = regionIndex;
 
-        GenerateRegionRpc(regionIndex);
+        GenerateRegionRpc(regionIndex, regionSeed);
         PostGenerationRpc();
         MoveAllPlayers();
     }
 
 
     [Rpc(SendTo.Everyone)]
-    void GenerateRegionRpc(int regionIndex)
+    void GenerateRegionRpc(int regionIndex, int regionSeed)
     {
         ClearInstancedRegion();
 
         Vector3 spawnPos = regionRoot != null ? regionRoot.position : Vector3.zero;
         // spawnedRegionInstance = Instantiate(availableRegions[regionIndex].RegionBase, spawnPos, Quaternion.identity, regionRoot);
 
-        availableRegions[regionIndex].SpawnRooms(regionRoot);
+        availableRegions[regionIndex].SpawnRooms(regionRoot, regionSeed);
     }
 
     void ClearInstancedRegion()

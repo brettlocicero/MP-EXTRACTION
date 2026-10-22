@@ -25,25 +25,26 @@ public class RegionSO : ScriptableObject
         RenderSettings.fogColor = fogColor;
     }
 
-    public void SpawnRooms(Transform regionRoot)
+    public void SpawnRooms(Transform regionRoot, int seed)
     {
+        System.Random rng = new(seed);
+
         Vector3 cursorPosition = regionRoot.position;
         Quaternion cursorRotation = regionRoot.rotation;
 
         for (int i = 0; i < roomCount; i++)
         {
-            RoomObject roomObject = rooms[Random.Range(0, rooms.Length)];
+            RoomObject roomObject = rooms[rng.Next(rooms.Length)];
             RoomObject roomInstance = Instantiate(roomObject, cursorPosition, cursorRotation, regionRoot);
             roomInstance.Initialize();
 
-            if (!roomInstance.TryGetComponent(out RoomObject room) || room.Connector == null)
+            if (roomInstance.Connector == null)
             {
                 Debug.LogWarning($"[RegionSO] Room prefab '{roomObject.name}' is missing a RoomObject/Connector, stopping room chain early.");
                 break;
             }
 
-            cursorPosition = room.Connector.position;
-            cursorRotation = room.Connector.rotation;
+            roomInstance.Connector.GetPositionAndRotation(out cursorPosition, out cursorRotation);
         }
     }
 }
