@@ -184,26 +184,36 @@ public class WeaponObject : ItemObject
 
     void TriggerAttackHitbox(Attack attack, WeaponContext weaponContext) 
     {
-        Collider[] hits = Physics.OverlapSphere(hitSpot.position, weapon.range, LayerMask.GetMask("Enemy"));
+        Collider[] hits = Physics.OverlapSphere(hitSpot.position, weapon.range, LayerMask.GetMask("Enemy", "Breakable"));
         HashSet<EnemyAI> hitEnemies = new();
+
         if (hits.Length > 0) 
         {
             float hitstopDuration = 0.1f;
             audioSource.PlayOneShot(weapon.contactSound);
             StartCoroutine(HitstopWorker(attack.animationClip.name, hitstopDuration));
 
-            foreach (Collider enemyCollider in hits) 
+            foreach (Collider hit in hits) 
             {
-                if (enemyCollider.TryGetComponent(out EnemyAI enemy)) 
+                if (hit.TryGetComponent(out EnemyAI enemy)) 
                 {
-                    Vector3 hitPoint = enemyCollider.ClosestPoint(hitSpot.position);
+                    Vector3 hitPoint = hit.ClosestPoint(hitSpot.position);
                     enemy.TakeDamage(weaponContext.Damage, weaponContext.StunTime, attack.direction, hitPoint);
                     hitEnemies.Add(enemy);
                 }
+
+                if (hit.TryGetComponent(out BreakableObject breakable))
+                {
+                    breakable.TakeDamage(weaponContext.Damage);
+                    Debug.Log("break");
+                }
             }
 
-            weaponContext.HitEnemies = hitEnemies.ToArray();
-            TriggerSoulShards(WeaponEvent.OnHit, weaponContext);
+            if (hitEnemies.Count > 0)
+            {
+                weaponContext.HitEnemies = hitEnemies.ToArray();
+                TriggerSoulShards(WeaponEvent.OnHit, weaponContext);
+            }
         }
     }
 
