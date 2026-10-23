@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class BreakableObject : NetworkBehaviour
+public class BreakableObject : PropObject
 {
     [SerializeField] GameObject intact;
     [SerializeField] Rigidbody[] debris;
