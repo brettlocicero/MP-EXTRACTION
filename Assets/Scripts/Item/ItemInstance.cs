@@ -32,4 +32,14 @@ public class ItemInstance : INetworkSerializable
     {
         soulShards.Add(soulShard);
     }
+
+    public WeaponStats GetStats(WeaponSO weapon)
+    {
+        WeaponStats stats = new WeaponStats(weapon);
+
+        foreach (SoulShardSO shard in soulShards)
+            shard.ModifyStats(ref stats);
+
+        return stats;
+    }
 }

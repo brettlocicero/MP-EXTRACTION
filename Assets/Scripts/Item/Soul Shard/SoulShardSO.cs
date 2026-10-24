@@ -20,4 +20,6 @@ public abstract class SoulShardSO : ItemSO
     {
         throw new NotImplementedException();
     }
+
+    public virtual void ModifyStats(ref WeaponStats stats) { }
 }

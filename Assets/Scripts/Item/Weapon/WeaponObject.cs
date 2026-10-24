@@ -110,8 +110,9 @@ public class WeaponObject : ItemObject
 
         if (!CanAttack()) return;
 
+        float attackRate = Instance.GetStats(weapon).attackRate;
         bool pressedAttack = InputManager.Actions.Player.Attack.WasPressedThisFrame();
-        if (pressedAttack && attackTimer >= weapon.attackRate)
+        if (pressedAttack && attackTimer >= attackRate)
         {
             StartCoroutine(AttackWorker(weapon.attacks[comboIndex]));
             attackTimer = 0f;

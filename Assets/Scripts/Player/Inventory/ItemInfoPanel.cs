@@ -91,24 +91,29 @@ public class ItemInfoPanel : MonoBehaviour
         descriptionText.rectTransform.sizeDelta = new Vector2(-40f, Mathf.Max(0f, height - bodyTop - footerHeight));
     }
 
-    // TODO: Update this function to account for the ItemInstance's stats, instead of the base data stats.
     string BuildDescriptionText(InventoryItem item)
     {
         if (item.Data is WeaponSO weapon)
         {
+            WeaponStats stats = item.Instance.GetStats(weapon);
             StringBuilder sb = new StringBuilder();
-            
-            var damageRange = weapon.GetDamageRange();
-            if (damageRange.Item1.Equals(damageRange.Item2))
-                sb.AppendLine($"Damage <color=red>{damageRange.Item1}</color>");
-            else
-                sb.AppendLine($"Damage <color=red>{damageRange.Item1} - {damageRange.Item2}</color>");
 
-            sb.AppendLine($"Range <color=green>{weapon.range}</color>");
-            sb.AppendLine($"Attack Rate <color=orange>{weapon.attackRate}</color>");
+            var damageRange = weapon.GetDamageRange();
+            float minDamage = damageRange.Item1 * stats.damageMultiplier;
+            float maxDamage = damageRange.Item2 * stats.damageMultiplier;
+
+            if (minDamage.Equals(maxDamage))
+                sb.AppendLine($"Damage <color=red>{minDamage:0.##}</color>");
+            else
+                sb.AppendLine($"Damage <color=red>{minDamage:0.##} - {maxDamage:0.##}</color>");
+
+            sb.AppendLine($"Range <color=green>{stats.range:0.##}</color>");
+            sb.AppendLine($"Attack Rate <color=orange>{stats.attackRate:0.##}</color>");
             sb.AppendLine($"Soul shards  {item.Instance.soulShards.Count} / {weapon.maxSlots}");
+
             foreach (SoulShardSO shard in item.Instance.soulShards)
                 sb.AppendLine($"  {shard.itemName}");
+
             return sb.ToString();
         }
 
