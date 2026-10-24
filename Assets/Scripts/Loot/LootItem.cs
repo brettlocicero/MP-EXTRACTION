@@ -11,6 +11,8 @@ public class LootItem : NetworkBehaviour, IInteractable
 
     public override void OnNetworkSpawn()
     {
+        gameObject.name = item.itemName;
+
         if (!IsServer) return;
 
         if (!isFactory)
