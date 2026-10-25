@@ -54,6 +54,8 @@ public class EnemyAI : NetworkBehaviour
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
+    
+    public float HealthPercent => currentHealth.Value / maxHealth;
 
     void Awake()
     {

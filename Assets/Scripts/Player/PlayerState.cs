@@ -133,6 +133,12 @@ public class PlayerState : NetworkBehaviour
 
         CurrentHealth.Value = Mathf.Min(MaxHealth.Value, CurrentHealth.Value + amount);
     }
+    
+    [Rpc(SendTo.Server)]
+    public void HealRpc(int amount)
+    {
+        Heal(amount);
+    }
 
     public void SetMaxHealth(int amount, bool healToFull = false)
     {
