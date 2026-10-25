@@ -9,6 +9,8 @@ public class LootItem : NetworkBehaviour, IInteractable
     ItemInstance instance;
     bool collected;
 
+    public void SetItem(ItemSO newItem) => item = newItem;
+
     public override void OnNetworkSpawn()
     {
         gameObject.name = item.itemName;

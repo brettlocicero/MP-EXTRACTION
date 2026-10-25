@@ -9,6 +9,11 @@ public class BreakableObject : PropObject
     [SerializeField] float breakForce = 50f;
     [SerializeField] float despawnDelay = 5f;
 
+    [Header("Loot")]
+    [SerializeField] ItemSO[] itemPool;
+    [SerializeField] int dropCount = 1;
+    [SerializeField] float lootForce = 6f;
+
     float health;
     bool broken;
 
@@ -39,7 +44,23 @@ public class BreakableObject : PropObject
         {
             broken = true;
             BreakRpc();
+
+            if (itemPool.Length > 0)
+                SpawnLoot();
+
             Invoke(nameof(DespawnSelf), despawnDelay);
+        }
+    }
+
+    void SpawnLoot()
+    {
+        for (int i = 0; i < dropCount; i++)
+        {
+            ItemSO item = itemPool[Random.Range(0, itemPool.Length)];
+            LootItem drop = ItemDatabase.Instance.SpawnItemDrop(item, transform.position);
+
+            Vector3 direction = new Vector3(Random.Range(-1f, 1f), Random.Range(0.5f, 1f), Random.Range(-1f, 1f)).normalized;
+            drop.GetComponent<Rigidbody>().AddForce(direction * lootForce, ForceMode.Impulse);
         }
     }
 
