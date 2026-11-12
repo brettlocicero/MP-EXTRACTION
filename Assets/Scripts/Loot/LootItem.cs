@@ -6,18 +6,27 @@ public class LootItem : NetworkBehaviour, IInteractable
     [SerializeField] ItemSO item;
     [SerializeField] bool isFactory;
 
+    NetworkVariable<int> itemId = new(-1);
+
     ItemInstance instance;
     bool collected;
 
-    public void SetItem(ItemSO newItem) => item = newItem;
+    public void SetItem(ItemSO newItem)
+    {
+        item = newItem;
+        itemId.Value = newItem.id;
+    }
 
     public override void OnNetworkSpawn()
     {
+        // Prefab-assigned items never went through SetItem
+        if (IsServer && itemId.Value == -1)
+            itemId.Value = item.id;
+
+        item = ItemDatabase.Instance.GetItem(itemId.Value);
         gameObject.name = item.itemName;
 
-        if (!IsServer) return;
-
-        if (!isFactory)
+        if (IsServer && !isFactory)
             Init();
     }
 
